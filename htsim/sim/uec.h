@@ -175,6 +175,9 @@ public:
         _maxwnd = maxwnd;
     }
 
+    void setPfcOnlyMode(bool enable);
+    void disableCongestionControl();
+
     void setConfiguredMaxWnd(mem_b wnd){
         _configured_maxwnd = wnd;
     }
@@ -211,6 +214,7 @@ public:
 
     static bool _sender_based_cc;
     static bool _receiver_based_cc;
+    static bool _quiet;
 
     enum Sender_CC { DCTCP, NSCC, CONSTANT};
     static Sender_CC _sender_cc_algo;
@@ -342,6 +346,7 @@ public:
     mem_b _bdp;
     bool _send_blocked_on_nic;
     bool _speculating;
+    bool _pfc_only_mode;
 
     // Record last time this UecSrc was scheduled.
     optional<simtime_picosec> _last_event_time;

@@ -18,6 +18,7 @@ using namespace std;
    large incasts. */
 simtime_picosec DCQCNSink::_cnp_interval = timeFromUs(50.0);
 simtime_picosec DCQCNSrc::_cc_update_period = timeFromUs(55.0);
+uint64_t DCQCNSink::_total_cnp_sent = 0;
 
 double DCQCNSrc::_alpha = 1;
 double DCQCNSrc::_g = .00390625; // g = 1/256
@@ -26,6 +27,7 @@ uint64_t DCQCNSrc::_B = 10000000; // number of bytes to go until we fire the byt
 uint32_t DCQCNSrc::_F = 5;
 linkspeed_bps DCQCNSrc::_RAI = 0;
 linkspeed_bps DCQCNSrc::_RHAI = 0;
+bool DCQCNSrc::_quiet = false;
 
 DCQCNSrc::DCQCNSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &eventlist, linkspeed_bps rate)
     : RoceSrc(logger,pktlogger,eventlist,rate)
@@ -41,6 +43,7 @@ DCQCNSrc::DCQCNSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &even
 
     _RAI = rate / 20;
     _RHAI = rate / 10;
+    _min_rate = std::max<linkspeed_bps>(rate / 1000, 1);
 
     _last_cc_update = 0;
     _last_alpha_update = 0;
@@ -49,11 +52,31 @@ DCQCNSrc::DCQCNSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &even
     _BC = 0;
     _byte_counter = 0;
     _old_highest_sent = 0;
+    _no_cc = false;
+}
+
+void DCQCNSrc::set_no_cc(bool enable){
+    _no_cc = enable;
+    if (_no_cc) {
+        _RC = _link;
+        _RT = _link;
+        _pacing_rate = _link;
+        update_spacing();
+    }
 }
 
 void DCQCNSrc::processCNP(const CNPPacket& cnp){
+    if (_no_cc) {
+        return;
+    }
     _RT = _RC;
     _RC = _RC * (1-_alpha/2);
+    if (_RC < _min_rate) {
+        _RC = _min_rate;
+    }
+    if (_RT < _min_rate) {
+        _RT = _min_rate;
+    }
     _alpha = (1-_g)*_alpha + _g;
 
     //_ai_state = increase_state::fast_recovery;
@@ -63,16 +86,23 @@ void DCQCNSrc::processCNP(const CNPPacket& cnp){
     _byte_counter = 0;
     _old_highest_sent = _highest_sent;
 
-    cout << "At " << timeAsUs(eventlist().now()) << " " << _RC << " CNP received, reduced rate; target rate is " << _RT << " node " << nodename() << " alpha is " << _alpha;
-
     _pacing_rate = _RC;
     update_spacing();
-    cout << " packet spacing is " << timeAsUs(_packet_spacing) << endl;
 
     _last_cc_update = eventlist().now();
     _last_alpha_update = eventlist().now();
 
     eventlist().sourceIsPendingRel(*this, _cc_update_period);
+}
+
+void DCQCNSrc::processAck(const RoceAck& ack) {
+    RoceSrc::processAck(ack);
+    if (_done && !_quiet) {
+        cout << "DCQCN_FINISH flowid " << _flow.flow_id()
+             << " time_ps " << eventlist().now()
+             << " time_ns " << timeAsNs(eventlist().now())
+             << endl;
+    }
 }
 
 void DCQCNSrc::increaseRate(){
@@ -100,21 +130,46 @@ void DCQCNSrc::increaseRate(){
     if (_RC > _link){
         _RC = _link;
     }
+    if (_RC < _min_rate) {
+        _RC = _min_rate;
+    }
+    if (_RT < _min_rate) {
+        _RT = _min_rate;
+    }
 
     _pacing_rate = _RC;
     update_spacing();
 
-    cout << "At " << timeAsUs(eventlist().now()) << " " << _RC << " increase target rate is " << _RT << " node " << nodename() << " packet spacing is " << timeAsUs(_packet_spacing) << " _T is " << _T << " _BC is " << _BC << " byte counter is " << _byte_counter << " alpha is " << _alpha << endl;
+    // Silence verbose DCQCN rate updates to keep logs manageable.
 }
 
 void DCQCNSrc::doNextEvent(){
+    if (!_flow_started) {
+        // Quiet startflow: avoid heavy stdout logging for large runs.
+        _flow_started = true;
+        _highest_sent = 0;
+        _last_acked = 0;
+        _acked_packets = 0;
+        _packets_sent = 0;
+        _done = false;
+        if (_flow_logger) {
+            _flow_logger->logEvent(_flow, *this, FlowEventLogger::START, _flow_size, 0);
+        }
+        eventlist().sourceIsPendingRel(*this, 0);
+        return;
+    }
     bool reschedule = false;
 
     RoceSrc::doNextEvent();
 
-    cout << "Adding " << (_highest_sent - _old_highest_sent) << " to sent bytes " << _byte_counter << " " << _highest_sent << endl;
+    if (_done) {
+        return;
+    }
+    if (_no_cc) {
+        return;
+    }
 
-    _byte_counter += (_highest_sent - _old_highest_sent);
+    _byte_counter += (_highest_sent - _old_highest_sent) * _mss;
     _old_highest_sent = _highest_sent;
 
     if (_byte_counter >= _B){
@@ -127,6 +182,7 @@ void DCQCNSrc::doNextEvent(){
 
     if (eventlist().now()-_last_alpha_update >= _cc_update_period){
         _alpha = (1-_g)*_alpha;
+        _last_alpha_update = eventlist().now();
         reschedule = true;
     }    
 
@@ -202,6 +258,10 @@ DCQCNSink::DCQCNSink(EventList &eventlist)
 // Note: _cumulative_ack is the last byte we've ACKed.
 // seqno is the first byte of the new packet.
 void DCQCNSink::receivePacket(Packet& pkt) {
+    // Cache the reverse route for CNPs on first data packet.
+    if (_route == nullptr && pkt.reverse_route() != nullptr) {
+        _route = pkt.reverse_route();
+    }
     bool ecn_marked = ((pkt.flags() & ECN_CE) != 0);
     RoceSink::receivePacket(pkt);
 
@@ -231,12 +291,9 @@ void DCQCNSink::send_cnp() {
     cnp->set_pathid(0);
 
     cnp->sendOn();
+    _total_cnp_sent++;
 
     _last_cnp_sent_time = eventlist().now();
     _packets_since_last_cnp = 0;
     _marked_packets_since_last_cnp = 0;
 }
-
-
-
-

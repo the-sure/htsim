@@ -14,6 +14,7 @@
 #include "swift_scheduler.h"
 #include "eventlist.h"
 #include "sent_packets.h"
+#include "trigger.h"
 
 //#define MODEL_RECEIVE_WINDOW 1
 
@@ -24,6 +25,7 @@ class SwiftSubflowSrc;
 class SwiftSubflowSink;
 class SwiftRtxTimerScanner;
 class BaseScheduler;
+class FlowEventLogger;
 
 class SwiftPacer : public EventSource {
 public:
@@ -45,6 +47,23 @@ class SwiftSubflowSrc : public EventSource, public PacketSink, public ScheduledS
     friend class SwiftSrc;
     friend class SwiftLoggerSimple;
 public:
+    struct Stats {
+        uint64_t packets_sent;
+        uint64_t acks_received;
+        uint64_t retransmits;
+        uint64_t timeouts;
+        simtime_picosec total_rtt;
+        uint64_t rtt_samples;
+
+        Stats()
+            : packets_sent(0),
+              acks_received(0),
+              retransmits(0),
+              timeouts(0),
+              total_rtt(0),
+              rtt_samples(0) {}
+    };
+
     SwiftSubflowSrc(SwiftSrc& src, TrafficLogger* pktlogger, int subflow_id);
     virtual const string& nodename() { return _nodename; }
     void connect(SwiftSink& sink, const Route& routeout, const Route& routeback, uint32_t flow_id, BaseScheduler* scheduler);
@@ -62,6 +81,10 @@ public:
     uint32_t drops() const { return _drops;}
     bool send_next_packet();
     virtual void send_callback();  // called by scheduler when it has more space
+    const Stats& get_stats() const { return _stats; }
+    uint32_t get_cwnd() const { return _swift_cwnd; }
+    simtime_picosec get_rtt() const { return _rtt; }
+    bool is_established() const { return _established; }
 protected:
     // connection state
     bool _established;
@@ -105,6 +128,7 @@ protected:
     const Route* _route;
     SwiftSrc& _src;
     SwiftPacer _pacer;
+    Stats _stats;
 
 private:
     int send_packets();
@@ -119,7 +143,7 @@ private:
     string _nodename;
 };
 
-class SwiftSrc : public EventSource {
+class SwiftSrc : public EventSource, public TriggerTarget {
     friend class SwiftSink;
     friend class SwiftRtxTimerScanner;
     //friend class SwiftSubflowSrc;
@@ -136,9 +160,43 @@ public:
     //virtual void receivePacket(Packet& pkt);
 
     void set_flowsize(uint64_t flow_size_in_bytes) {
-        _flow_size = flow_size_in_bytes + mss();
+        _flow_size = flow_size_in_bytes;
         cout << "Setting flow size to " << _flow_size << endl;
     }
+
+    void set_flowid(flowid_t id) {
+        _flow_id = id;
+        for (auto* sub : _subs) {
+            sub->flow().set_flowid(id);
+        }
+    }
+    flowid_t get_flowid() const { return _flow_id; }
+    void set_dst(int dst) { _dst = dst; }
+    int get_dst() const { return _dst; }
+    void set_end_trigger(Trigger& trigger) { _end_trigger = &trigger; }
+    void set_start_trigger(Trigger& trigger) { _start_trigger = &trigger; }
+    void logFlowEvents(FlowEventLogger& logger) { _flow_logger = &logger; }
+    void set_base_delay(simtime_picosec delay) {
+        _base_delay = delay;
+        _h = _base_delay / 6.55;
+        cout << "Swift flow " << _flow_id << " base_delay: " << timeAsUs(delay) << " us" << endl;
+    }
+    void set_ai(double ai) {
+        _ai = ai;
+        cout << "Swift flow " << _flow_id << " ai: " << ai << endl;
+    }
+    void set_beta(double beta) {
+        _beta = beta;
+        cout << "Swift flow " << _flow_id << " beta: " << beta << endl;
+    }
+    void set_max_mdf(double max_mdf) {
+        _max_mdf = max_mdf;
+        cout << "Swift flow " << _flow_id << " max_mdf: " << max_mdf << endl;
+    }
+    SwiftSubflowSrc* get_subflow() { return _subs.empty() ? nullptr : _subs.front(); }
+    uint32_t get_cwnd() const { return _subs.empty() ? 0 : _subs.front()->get_cwnd(); }
+    bool is_done() const;
+    bool is_finished() const { return _finished; }
 
     void set_stoptime(simtime_picosec stop_time) {
         _stop_time = stop_time;
@@ -204,6 +262,7 @@ public:
 
     SwiftSink* _sink;
     void set_app_limit(int pktps);
+    virtual void activate() { startflow(); }
 
 
     // Swift helper functions
@@ -212,6 +271,11 @@ public:
     int queuesize(int flow_id);
 
 private:
+    flowid_t _flow_id;
+    int _dst;
+    Trigger* _end_trigger;
+    Trigger* _start_trigger;
+    FlowEventLogger* _flow_logger;
     // Housekeeping
     SwiftLogger* _logger;
     TrafficLogger* _traffic_logger;
@@ -223,6 +287,7 @@ private:
 
     // list of subflows
     vector<SwiftSubflowSrc*> _subs;
+    bool _finished;
 
 };
 
@@ -281,6 +346,13 @@ public:
 
     set <SwiftPacket::seq_t> _dsn_received; // use a map because multipath packets will arrive out of order
 
+    void set_src_id(int src) { _src_id = src; }
+    int get_src_id() const { return _src_id; }
+    flowid_t get_flowid() const { return _src ? _src->get_flowid() : 0; }
+    uint64_t get_cumulative_ack() const;
+    uint64_t get_cumulative_data_ack() const { return _cumulative_data_ack; }
+    uint64_t get_packets_received() const;
+
     SwiftSrc* _src;
     uint64_t cumulative_ack();
     uint32_t drops();
@@ -291,6 +363,7 @@ private:
     SwiftSubflowSink* connect(SwiftSrc& src, SwiftSubflowSrc&, const Route& route);
     string _nodename;
     ReorderBufferLogger* _buffer_logger;
+    int _src_id;
 };
 
 class SwiftRtxTimerScanner : public EventSource {

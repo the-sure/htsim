@@ -324,10 +324,28 @@ vector<connection*>* ConnectionMatrix::getAllConnections(){
             tmp->dst = destinations->at(dst_id);
             tmp->start = 0;
             tmp->size = 0;
+            tmp->flowid = 0;
+            tmp->msgid = {};
+            tmp->send_done_trigger = 0;
+            tmp->recv_done_trigger = 0;
+            tmp->trigger = 0;
+            tmp->priority = 2000000;
             conns->push_back(tmp);
         }
     }
     return conns.get();
+}
+
+size_t ConnectionMatrix::getConnectionCount() const {
+    return conns ? conns->size() : 0;
+}
+
+size_t ConnectionMatrix::getTriggerCount() const {
+    return triggers.size();
+}
+
+size_t ConnectionMatrix::getFailureCount() const {
+    return failures.size();
 }
 
 void ConnectionMatrix::setStaggeredRandom(Topology* top,uint32_t conns,double local){
@@ -969,4 +987,3 @@ ConnectionMatrix::getTrigger(triggerid_t id, EventList& eventlist) {
     }
     return t->trigger;
 }
-

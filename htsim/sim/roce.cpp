@@ -58,6 +58,7 @@ RoceSrc::RoceSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &eventl
     _mdev = 0;
     _drops = 0;
     _flow_size = ((uint64_t)1)<<63;
+    _flow_logger = NULL;
   
     _node_num = _global_node_count++;
     _nodename = "rocesrc " + to_string(_node_num);
@@ -112,6 +113,10 @@ void RoceSrc::startflow(){
     _acked_packets = 0;
     _packets_sent = 0;
     _done = false;
+
+    if (_flow_logger) {
+        _flow_logger->logEvent(_flow, *this, FlowEventLogger::START, _flow_size, 0);
+    }
     
     eventlist().sourceIsPendingRel(*this,0);
 }
@@ -207,6 +212,9 @@ void RoceSrc::processAck(const RoceAck& ack) {
     if (ackno * _mss >= _flow_size){
         cout << "Flow " << _name << " " << get_id() << " finished at " << timeAsUs(eventlist().now()) << " total bytes " << ackno << endl;
         _done = true;
+        if (_flow_logger) {
+            _flow_logger->logEvent(_flow, *this, FlowEventLogger::FINISH, _flow_size, ackno);
+        }
         if (_end_trigger) {
             _end_trigger->activate();
         }
@@ -225,7 +233,9 @@ void RoceSrc::processPause(const EthPausePacket& p) {
         //we are allowed to send!
         //assert(_state_send != READY);
         _state_send = READY;
-        cout << "Source " << str() << " RESUME " << timeAsUs(eventlist().now()) << endl;
+        if (_log_me) {
+            cout << "Source " << str() << " RESUME " << timeAsUs(eventlist().now()) << endl;
+        }
         eventlist().sourceIsPendingRel(*this,0);
     }
 }
@@ -313,6 +323,10 @@ void RoceSrc::doNextEvent() {
       return;
     }
 
+    if (_done) {
+        return;
+    }
+
     assert(_flow_started);
     if (_log_me) 
         cout << "Src " << get_id() << " do next event\n";
@@ -321,12 +335,10 @@ void RoceSrc::doNextEvent() {
     if (_state_send==PAUSED) {
         if (_log_me) 
             cout << "Src " << get_id() << " paused\n";
-
-        cout << "PAUSE" << endl;
         return;
     }
 
-    if (_flow_size && _highest_sent >= _flow_size) { 
+    if (_flow_size && _highest_sent * _mss >= _flow_size) { 
         if (_log_me) 
             cout << "Src " << get_id()  << " stopping send coz highest_sent is " << _highest_sent << endl;
         return;
@@ -481,7 +493,3 @@ void RoceSink::send_nack(simtime_picosec ts, RocePacket::seq_t ackno) {
     nack->set_ts(ts);
     nack->sendOn();
 }
-
-
-
-

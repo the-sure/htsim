@@ -5,6 +5,7 @@
 #include "switch.h"
 #include "callback_pipe.h"
 #include <unordered_map>
+#include <unordered_set>
 
 class FatTreeTopology;
 
@@ -132,6 +133,13 @@ public:
     static double _speculative_threshold_fraction;
     static uint16_t _trim_size;
     static bool _disable_trim;
+    static std::unordered_set<flowid_t> _logged_uplink_flows;
+    static std::unordered_map<int, uint32_t> _bg_uplink_counts;
+    static std::unordered_set<flowid_t> _logged_bg_uplink_flows;
+    static flowid_t _bg_flowid_threshold;
+    static void set_bg_flowid_threshold(flowid_t threshold) {
+        _bg_flowid_threshold = threshold;
+    }
 private:
     switch_type _type;
     Pipe* _pipe;

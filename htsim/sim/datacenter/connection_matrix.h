@@ -77,6 +77,9 @@ public:
     vector<connection*>* getAllConnections();
     Trigger* getTrigger(triggerid_t id, EventList& eventlist);
     void bindTriggers(connection* c, EventList& eventlist);
+    size_t getConnectionCount() const;
+    size_t getTriggerCount() const;
+    size_t getFailureCount() const;
 
     uint32_t N;
     unique_ptr<vector<connection*>> conns;

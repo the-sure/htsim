@@ -49,6 +49,8 @@ public:
 
     static void setMinRTO(uint32_t min_rto_in_us) {_min_rto = timeFromUs((uint32_t)min_rto_in_us);}
 
+    void logFlowEvents(FlowEventLogger& flow_logger) { _flow_logger = &flow_logger; }
+
     void set_flowsize(uint64_t flow_size_in_bytes) {
         _flow_size = flow_size_in_bytes;
     }
@@ -127,6 +129,7 @@ protected:
     // Housekeeping
     RoceLogger* _logger;
     Trigger* _end_trigger;
+    FlowEventLogger* _flow_logger;
 
     linkspeed_bps _pacing_rate;
 
@@ -207,4 +210,3 @@ protected:
 
 
 #endif
-

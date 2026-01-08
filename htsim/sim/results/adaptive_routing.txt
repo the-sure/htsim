@@ -1,0 +1,1071 @@
+traffic matrix input file: datacenter/connection_matrices/mcc_partial_all_pfc.cm
+FatTree topology input file: datacenter/topologies/mcc_partial.topo
+queue_type 8
+DCQCN no-cc mode enabled for background flows (PFC only)
+Mixed congestion control enabled (DCQCN + NSCC)
+CC flowid threshold set to 0
+  Flows with ID < 0 will use NSCC
+  Flows with ID >= 0 will use DCQCN (DCTCP)
+Setting queuesize to 100 packets 
+PFC thresholds high 40 low 20
+Adaptive routing based on queue size 
+endtime(us) 10000000
+Packet size (MTU) is 4150
+Parsed args
+Logging to logout.dat
+Linkspeed set to 100Gbps
+Loading connection matrix from  datacenter/connection_matrices/mcc_partial_all_pfc.cm
+Nodes: 4096 Connections: 224 Triggers: 0 Failures: 0
+Topology load done
+Fat Tree topology (0) with 1us Src-ToR links, 1us ToR-Agg links, 0us ToR switch latency, 0us Agg switch latency for 4us diameter latency.
+no_of_tor_uplinks: 1024
+No of nodes: 4096
+No of pods: 1
+Hosts per pod: 4096
+Hosts per pod: 4096
+ToR switches per pod: 64
+Agg switches per pod: 32
+No of core switches: 0
+FatTreeCfg constructor done.
+Tier 0 QueueSize Down 415000 bytes
+Tier 0 QueueSize Up 415000 bytes
+Tier 1 QueueSize Down 415000 bytes
+Tier 1 QueueSize Up 415000 bytes
+Tier 2 QueueSize Down 415000 bytes
+Setting min_rate to 45% of linerate
+Using simple receiver oversubscribed CC. Oversubscription ratio is 2
+Setting min RTO to 214.2
+Setting ECN to parameters low 24900 high 99600 enable on tor downlink 1
+FatTreeTopologyCfg NCORE=0 NAGG=32 NTOR=64 NSRV=4096 NPOD=1 tor_switches_per_pod=64 agg_switches_per_pod=32 tiers=2 host_per_pod=4096 enabled_ecn=1 enable_ecn_on_tor_downlink=1 ecn_low=24900 ecn_high=99600 num_failed_links=0 failed_link_ratio=0.25 no_of_nodes=4096 hop_latency=0 switch_latency=0 diameter_latency=4000000 diameter=4 tier=0 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=400000000000 oversub=2 radix_down=64 queue_down=415000 radix_up=32 queue_up=415000 tier=1 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=800000000000 oversub=1 radix_down=32 queue_down=415000 radix_up=0 queue_up=415000
+network_max_unloaded_rtt 9.34848
+Initializing static NSCC parameters: _reference_network_linkspeed=100000000000 _reference_network_rtt=12000000 _reference_network_bdp=150000 _target_Qdelay=7011360 _network_linkspeed=100000000000 _network_rtt=9348480 _network_bdp=116856 _qa_gate=2^3 _qa_threshold=2.80454e+07 _scaling_factor_a=0.77904 _scaling_factor_b=0.58428 _alpha=0.00106105 _fi=15915.8 _eta=477.474 _qa_scaling=1 _gamma=0.8 _fi_scale=0.19476 _delay_alpha=0.0125 _adjust_period_threshold=9348480 _adjust_bytes_threshold=33200
+Creating DCQCN flow 1001 (32->96)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1002 (33->160)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1003 (34->224)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1004 (35->288)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1005 (36->352)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1006 (37->416)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1007 (38->480)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1008 (39->544)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1009 (40->608)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1010 (41->672)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1011 (42->736)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1012 (43->800)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1013 (96->97)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1014 (97->161)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1015 (98->225)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1016 (99->289)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1017 (100->353)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1018 (101->417)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1019 (102->481)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1020 (103->545)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1021 (104->609)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1022 (105->673)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1023 (106->737)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1024 (107->801)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1025 (160->98)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1026 (161->162)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1027 (162->226)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1028 (163->290)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1029 (164->354)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1030 (165->418)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1031 (166->482)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1032 (167->546)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1033 (168->610)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1034 (169->674)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1035 (170->738)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1036 (171->802)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1037 (224->99)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1038 (225->163)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1039 (226->227)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1040 (227->291)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1041 (228->355)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1042 (229->419)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1043 (230->483)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1044 (231->547)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1045 (232->611)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1046 (233->675)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1047 (234->739)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1048 (235->803)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1049 (288->100)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1050 (289->164)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1051 (290->228)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1052 (291->292)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1053 (292->356)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1054 (293->420)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1055 (294->484)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1056 (295->548)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1057 (296->612)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1058 (297->676)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1059 (298->740)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1060 (299->804)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1061 (352->101)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1062 (353->165)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1063 (354->229)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1064 (355->293)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1065 (356->357)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1066 (357->421)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1067 (358->485)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1068 (359->549)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1069 (360->613)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1070 (361->677)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1071 (362->741)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1072 (363->805)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1073 (416->102)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1074 (417->166)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1075 (418->230)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1076 (419->294)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1077 (420->358)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1078 (421->422)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1079 (422->486)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1080 (423->550)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1081 (424->614)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1082 (425->678)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1083 (426->742)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1084 (427->806)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1085 (480->103)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1086 (481->167)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1087 (482->231)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1088 (483->295)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1089 (484->359)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1090 (485->423)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1091 (486->487)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1092 (487->551)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1093 (488->615)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1094 (489->679)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1095 (490->743)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1096 (491->807)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1097 (544->104)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1098 (545->168)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1099 (546->232)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1100 (547->296)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1101 (548->360)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1102 (549->424)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1103 (550->488)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1104 (551->552)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1105 (552->616)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1106 (553->680)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1107 (554->744)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1108 (555->808)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1109 (608->105)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1110 (609->169)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1111 (610->233)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1112 (611->297)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1113 (612->361)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1114 (613->425)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1115 (614->489)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1116 (615->553)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1117 (616->617)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1118 (617->681)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1119 (618->745)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1120 (619->809)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1121 (672->106)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1122 (673->170)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1123 (674->234)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1124 (675->298)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1125 (676->362)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1126 (677->426)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1127 (678->490)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1128 (679->554)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1129 (680->618)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1130 (681->682)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1131 (682->746)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1132 (683->810)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1133 (736->107)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1134 (737->171)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1135 (738->235)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1136 (739->299)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1137 (740->363)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1138 (741->427)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1139 (742->491)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1140 (743->555)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1141 (744->619)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1142 (745->683)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1143 (746->747)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1144 (747->811)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1145 (800->108)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1146 (801->172)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1147 (802->236)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1148 (803->300)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1149 (804->364)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1150 (805->428)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1151 (806->492)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1152 (807->556)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1153 (808->620)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1154 (809->684)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1155 (810->748)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1156 (811->812)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1157 (864->109)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1158 (865->173)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1159 (866->237)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1160 (867->301)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1161 (868->365)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1162 (869->429)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1163 (870->493)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1164 (871->557)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1165 (872->621)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1166 (873->685)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1167 (874->749)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1168 (875->813)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1169 (928->110)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1170 (929->174)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1171 (930->238)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1172 (931->302)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1173 (932->366)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1174 (933->430)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1175 (934->494)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1176 (935->558)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1177 (936->622)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1178 (937->686)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1179 (938->750)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1180 (939->814)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1181 (992->111)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1182 (993->175)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1183 (994->239)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1184 (995->303)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1185 (996->367)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1186 (997->431)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1187 (998->495)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1188 (999->559)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1189 (1000->623)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1190 (1001->687)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1191 (1002->751)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1192 (1003->815)
+  Set DCQCN flow size to 5000000 bytes
+Creating DCQCN flow 1201 (0->64)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1202 (1->65)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1203 (2->66)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1204 (3->67)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1205 (4->68)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1206 (5->69)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1207 (6->70)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1208 (7->71)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1209 (8->72)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1210 (9->73)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1211 (10->74)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1212 (11->75)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1213 (12->76)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1214 (13->77)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1215 (14->78)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1216 (15->79)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1217 (16->80)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1218 (17->81)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1219 (18->82)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1220 (19->83)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1221 (20->84)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1222 (21->85)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1223 (22->86)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1224 (23->87)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1225 (24->88)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1226 (25->89)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1227 (26->90)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1228 (27->91)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1229 (28->92)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1230 (29->93)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1231 (30->94)
+  Set DCQCN flow size to 32000000 bytes
+Creating DCQCN flow 1232 (31->95)
+  Set DCQCN flow size to 32000000 bytes
+Starting simulation
+startflow DCQCN_32_96 at 0
+startflow DCQCN_33_160 at 0
+startflow DCQCN_34_224 at 0
+startflow DCQCN_35_288 at 0
+startflow DCQCN_36_352 at 0
+startflow DCQCN_37_416 at 0
+startflow DCQCN_38_480 at 0
+startflow DCQCN_39_544 at 0
+startflow DCQCN_40_608 at 0
+startflow DCQCN_41_672 at 0
+startflow DCQCN_42_736 at 0
+startflow DCQCN_43_800 at 0
+startflow DCQCN_96_97 at 0
+startflow DCQCN_97_161 at 0
+startflow DCQCN_98_225 at 0
+startflow DCQCN_99_289 at 0
+startflow DCQCN_100_353 at 0
+startflow DCQCN_101_417 at 0
+startflow DCQCN_102_481 at 0
+startflow DCQCN_103_545 at 0
+startflow DCQCN_104_609 at 0
+startflow DCQCN_105_673 at 0
+startflow DCQCN_106_737 at 0
+startflow DCQCN_107_801 at 0
+startflow DCQCN_160_98 at 0
+startflow DCQCN_161_162 at 0
+startflow DCQCN_162_226 at 0
+startflow DCQCN_163_290 at 0
+startflow DCQCN_164_354 at 0
+startflow DCQCN_165_418 at 0
+startflow DCQCN_166_482 at 0
+startflow DCQCN_167_546 at 0
+startflow DCQCN_168_610 at 0
+startflow DCQCN_169_674 at 0
+startflow DCQCN_170_738 at 0
+startflow DCQCN_171_802 at 0
+startflow DCQCN_224_99 at 0
+startflow DCQCN_225_163 at 0
+startflow DCQCN_226_227 at 0
+startflow DCQCN_227_291 at 0
+startflow DCQCN_228_355 at 0
+startflow DCQCN_229_419 at 0
+startflow DCQCN_230_483 at 0
+startflow DCQCN_231_547 at 0
+startflow DCQCN_232_611 at 0
+startflow DCQCN_233_675 at 0
+startflow DCQCN_234_739 at 0
+startflow DCQCN_235_803 at 0
+startflow DCQCN_288_100 at 0
+startflow DCQCN_289_164 at 0
+startflow DCQCN_290_228 at 0
+startflow DCQCN_291_292 at 0
+startflow DCQCN_292_356 at 0
+startflow DCQCN_293_420 at 0
+startflow DCQCN_294_484 at 0
+startflow DCQCN_295_548 at 0
+startflow DCQCN_296_612 at 0
+startflow DCQCN_297_676 at 0
+startflow DCQCN_298_740 at 0
+startflow DCQCN_299_804 at 0
+startflow DCQCN_352_101 at 0
+startflow DCQCN_353_165 at 0
+startflow DCQCN_354_229 at 0
+startflow DCQCN_355_293 at 0
+startflow DCQCN_356_357 at 0
+startflow DCQCN_357_421 at 0
+startflow DCQCN_358_485 at 0
+startflow DCQCN_359_549 at 0
+startflow DCQCN_360_613 at 0
+startflow DCQCN_361_677 at 0
+startflow DCQCN_362_741 at 0
+startflow DCQCN_363_805 at 0
+startflow DCQCN_416_102 at 0
+startflow DCQCN_417_166 at 0
+startflow DCQCN_418_230 at 0
+startflow DCQCN_419_294 at 0
+startflow DCQCN_420_358 at 0
+startflow DCQCN_421_422 at 0
+startflow DCQCN_422_486 at 0
+startflow DCQCN_423_550 at 0
+startflow DCQCN_424_614 at 0
+startflow DCQCN_425_678 at 0
+startflow DCQCN_426_742 at 0
+startflow DCQCN_427_806 at 0
+startflow DCQCN_480_103 at 0
+startflow DCQCN_481_167 at 0
+startflow DCQCN_482_231 at 0
+startflow DCQCN_483_295 at 0
+startflow DCQCN_484_359 at 0
+startflow DCQCN_485_423 at 0
+startflow DCQCN_486_487 at 0
+startflow DCQCN_487_551 at 0
+startflow DCQCN_488_615 at 0
+startflow DCQCN_489_679 at 0
+startflow DCQCN_490_743 at 0
+startflow DCQCN_491_807 at 0
+startflow DCQCN_544_104 at 0
+startflow DCQCN_545_168 at 0
+startflow DCQCN_546_232 at 0
+startflow DCQCN_547_296 at 0
+startflow DCQCN_548_360 at 0
+startflow DCQCN_549_424 at 0
+startflow DCQCN_550_488 at 0
+startflow DCQCN_551_552 at 0
+startflow DCQCN_552_616 at 0
+startflow DCQCN_553_680 at 0
+startflow DCQCN_554_744 at 0
+startflow DCQCN_555_808 at 0
+startflow DCQCN_608_105 at 0
+startflow DCQCN_609_169 at 0
+startflow DCQCN_610_233 at 0
+startflow DCQCN_611_297 at 0
+startflow DCQCN_612_361 at 0
+startflow DCQCN_613_425 at 0
+startflow DCQCN_614_489 at 0
+startflow DCQCN_615_553 at 0
+startflow DCQCN_616_617 at 0
+startflow DCQCN_617_681 at 0
+startflow DCQCN_618_745 at 0
+startflow DCQCN_619_809 at 0
+startflow DCQCN_672_106 at 0
+startflow DCQCN_673_170 at 0
+startflow DCQCN_674_234 at 0
+startflow DCQCN_675_298 at 0
+startflow DCQCN_676_362 at 0
+startflow DCQCN_677_426 at 0
+startflow DCQCN_678_490 at 0
+startflow DCQCN_679_554 at 0
+startflow DCQCN_680_618 at 0
+startflow DCQCN_681_682 at 0
+startflow DCQCN_682_746 at 0
+startflow DCQCN_683_810 at 0
+startflow DCQCN_736_107 at 0
+startflow DCQCN_737_171 at 0
+startflow DCQCN_738_235 at 0
+startflow DCQCN_739_299 at 0
+startflow DCQCN_740_363 at 0
+startflow DCQCN_741_427 at 0
+startflow DCQCN_742_491 at 0
+startflow DCQCN_743_555 at 0
+startflow DCQCN_744_619 at 0
+startflow DCQCN_745_683 at 0
+startflow DCQCN_746_747 at 0
+startflow DCQCN_747_811 at 0
+startflow DCQCN_800_108 at 0
+startflow DCQCN_801_172 at 0
+startflow DCQCN_802_236 at 0
+startflow DCQCN_803_300 at 0
+startflow DCQCN_804_364 at 0
+startflow DCQCN_805_428 at 0
+startflow DCQCN_806_492 at 0
+startflow DCQCN_807_556 at 0
+startflow DCQCN_808_620 at 0
+startflow DCQCN_809_684 at 0
+startflow DCQCN_810_748 at 0
+startflow DCQCN_811_812 at 0
+startflow DCQCN_864_109 at 0
+startflow DCQCN_865_173 at 0
+startflow DCQCN_866_237 at 0
+startflow DCQCN_867_301 at 0
+startflow DCQCN_868_365 at 0
+startflow DCQCN_869_429 at 0
+startflow DCQCN_870_493 at 0
+startflow DCQCN_871_557 at 0
+startflow DCQCN_872_621 at 0
+startflow DCQCN_873_685 at 0
+startflow DCQCN_874_749 at 0
+startflow DCQCN_875_813 at 0
+startflow DCQCN_928_110 at 0
+startflow DCQCN_929_174 at 0
+startflow DCQCN_930_238 at 0
+startflow DCQCN_931_302 at 0
+startflow DCQCN_932_366 at 0
+startflow DCQCN_933_430 at 0
+startflow DCQCN_934_494 at 0
+startflow DCQCN_935_558 at 0
+startflow DCQCN_936_622 at 0
+startflow DCQCN_937_686 at 0
+startflow DCQCN_938_750 at 0
+startflow DCQCN_939_814 at 0
+startflow DCQCN_992_111 at 0
+startflow DCQCN_993_175 at 0
+startflow DCQCN_994_239 at 0
+startflow DCQCN_995_303 at 0
+startflow DCQCN_996_367 at 0
+startflow DCQCN_997_431 at 0
+startflow DCQCN_998_495 at 0
+startflow DCQCN_999_559 at 0
+startflow DCQCN_1000_623 at 0
+startflow DCQCN_1001_687 at 0
+startflow DCQCN_1002_751 at 0
+startflow DCQCN_1003_815 at 0
+startflow DCQCN_0_64 at 0
+startflow DCQCN_1_65 at 0
+startflow DCQCN_2_66 at 0
+startflow DCQCN_3_67 at 0
+startflow DCQCN_4_68 at 0
+startflow DCQCN_5_69 at 0
+startflow DCQCN_6_70 at 0
+startflow DCQCN_7_71 at 0
+startflow DCQCN_8_72 at 0
+startflow DCQCN_9_73 at 0
+startflow DCQCN_10_74 at 0
+startflow DCQCN_11_75 at 0
+startflow DCQCN_12_76 at 0
+startflow DCQCN_13_77 at 0
+startflow DCQCN_14_78 at 0
+startflow DCQCN_15_79 at 0
+startflow DCQCN_16_80 at 0
+startflow DCQCN_17_81 at 0
+startflow DCQCN_18_82 at 0
+startflow DCQCN_19_83 at 0
+startflow DCQCN_20_84 at 0
+startflow DCQCN_21_85 at 0
+startflow DCQCN_22_86 at 0
+startflow DCQCN_23_87 at 0
+startflow DCQCN_24_88 at 0
+startflow DCQCN_25_89 at 0
+startflow DCQCN_26_90 at 0
+startflow DCQCN_27_91 at 0
+startflow DCQCN_28_92 at 0
+startflow DCQCN_29_93 at 0
+startflow DCQCN_30_94 at 0
+startflow DCQCN_31_95 at 0
+Flow DCQCN_616_617 53907 finished at 410.147 total bytes 1205
+Flow DCQCN_96_97 53491 finished at 410.147 total bytes 1205
+Flow DCQCN_486_487 53803 finished at 410.147 total bytes 1205
+Flow DCQCN_811_812 54063 finished at 410.147 total bytes 1205
+Flow DCQCN_161_162 53543 finished at 410.147 total bytes 1205
+Flow DCQCN_226_227 53595 finished at 410.147 total bytes 1205
+Flow DCQCN_681_682 53959 finished at 410.147 total bytes 1205
+Flow DCQCN_421_422 53751 finished at 410.147 total bytes 1205
+Flow DCQCN_551_552 53855 finished at 410.147 total bytes 1205
+Flow DCQCN_746_747 54011 finished at 410.147 total bytes 1205
+Flow DCQCN_291_292 53647 finished at 410.147 total bytes 1205
+Flow DCQCN_356_357 53699 finished at 410.147 total bytes 1205
+Flow DCQCN_618_745 53915 finished at 414.149 total bytes 1205
+Flow DCQCN_993_175 54167 finished at 414.149 total bytes 1205
+Flow DCQCN_163_290 53551 finished at 414.149 total bytes 1205
+Flow DCQCN_355_293 53695 finished at 414.149 total bytes 1205
+Flow DCQCN_996_367 54179 finished at 414.149 total bytes 1205
+Flow DCQCN_864_109 54067 finished at 414.149 total bytes 1205
+Flow DCQCN_929_174 54119 finished at 414.149 total bytes 1205
+Flow DCQCN_808_620 54051 finished at 414.149 total bytes 1205
+Flow DCQCN_866_237 54075 finished at 414.149 total bytes 1205
+Flow DCQCN_875_813 54111 finished at 414.149 total bytes 1205
+Flow DCQCN_611_297 53887 finished at 414.149 total bytes 1205
+Flow DCQCN_37_416 53463 finished at 414.149 total bytes 1205
+Flow DCQCN_999_559 54191 finished at 414.149 total bytes 1205
+Flow DCQCN_741_427 53991 finished at 414.149 total bytes 1205
+Flow DCQCN_32_96 53443 finished at 414.149 total bytes 1205
+Flow DCQCN_678_490 53947 finished at 414.149 total bytes 1205
+Flow DCQCN_747_811 54015 finished at 414.149 total bytes 1205
+Flow DCQCN_872_621 54099 finished at 414.149 total bytes 1205
+Flow DCQCN_553_680 53863 finished at 414.149 total bytes 1205
+Flow DCQCN_482_231 53787 finished at 414.149 total bytes 1205
+Flow DCQCN_1002_751 54203 finished at 414.149 total bytes 1205
+Flow DCQCN_809_684 54055 finished at 414.149 total bytes 1205
+Flow DCQCN_871_557 54095 finished at 414.149 total bytes 1205
+Flow DCQCN_803_300 54031 finished at 414.149 total bytes 1205
+Flow DCQCN_418_230 53739 finished at 414.149 total bytes 1205
+Flow DCQCN_231_547 53615 finished at 414.149 total bytes 1205
+Flow DCQCN_289_164 53639 finished at 414.149 total bytes 1205
+Flow DCQCN_674_234 53931 finished at 414.149 total bytes 1205
+Flow DCQCN_676_362 53939 finished at 414.149 total bytes 1205
+Flow DCQCN_939_814 54159 finished at 414.149 total bytes 1205
+Flow DCQCN_552_616 53859 finished at 414.149 total bytes 1205
+Flow DCQCN_162_226 53547 finished at 414.149 total bytes 1205
+Flow DCQCN_931_302 54127 finished at 414.149 total bytes 1205
+Flow DCQCN_1000_623 54195 finished at 414.149 total bytes 1205
+Flow DCQCN_423_550 53759 finished at 414.149 total bytes 1205
+Flow DCQCN_742_491 53995 finished at 414.149 total bytes 1205
+Flow DCQCN_298_740 53675 finished at 414.149 total bytes 1205
+Flow DCQCN_427_806 53775 finished at 414.149 total bytes 1205
+Flow DCQCN_357_421 53703 finished at 414.149 total bytes 1205
+Flow DCQCN_744_619 54003 finished at 414.149 total bytes 1205
+Flow DCQCN_740_363 53987 finished at 414.149 total bytes 1205
+Flow DCQCN_550_488 53851 finished at 414.149 total bytes 1205
+Flow DCQCN_169_674 53575 finished at 414.149 total bytes 1205
+Flow DCQCN_171_802 53583 finished at 414.149 total bytes 1205
+Flow DCQCN_296_612 53667 finished at 414.149 total bytes 1205
+Flow DCQCN_160_98 53539 finished at 414.149 total bytes 1205
+Flow DCQCN_97_161 53495 finished at 414.149 total bytes 1205
+Flow DCQCN_483_295 53791 finished at 414.149 total bytes 1205
+Flow DCQCN_106_737 53531 finished at 414.149 total bytes 1205
+Flow DCQCN_104_609 53523 finished at 414.149 total bytes 1205
+Flow DCQCN_487_551 53807 finished at 414.149 total bytes 1205
+Flow DCQCN_548_360 53843 finished at 414.149 total bytes 1205
+Flow DCQCN_544_104 53827 finished at 414.149 total bytes 1205
+Flow DCQCN_41_672 53479 finished at 414.149 total bytes 1205
+Flow DCQCN_359_549 53711 finished at 414.149 total bytes 1205
+Flow DCQCN_546_232 53835 finished at 414.149 total bytes 1205
+Flow DCQCN_490_743 53819 finished at 414.149 total bytes 1205
+Flow DCQCN_102_481 53515 finished at 414.149 total bytes 1205
+Flow DCQCN_417_166 53735 finished at 414.149 total bytes 1205
+Flow DCQCN_737_171 53975 finished at 414.149 total bytes 1205
+Flow DCQCN_610_233 53883 finished at 414.149 total bytes 1205
+Flow DCQCN_358_485 53707 finished at 414.149 total bytes 1205
+Flow DCQCN_743_555 53999 finished at 414.149 total bytes 1205
+Flow DCQCN_491_807 53823 finished at 414.149 total bytes 1205
+Flow DCQCN_233_675 53623 finished at 414.149 total bytes 1205
+Flow DCQCN_228_355 53603 finished at 414.149 total bytes 1205
+Flow DCQCN_299_804 53679 finished at 414.149 total bytes 1205
+Flow DCQCN_225_163 53591 finished at 414.149 total bytes 1205
+Flow DCQCN_992_111 54163 finished at 414.149 total bytes 1205
+Flow DCQCN_352_101 53683 finished at 414.149 total bytes 1205
+Flow DCQCN_994_239 54171 finished at 414.149 total bytes 1205
+Flow DCQCN_484_359 53795 finished at 414.149 total bytes 1205
+Flow DCQCN_932_366 54131 finished at 414.149 total bytes 1205
+Flow DCQCN_682_746 53963 finished at 414.149 total bytes 1205
+Flow DCQCN_426_742 53771 finished at 414.149 total bytes 1205
+Flow DCQCN_874_749 54107 finished at 414.149 total bytes 1205
+Flow DCQCN_353_165 53687 finished at 414.149 total bytes 1205
+Flow DCQCN_227_291 53599 finished at 414.149 total bytes 1205
+Flow DCQCN_867_301 54079 finished at 414.149 total bytes 1205
+Flow DCQCN_675_298 53935 finished at 414.149 total bytes 1205
+Flow DCQCN_488_615 53811 finished at 414.149 total bytes 1205
+Flow DCQCN_35_288 53455 finished at 414.149 total bytes 1205
+Flow DCQCN_167_546 53567 finished at 414.149 total bytes 1205
+Flow DCQCN_673_170 53927 finished at 414.149 total bytes 1205
+Flow DCQCN_363_805 53727 finished at 414.149 total bytes 1205
+Flow DCQCN_677_426 53943 finished at 414.149 total bytes 1205
+Flow DCQCN_294_484 53659 finished at 414.149 total bytes 1205
+Flow DCQCN_738_235 53979 finished at 414.149 total bytes 1205
+Flow DCQCN_608_105 53875 finished at 414.149 total bytes 1205
+Flow DCQCN_38_480 53467 finished at 414.149 total bytes 1205
+Flow DCQCN_1001_687 54199 finished at 414.15 total bytes 1205
+Flow DCQCN_36_352 53459 finished at 414.15 total bytes 1205
+Flow DCQCN_422_486 53755 finished at 414.15 total bytes 1205
+Flow DCQCN_612_361 53891 finished at 414.15 total bytes 1205
+Flow DCQCN_170_738 53579 finished at 414.15 total bytes 1205
+Flow DCQCN_232_611 53619 finished at 414.15 total bytes 1205
+Flow DCQCN_933_430 54135 finished at 414.15 total bytes 1205
+Flow DCQCN_617_681 53911 finished at 414.15 total bytes 1205
+Flow DCQCN_39_544 53471 finished at 414.15 total bytes 1205
+Flow DCQCN_229_419 53607 finished at 414.15 total bytes 1205
+Flow DCQCN_810_748 54059 finished at 414.15 total bytes 1205
+Flow DCQCN_547_296 53839 finished at 414.15 total bytes 1205
+Flow DCQCN_481_167 53783 finished at 414.15 total bytes 1205
+Flow DCQCN_480_103 53779 finished at 414.15 total bytes 1205
+Flow DCQCN_290_228 53643 finished at 414.15 total bytes 1205
+Flow DCQCN_419_294 53743 finished at 414.15 total bytes 1205
+Flow DCQCN_295_548 53663 finished at 414.15 total bytes 1205
+Flow DCQCN_362_741 53723 finished at 414.15 total bytes 1205
+Flow DCQCN_804_364 54035 finished at 414.15 total bytes 1205
+Flow DCQCN_869_429 54087 finished at 414.15 total bytes 1205
+Flow DCQCN_619_809 53919 finished at 414.15 total bytes 1205
+Flow DCQCN_292_356 53651 finished at 414.15 total bytes 1205
+Flow DCQCN_105_673 53527 finished at 414.15 total bytes 1205
+Flow DCQCN_166_482 53563 finished at 414.15 total bytes 1205
+Flow DCQCN_555_808 53871 finished at 414.15 total bytes 1205
+Flow DCQCN_293_420 53655 finished at 414.15 total bytes 1205
+Flow DCQCN_425_678 53767 finished at 414.15 total bytes 1205
+Flow DCQCN_739_299 53983 finished at 414.15 total bytes 1205
+Flow DCQCN_549_424 53847 finished at 414.15 total bytes 1205
+Flow DCQCN_165_418 53559 finished at 414.15 total bytes 1205
+Flow DCQCN_801_172 54023 finished at 414.15 total bytes 1205
+Flow DCQCN_935_558 54143 finished at 414.15 total bytes 1205
+Flow DCQCN_100_353 53507 finished at 414.151 total bytes 1205
+Flow DCQCN_99_289 53503 finished at 414.151 total bytes 1205
+Flow DCQCN_934_494 54139 finished at 414.191 total bytes 1205
+Flow DCQCN_33_160 53447 finished at 414.191 total bytes 1205
+Flow DCQCN_806_492 54043 finished at 414.191 total bytes 1205
+Flow DCQCN_995_303 54175 finished at 414.191 total bytes 1205
+Flow DCQCN_802_236 54027 finished at 414.191 total bytes 1205
+Flow DCQCN_868_365 54083 finished at 414.191 total bytes 1205
+Flow DCQCN_416_102 53731 finished at 414.191 total bytes 1205
+Flow DCQCN_865_173 54071 finished at 414.191 total bytes 1205
+Flow DCQCN_870_493 54091 finished at 414.191 total bytes 1205
+Flow DCQCN_805_428 54039 finished at 414.191 total bytes 1205
+Flow DCQCN_424_614 53763 finished at 414.191 total bytes 1205
+Flow DCQCN_545_168 53831 finished at 414.191 total bytes 1205
+Flow DCQCN_936_622 54147 finished at 414.191 total bytes 1205
+Flow DCQCN_614_489 53899 finished at 414.191 total bytes 1205
+Flow DCQCN_937_686 54151 finished at 414.191 total bytes 1205
+Flow DCQCN_807_556 54047 finished at 414.191 total bytes 1205
+Flow DCQCN_1003_815 54207 finished at 414.191 total bytes 1205
+Flow DCQCN_40_608 53475 finished at 414.191 total bytes 1205
+Flow DCQCN_930_238 54123 finished at 414.191 total bytes 1205
+Flow DCQCN_873_685 54103 finished at 414.191 total bytes 1205
+Flow DCQCN_224_99 53587 finished at 414.191 total bytes 1205
+Flow DCQCN_230_483 53611 finished at 414.191 total bytes 1205
+Flow DCQCN_168_610 53571 finished at 414.191 total bytes 1205
+Flow DCQCN_235_803 53631 finished at 414.191 total bytes 1205
+Flow DCQCN_101_417 53511 finished at 414.191 total bytes 1205
+Flow DCQCN_42_736 53483 finished at 414.191 total bytes 1205
+Flow DCQCN_234_739 53627 finished at 414.192 total bytes 1205
+Flow DCQCN_485_423 53799 finished at 414.192 total bytes 1205
+Flow DCQCN_683_810 53967 finished at 414.192 total bytes 1205
+Flow DCQCN_164_354 53555 finished at 414.192 total bytes 1205
+Flow DCQCN_103_545 53519 finished at 414.192 total bytes 1205
+Flow DCQCN_361_677 53719 finished at 414.192 total bytes 1205
+Flow DCQCN_680_618 53955 finished at 414.192 total bytes 1205
+Flow DCQCN_360_613 53715 finished at 414.192 total bytes 1205
+Flow DCQCN_679_554 53951 finished at 414.192 total bytes 1205
+Flow DCQCN_613_425 53895 finished at 414.192 total bytes 1205
+Flow DCQCN_615_553 53903 finished at 414.192 total bytes 1205
+Flow DCQCN_420_358 53747 finished at 414.192 total bytes 1205
+Flow DCQCN_107_801 53535 finished at 414.192 total bytes 1205
+Flow DCQCN_34_224 53451 finished at 414.192 total bytes 1205
+Flow DCQCN_928_110 54115 finished at 414.192 total bytes 1205
+Flow DCQCN_43_800 53487 finished at 414.192 total bytes 1205
+Flow DCQCN_297_676 53671 finished at 414.192 total bytes 1205
+Flow DCQCN_672_106 53923 finished at 414.192 total bytes 1205
+Flow DCQCN_745_683 54007 finished at 414.192 total bytes 1205
+Flow DCQCN_354_229 53691 finished at 414.233 total bytes 1205
+Flow DCQCN_609_169 53879 finished at 414.233 total bytes 1205
+Flow DCQCN_98_225 53499 finished at 414.233 total bytes 1205
+Flow DCQCN_997_431 54183 finished at 414.233 total bytes 1205
+Flow DCQCN_489_679 53815 finished at 414.233 total bytes 1205
+Flow DCQCN_800_108 54019 finished at 414.233 total bytes 1205
+Flow DCQCN_998_495 54187 finished at 414.233 total bytes 1205
+Flow DCQCN_554_744 53867 finished at 414.233 total bytes 1205
+Flow DCQCN_288_100 53635 finished at 414.233 total bytes 1205
+Flow DCQCN_938_750 54155 finished at 414.233 total bytes 1205
+Flow DCQCN_736_107 53971 finished at 414.234 total bytes 1205
+Flow DCQCN_0_64 54211 finished at 2607.45 total bytes 7711
+Flow DCQCN_3_67 54223 finished at 2607.45 total bytes 7711
+Flow DCQCN_1_65 54215 finished at 2607.45 total bytes 7711
+Flow DCQCN_11_75 54255 finished at 2607.45 total bytes 7711
+Flow DCQCN_13_77 54263 finished at 2607.45 total bytes 7711
+Flow DCQCN_2_66 54219 finished at 2607.45 total bytes 7711
+Flow DCQCN_5_69 54231 finished at 2607.45 total bytes 7711
+Flow DCQCN_24_88 54307 finished at 2607.45 total bytes 7711
+Flow DCQCN_4_68 54227 finished at 2607.45 total bytes 7711
+Flow DCQCN_30_94 54331 finished at 2607.45 total bytes 7711
+Flow DCQCN_25_89 54311 finished at 2607.45 total bytes 7711
+Flow DCQCN_22_86 54299 finished at 2607.45 total bytes 7711
+Flow DCQCN_6_70 54235 finished at 2607.45 total bytes 7711
+Flow DCQCN_7_71 54239 finished at 2607.45 total bytes 7711
+Flow DCQCN_21_85 54295 finished at 2607.45 total bytes 7711
+Flow DCQCN_15_79 54271 finished at 2607.45 total bytes 7711
+Flow DCQCN_12_76 54259 finished at 2607.45 total bytes 7711
+Flow DCQCN_8_72 54243 finished at 2607.45 total bytes 7711
+Flow DCQCN_27_91 54319 finished at 2607.45 total bytes 7711
+Flow DCQCN_10_74 54251 finished at 2607.45 total bytes 7711
+Flow DCQCN_17_81 54279 finished at 2607.45 total bytes 7711
+Flow DCQCN_20_84 54291 finished at 2607.49 total bytes 7711
+Flow DCQCN_18_82 54283 finished at 2607.49 total bytes 7711
+Flow DCQCN_28_92 54323 finished at 2607.49 total bytes 7711
+Flow DCQCN_14_78 54267 finished at 2607.49 total bytes 7711
+Flow DCQCN_26_90 54315 finished at 2607.49 total bytes 7711
+Flow DCQCN_9_73 54247 finished at 2607.49 total bytes 7711
+Flow DCQCN_16_80 54275 finished at 2607.49 total bytes 7711
+Flow DCQCN_23_87 54303 finished at 2607.49 total bytes 7711
+Flow DCQCN_31_95 54335 finished at 2607.49 total bytes 7711
+Flow DCQCN_19_83 54287 finished at 2607.54 total bytes 7711
+Flow DCQCN_29_93 54327 finished at 2607.54 total bytes 7711
+..........|.........Progress: 1 seconds
+.|..........|.......Progress: 2 seconds
+...|..........|.....Progress: 3 seconds
+.....|..........|...Progress: 4 seconds
+.......|..........|.Progress: 5 seconds
+.........|..........Progress: 6 seconds
+|..........|........Progress: 7 seconds
+..|..........|......Progress: 8 seconds
+....|..........|....Progress: 9 seconds
+......|..........|.Done
+
+========================================
+Mixed Congestion Control Statistics:
+========================================
+  Threshold: flowid 0
+  Total flows: 224
+  NSCC flows (flowid < 0): 0
+  DCQCN flows (flowid >= 0): 224
+  DCQCN no-cc flows (PFC only): 224
+========================================
+
+PFC Statistics:
+  pause_sent: 0
+  pause_cleared: 0
+  pfc_thresholds: low 83000 high 166000
+
+ToR 0 Uplink Queue Statistics:
+Uplink 0: packets_served=7895 max_size=21070
+Uplink 1: packets_served=4048 max_size=21070
+Uplink 2: packets_served=7886 max_size=21070
+Uplink 3: packets_served=9021 max_size=25284
+Uplink 4: packets_served=9075 max_size=25284
+Uplink 5: packets_served=4028 max_size=21070
+Uplink 6: packets_served=15600 max_size=25284
+Uplink 7: packets_served=8060 max_size=25284
+Uplink 8: packets_served=11823 max_size=25284
+Uplink 9: packets_served=7967 max_size=25284
+Uplink 10: packets_served=4082 max_size=21070
+Uplink 11: packets_served=4582 max_size=21070
+Uplink 12: packets_served=11816 max_size=29498
+Uplink 13: packets_served=12273 max_size=25284
+Uplink 14: packets_served=8094 max_size=25284
+Uplink 15: packets_served=4052 max_size=21070
+Uplink 16: packets_served=4002 max_size=21070
+Uplink 17: packets_served=8519 max_size=25284
+Uplink 18: packets_served=4195 max_size=21070
+Uplink 19: packets_served=4650 max_size=21070
+Uplink 20: packets_served=7965 max_size=25284
+Uplink 21: packets_served=4757 max_size=21070
+Uplink 22: packets_served=12323 max_size=25284
+Uplink 23: packets_served=4052 max_size=25284
+Uplink 24: packets_served=7968 max_size=21070
+Uplink 25: packets_served=4178 max_size=25284
+Uplink 26: packets_served=11726 max_size=29498
+Uplink 27: packets_served=15604 max_size=33712
+Uplink 28: packets_served=7914 max_size=25284
+Uplink 29: packets_served=15822 max_size=29498
+Uplink 30: packets_served=8540 max_size=25284
+Uplink 31: packets_served=8695 max_size=25284
+
+ToR 0 Uplink Background Flow Counts:
+Uplink 0: bg_flows=5
+Uplink 1: bg_flows=6
+Uplink 2: bg_flows=5
+Uplink 3: bg_flows=7
+Uplink 4: bg_flows=9
+Uplink 5: bg_flows=3
+Uplink 6: bg_flows=7
+Uplink 7: bg_flows=4
+Uplink 8: bg_flows=5
+Uplink 9: bg_flows=8
+Uplink 10: bg_flows=2
+Uplink 11: bg_flows=5
+Uplink 12: bg_flows=7
+Uplink 13: bg_flows=4
+Uplink 14: bg_flows=7
+Uplink 15: bg_flows=11
+Uplink 16: bg_flows=5
+Uplink 17: bg_flows=8
+Uplink 18: bg_flows=6
+Uplink 19: bg_flows=5
+Uplink 20: bg_flows=5
+Uplink 21: bg_flows=4
+Uplink 22: bg_flows=7
+Uplink 23: bg_flows=2
+Uplink 24: bg_flows=10
+Uplink 25: bg_flows=9
+Uplink 26: bg_flows=10
+Uplink 27: bg_flows=11
+Uplink 28: bg_flows=7
+Uplink 29: bg_flows=14
+Uplink 30: bg_flows=6
+Uplink 31: bg_flows=8
+
+ToR 0 Uplink PFC Pause Counts:
+Uplink 0: pause_sent=0 pause_cleared=0
+Uplink 1: pause_sent=0 pause_cleared=0
+Uplink 2: pause_sent=0 pause_cleared=0
+Uplink 3: pause_sent=0 pause_cleared=0
+Uplink 4: pause_sent=0 pause_cleared=0
+Uplink 5: pause_sent=0 pause_cleared=0
+Uplink 6: pause_sent=0 pause_cleared=0
+Uplink 7: pause_sent=0 pause_cleared=0
+Uplink 8: pause_sent=0 pause_cleared=0
+Uplink 9: pause_sent=0 pause_cleared=0
+Uplink 10: pause_sent=0 pause_cleared=0
+Uplink 11: pause_sent=0 pause_cleared=0
+Uplink 12: pause_sent=0 pause_cleared=0
+Uplink 13: pause_sent=0 pause_cleared=0
+Uplink 14: pause_sent=0 pause_cleared=0
+Uplink 15: pause_sent=0 pause_cleared=0
+Uplink 16: pause_sent=0 pause_cleared=0
+Uplink 17: pause_sent=0 pause_cleared=0
+Uplink 18: pause_sent=0 pause_cleared=0
+Uplink 19: pause_sent=0 pause_cleared=0
+Uplink 20: pause_sent=0 pause_cleared=0
+Uplink 21: pause_sent=0 pause_cleared=0
+Uplink 22: pause_sent=0 pause_cleared=0
+Uplink 23: pause_sent=0 pause_cleared=0
+Uplink 24: pause_sent=0 pause_cleared=0
+Uplink 25: pause_sent=0 pause_cleared=0
+Uplink 26: pause_sent=0 pause_cleared=0
+Uplink 27: pause_sent=0 pause_cleared=0
+Uplink 28: pause_sent=0 pause_cleared=0
+Uplink 29: pause_sent=0 pause_cleared=0
+Uplink 30: pause_sent=0 pause_cleared=0
+Uplink 31: pause_sent=0 pause_cleared=0
+
+DCQCN Statistics:
+  Packets sent: 478112
+  CNPs received: 0
+  ACKs received: 478112
+  NACKs received: 0

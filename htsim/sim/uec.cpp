@@ -39,6 +39,7 @@ bool UecSrc::_debug = false;
 
 bool UecSrc::_sender_based_cc = false;
 bool UecSrc::_receiver_based_cc = false;
+bool UecSrc::_quiet = false;
 bool UecSink::_oversubscribed_cc = false; // can only be enabled when receiver_based_cc is set to true
 
 UecSrc::Sender_CC UecSrc::_sender_cc_algo = UecSrc::NSCC;
@@ -134,28 +135,30 @@ void UecSrc::initNsccParams(simtime_picosec network_rtt,
     _adjust_period_threshold = _network_rtt;
     _adjust_bytes_threshold = 8 * _mtu;
 
-    cout << "Initializing static NSCC parameters:"
-        << " _reference_network_linkspeed=" << _reference_network_linkspeed
-        << " _reference_network_rtt=" << _reference_network_rtt
-        << " _reference_network_bdp=" << _reference_network_bdp
-        << " _target_Qdelay=" << _target_Qdelay
-        << " _network_linkspeed=" << _network_linkspeed
-        << " _network_rtt=" << _network_rtt
-        << " _network_bdp=" << _network_bdp
-        << " _qa_gate=2^" << (uint32_t)_qa_gate
-        << " _qa_threshold=" << _qa_threshold
-        << " _scaling_factor_a=" << _scaling_factor_a
-        << " _scaling_factor_b=" << _scaling_factor_b
-        << " _alpha=" << _alpha
-        << " _fi=" << _fi
-        << " _eta=" << _eta
-        << " _qa_scaling=" << _qa_scaling
-        << " _gamma=" << _gamma
-        << " _fi_scale=" << _fi_scale
-        << " _delay_alpha=" << _delay_alpha 
-        << " _adjust_period_threshold=" << _adjust_period_threshold
-        << " _adjust_bytes_threshold=" << _adjust_bytes_threshold
-        << endl;
+    if (!UecSrc::_quiet) {
+        cout << "Initializing static NSCC parameters:"
+            << " _reference_network_linkspeed=" << _reference_network_linkspeed
+            << " _reference_network_rtt=" << _reference_network_rtt
+            << " _reference_network_bdp=" << _reference_network_bdp
+            << " _target_Qdelay=" << _target_Qdelay
+            << " _network_linkspeed=" << _network_linkspeed
+            << " _network_rtt=" << _network_rtt
+            << " _network_bdp=" << _network_bdp
+            << " _qa_gate=2^" << (uint32_t)_qa_gate
+            << " _qa_threshold=" << _qa_threshold
+            << " _scaling_factor_a=" << _scaling_factor_a
+            << " _scaling_factor_b=" << _scaling_factor_b
+            << " _alpha=" << _alpha
+            << " _fi=" << _fi
+            << " _eta=" << _eta
+            << " _qa_scaling=" << _qa_scaling
+            << " _gamma=" << _gamma
+            << " _fi_scale=" << _fi_scale
+            << " _delay_alpha=" << _delay_alpha 
+            << " _adjust_period_threshold=" << _adjust_period_threshold
+            << " _adjust_bytes_threshold=" << _adjust_bytes_threshold
+            << endl;
+    }
 }
 
 void UecSrc::initNscc(mem_b cwnd, simtime_picosec peer_rtt) {
@@ -167,20 +170,22 @@ void UecSrc::initNscc(mem_b cwnd, simtime_picosec peer_rtt) {
     setConfiguredMaxWnd(1.5*_bdp);
 
     if (cwnd == 0) {
-        _cwnd = _maxwnd;
+        _cwnd = memFromPkt(2);
     } else {
         _cwnd = cwnd;
     }
 
-    cout << "Initialize per-instance NSCC parameters:"
-        << " flowid " << _flow.flow_id()
-        << " _base_rtt=" << _base_rtt
-        << " _base_bdp=" << _base_bdp
-        << " _bdp=" << _bdp
-        << " _min_cwnd=" << _min_cwnd
-        << " _maxwnd=" << _maxwnd
-        << " _cwnd=" << _cwnd
-        << endl;
+    if (!UecSrc::_quiet) {
+        cout << "Initialize per-instance NSCC parameters:"
+            << " flowid " << _flow.flow_id()
+            << " _base_rtt=" << _base_rtt
+            << " _base_bdp=" << _base_bdp
+            << " _bdp=" << _bdp
+            << " _min_cwnd=" << _min_cwnd
+            << " _maxwnd=" << _maxwnd
+            << " _cwnd=" << _cwnd
+            << endl;
+    }
 }
 
 void UecSrc::initRccc(mem_b cwnd, simtime_picosec peer_rtt) {
@@ -198,14 +203,29 @@ void UecSrc::initRccc(mem_b cwnd, simtime_picosec peer_rtt) {
         _cwnd = cwnd;
     }
 
-    cout << "Initialize per-instance RCCC parameters:"
-        << " flowid " << _flow.flow_id()
-        << " _base_rtt=" << _base_rtt
-        << " _base_bdp=" << _base_bdp
-        << " _bdp=" << _bdp
-        << " _maxwnd=" << _maxwnd
-        << " _cwnd=" << _cwnd
-        << endl;
+    if (!UecSrc::_quiet) {
+        cout << "Initialize per-instance RCCC parameters:"
+            << " flowid " << _flow.flow_id()
+            << " _base_rtt=" << _base_rtt
+            << " _base_bdp=" << _base_bdp
+            << " _bdp=" << _bdp
+            << " _maxwnd=" << _maxwnd
+            << " _cwnd=" << _cwnd
+            << endl;
+    }
+}
+
+void UecSrc::setPfcOnlyMode(bool enable) {
+    _pfc_only_mode = enable;
+    if (enable) {
+        disableCongestionControl();
+        _credit = _maxwnd;
+    }
+}
+
+void UecSrc::disableCongestionControl() {
+    updateCwndOnAck = &UecSrc::dontUpdateCwndOnAck;
+    updateCwndOnNack = &UecSrc::dontUpdateCwndOnNack;
 }
 
 
@@ -524,6 +544,7 @@ UecSrc::UecSrc(TrafficLogger* trafficLogger,
     _pull = INIT_PULL;
     _credit = _maxwnd;
     _speculating = true;
+    _pfc_only_mode = false;
     _in_flight = 0;
     _highest_sent = 0;
     _send_blocked_on_nic = false;
@@ -820,41 +841,53 @@ bool UecSrc::checkFinished(UecDataPacket::seq_t cum_ack) {
     } else { 
         if (_msg_tracker.has_value()) {
             if (_msg_tracker.value()->checkFinished()) {
-                cout << "Flow " << _name << " flowId " << flowId() << " " << _nodename 
-                    << " finished at " << timeAsUs(eventlist().now()) 
-                    << " total messages " << _msg_tracker.value()->getMsgCompleted()
-                    << " total packets " << cum_ack 
-                    << " RTS " << _stats.rts_pkts_sent 
-                    << " total bytes " << ((mem_b)cum_ack - _stats.rts_pkts_sent) * _mss
-                    << " in_flight now " << _in_flight 
-                    << " fair_inc " << _nscc_overall_stats.inc_fair_bytes
-                    << " prop_inc " << _nscc_overall_stats.inc_prop_bytes
-                    << " fast_inc " << _nscc_overall_stats.inc_fast_bytes 
-                    << " eta_inc " << _nscc_overall_stats.inc_eta_bytes 
-                    << " multi_dec -" << _nscc_overall_stats.dec_multi_bytes 
-                    << " quick_dec -" << _nscc_overall_stats.dec_quick_bytes 
-                    << " nack_dec -" << _nscc_overall_stats.dec_nack_bytes 
-                    << endl;
+                if (!_quiet) {
+                    cout << "Flow " << _name << " flowId " << flowId() << " " << _nodename 
+                        << " finished at " << timeAsUs(eventlist().now()) 
+                        << " total messages " << _msg_tracker.value()->getMsgCompleted()
+                        << " total packets " << cum_ack 
+                        << " RTS " << _stats.rts_pkts_sent 
+                        << " total bytes " << ((mem_b)cum_ack - _stats.rts_pkts_sent) * _mss
+                        << " in_flight now " << _in_flight 
+                        << " fair_inc " << _nscc_overall_stats.inc_fair_bytes
+                        << " prop_inc " << _nscc_overall_stats.inc_prop_bytes
+                        << " fast_inc " << _nscc_overall_stats.inc_fast_bytes 
+                        << " eta_inc " << _nscc_overall_stats.inc_eta_bytes 
+                        << " multi_dec -" << _nscc_overall_stats.dec_multi_bytes 
+                        << " quick_dec -" << _nscc_overall_stats.dec_quick_bytes 
+                        << " nack_dec -" << _nscc_overall_stats.dec_nack_bytes 
+                        << endl;
+                    cout << "NSCC_FINISH flowid " << _flow.flow_id()
+                        << " time_ps " << eventlist().now()
+                        << " time_ns " << timeAsNs(eventlist().now())
+                        << endl;
+                }
                 cancelRTO();
                 _done_sending = true;
             }
         } else {
             if ((((int64_t)cum_ack - _stats.rts_pkts_sent) * _mss) >= (int64_t)_flow_size) {
-                cout << "Flow " << _name << " flowId " << flowId() << " " << _nodename 
-                    << " finished at " << timeAsUs(eventlist().now()) 
-                    << " total messages " << 1 
-                    << " total packets " << cum_ack 
-                    << " RTS " << _stats.rts_pkts_sent 
-                    << " total bytes " << ((mem_b)cum_ack - _stats.rts_pkts_sent) * _mss
-                    << " in_flight now " << _in_flight 
-                    << " fair_inc " << _nscc_overall_stats.inc_fair_bytes
-                    << " prop_inc " << _nscc_overall_stats.inc_prop_bytes
-                    << " fast_inc " << _nscc_overall_stats.inc_fast_bytes 
-                    << " eta_inc " << _nscc_overall_stats.inc_eta_bytes 
-                    << " multi_dec -" << _nscc_overall_stats.dec_multi_bytes 
-                    << " quick_dec -" << _nscc_overall_stats.dec_quick_bytes 
-                    << " nack_dec -" << _nscc_overall_stats.dec_nack_bytes 
-                    << endl;
+                if (!_quiet) {
+                    cout << "Flow " << _name << " flowId " << flowId() << " " << _nodename 
+                        << " finished at " << timeAsUs(eventlist().now()) 
+                        << " total messages " << 1 
+                        << " total packets " << cum_ack 
+                        << " RTS " << _stats.rts_pkts_sent 
+                        << " total bytes " << ((mem_b)cum_ack - _stats.rts_pkts_sent) * _mss
+                        << " in_flight now " << _in_flight 
+                        << " fair_inc " << _nscc_overall_stats.inc_fair_bytes
+                        << " prop_inc " << _nscc_overall_stats.inc_prop_bytes
+                        << " fast_inc " << _nscc_overall_stats.inc_fast_bytes 
+                        << " eta_inc " << _nscc_overall_stats.inc_eta_bytes 
+                        << " multi_dec -" << _nscc_overall_stats.dec_multi_bytes 
+                        << " quick_dec -" << _nscc_overall_stats.dec_quick_bytes 
+                        << " nack_dec -" << _nscc_overall_stats.dec_nack_bytes 
+                        << endl;
+                    cout << "NSCC_FINISH flowid " << _flow.flow_id()
+                        << " time_ps " << eventlist().now()
+                        << " time_ns " << timeAsNs(eventlist().now())
+                        << endl;
+                }
                 _speculating = false;
                 if (_end_trigger) {
                     _end_trigger->activate();
@@ -1103,6 +1136,9 @@ void UecSrc::processAck(const UecAckPacket& pkt) {
 }
 
 void UecSrc::updateCwndOnAck_DCTCP(bool skip, simtime_picosec rtt, mem_b newly_acked_bytes) {
+    if (_pfc_only_mode) {
+        return;
+    }
     cout << timeAsUs(eventlist().now()) << " DCTCP start " << _name << " cwnd " << _cwnd
          << " with params skip " << skip << " acked bytes " << newly_acked_bytes << endl;
 
@@ -1118,17 +1154,26 @@ void UecSrc::updateCwndOnAck_DCTCP(bool skip, simtime_picosec rtt, mem_b newly_a
 }
 
 void UecSrc::updateCwndOnNack_DCTCP(bool skip, mem_b nacked_bytes, bool last_hop) {
+    if (_pfc_only_mode) {
+        return;
+    }
     _cwnd -= nacked_bytes;
     _cwnd = max(_cwnd, (mem_b)_mtu);
 }
 
 bool UecSrc::can_send_RCCC() {
     assert(_receiver_based_cc);
+    if (_pfc_only_mode) {
+        return true;
+    }
     return credit() > 0;
 }
 
 bool UecSrc::can_send_NSCC(mem_b pkt_size) {
     assert(_sender_based_cc);
+    if (_pfc_only_mode) {
+        return true;
+    }
     return (pkt_size > 0) 
     	   && (((!_loss_recovery_mode && _cwnd >= _in_flight + pkt_size) 
                 || (_loss_recovery_mode && (!_rtx_queue.empty() || _cwnd >= _in_flight + pkt_size))));
@@ -1308,6 +1353,9 @@ void UecSrc::dontUpdateCwndOnAck(bool skip, simtime_picosec delay, mem_b newly_a
 
 
 void UecSrc::updateCwndOnAck_NSCC(bool skip, simtime_picosec delay, mem_b newly_acked_bytes) {
+    if (_pfc_only_mode) {
+        return;
+    }
     // bool can_decrease = _exp_avg_ecn > _ecn_thresh;
 
     if (quick_adapt(false, skip, delay))
@@ -1357,6 +1405,9 @@ void UecSrc::updateCwndOnAck_NSCC(bool skip, simtime_picosec delay, mem_b newly_
 }
 
 void UecSrc::updateCwndOnNack_NSCC(bool skip, mem_b nacked_bytes, bool last_hop) {
+    if (_pfc_only_mode) {
+        return;
+    }
     bool adjust_cwnd = true;
 
     _bytes_ignored += nacked_bytes;
@@ -1719,8 +1770,10 @@ void UecSrc::startConnection() {
     assert(!hasStarted());
     _last_event_time.emplace(eventlist().now());
 
-    cout << "Flow " << _name << " flowId " << flowId() << " " << _nodename << " starting at "
-         << timeAsUs(eventlist().now()) << endl;
+    if (!_quiet) {
+        cout << "Flow " << _name << " flowId " << flowId() << " " << _nodename << " starting at "
+             << timeAsUs(eventlist().now()) << endl;
+    }
 
 
     if (_flow_logger) {
@@ -1786,9 +1839,9 @@ bool UecSrc::isSendPermitted() {
 }
 
 void UecSrc::continueConnection() {
-    if (_debug_src)
+    if (_debug_src && !_quiet)
         cout << "Flow " << _name << " flowId " << flowId() << " " << _nodename << " continue at "
-            << timeAsUs(eventlist().now()) << endl;
+             << timeAsUs(eventlist().now()) << endl;
 
     assert(_msg_tracker.has_value());
     assert(hasStarted());
@@ -2066,10 +2119,11 @@ mem_b UecSrc::sendNewPacket(const Route& route) {
     assert(full_pkt_size <= _mtu);
 
     // check we're allowed to send according to state machine
-    if (_receiver_based_cc)
+    if (_receiver_based_cc && !_pfc_only_mode)
         assert(credit() > 0);
-        
-    spendCredit(full_pkt_size);
+
+    if (!_pfc_only_mode)
+        spendCredit(full_pkt_size);
 
     _backlog -= full_pkt_size;
     assert(_backlog >= 0);
@@ -2087,7 +2141,8 @@ mem_b UecSrc::sendNewPacket(const Route& route) {
     p->set_pathid(ev);
     p->flow().logTraffic(*p, *this, TrafficLogger::PKT_CREATESEND);
 
-    if (_backlog == 0 || (_receiver_based_cc && _credit <= 0) || ( _sender_based_cc &&  (_in_flight + full_pkt_size) >= _cwnd )) 
+    if (_backlog == 0 || (_receiver_based_cc && !_pfc_only_mode && _credit <= 0)
+        || ( _sender_based_cc &&  (_in_flight + full_pkt_size) >= _cwnd )) 
         p->set_ar(true);
     
     createSendRecord(_highest_sent, full_pkt_size);
@@ -3168,5 +3223,3 @@ void UecPullPacer::requestPull(UecSink* sink) {
         _active = true;
     }
 }
-
-

@@ -121,6 +121,8 @@ Queue::Queue(linkspeed_bps bitrate, mem_b maxsize, EventList& eventlist,
       _maxsize(maxsize), _num_drops(0)
 {
     _queuesize = 0;
+    _packets_served = 0;
+    _max_recorded_size = 0;
     stringstream ss;
     ss << "queue(" << bitrate/1000000 << "Mb/s," << maxsize << "bytes)";
     _nodename = ss.str();
@@ -143,6 +145,7 @@ Queue::completeService()
     //Packet* pkt = _enqueued.back();
     //_enqueued.pop_back();
     Packet* pkt = _enqueued.pop();
+    _packets_served++;
     _queuesize -= pkt->size();
     pkt->flow().logTraffic(*pkt, *this, TrafficLogger::PKT_DEPART);
     if (_logger) _logger->logQueue(*this, QueueLogger::PKT_SERVICE, *pkt);
@@ -188,6 +191,9 @@ Queue::receivePacket(Packet& pkt)
     Packet* pkt_p = &pkt;
     _enqueued.push(pkt_p);
     _queuesize += pkt.size();
+    if (_queuesize > _max_recorded_size) {
+        _max_recorded_size = _queuesize;
+    }
     if (_logger) _logger->logQueue(*this, QueueLogger::PKT_ENQUEUE, pkt);
 
     if (queueWasEmpty) {

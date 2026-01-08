@@ -13,6 +13,7 @@
 #include "loggertypes.h"
 #include "eth_pause_packet.h"
 #include "switch.h"
+#include <unordered_map>
 #include "callback_pipe.h"
 
 class Switch;
@@ -38,6 +39,10 @@ public:
 
     static uint64_t _low_threshold;
     static uint64_t _high_threshold;
+    static uint64_t _pause_sent;
+    static uint64_t _pause_cleared;
+    static std::unordered_map<const LosslessInputQueue*, uint64_t> _pause_sent_by_q;
+    static std::unordered_map<const LosslessInputQueue*, uint64_t> _pause_cleared_by_q;
 
 private:
     int _state_recv;

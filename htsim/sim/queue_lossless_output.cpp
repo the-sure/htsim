@@ -86,9 +86,18 @@ LosslessOutputQueue::receivePacket(Packet& pkt,VirtualQueue* prev)
     _enqueued.push(pkt_p);
 
     _queuesize += pkt.size();
+    if (_queuesize > _max_recorded_size) {
+        _max_recorded_size = _queuesize;
+    }
 
     if (_queuesize > _maxsize){
-        cout << " Queue " << _name << " LOSSLESS not working! I should have dropped this packet" << _queuesize / Packet::data_packet_size() << endl;
+        static bool logged = false;
+        if (!logged) {
+            cout << " Queue " << _name
+                 << " LOSSLESS not working! I should have dropped this packet"
+                 << _queuesize / Packet::data_packet_size() << endl;
+            logged = true;
+        }
     }
 
     if (_logger) 
@@ -113,6 +122,7 @@ void LosslessOutputQueue::completeService(){
     assert(!_enqueued.empty());
 
     Packet* pkt = _enqueued.pop();
+    _packets_served++;
     VirtualQueue* q = _vq.back();
 
     //_enqueued.pop_back();

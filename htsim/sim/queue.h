@@ -99,6 +99,8 @@ class Queue : public BaseQueue {
     void doNextEvent();
     // should really be private, but loggers want to see
     mem_b _maxsize; 
+    uint64_t _packets_served;
+    mem_b _max_recorded_size;
 
     virtual mem_b queuesize() const;
     virtual mem_b maxsize() const {return _maxsize;}

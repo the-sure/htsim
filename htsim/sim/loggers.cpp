@@ -419,6 +419,9 @@ string FlowEventLoggerSimple::event_to_str(RawLogEvent& event) {
     ss << fixed << setprecision(9) << event._time;
     assert(event._type == Logger::FLOW_EVENT);
     ss << " Type FLOW_EVENT SrcID " << event._id;
+    if (event._name != "") {
+        ss << " Name " << event._name;
+    }
     switch((FlowEventLogger::FlowEvent)event._ev) {
     case START:
         ss << " Ev START ";

@@ -1,5 +1,6 @@
 // -*- c-basic-offset: 4; indent-tabs-mode: nil -*- 
 #include "swift.h"
+#include "loggers.h"
 #include <iostream>
 #include <math.h>
 
@@ -50,6 +51,10 @@ SwiftSubflowSrc::SwiftSubflowSrc(SwiftSrc& src, TrafficLogger* pktlogger, int su
 
 void
 SwiftSubflowSrc::update_rtt(simtime_picosec delay) {
+    if (delay > 0) {
+        _stats.total_rtt += delay;
+        _stats.rtt_samples++;
+    }
     // calculate TCP-like RTO.  Not clear this is right for Swift
     if (delay!=0){
         if (_rtt>0){
@@ -172,6 +177,7 @@ SwiftSubflowSrc::applySwiftLimits() {
 void
 SwiftSubflowSrc::handle_ack(SwiftAck::seq_t ackno) {
     simtime_picosec now = eventlist().now();
+    _stats.acks_received++;
     if (ackno > _last_acked) { // a brand new ack
         _RFC2988_RTO_timeout = now + _rto;// RFC 2988 5.3
     
@@ -380,6 +386,7 @@ SwiftSubflowSrc::send_next_packet() {
     //cout << timeAsUs(eventlist().now()) << " " << nodename() << " sent " << _highest_sent+1 << "-" << _highest_sent+mss() << " dsn " << dsn << endl;
     _highest_sent += mss();  
     _packets_sent += mss();
+    _stats.packets_sent++;
 
     p->flow().logTraffic(*p, _src, TrafficLogger::PKT_CREATESEND);
     p->set_ts(eventlist().now());
@@ -402,6 +409,7 @@ SwiftSubflowSrc::send_callback() {
 
 void 
 SwiftSubflowSrc::retransmit_packet() {
+    _stats.retransmits++;
     cout << timeAsUs(eventlist().now()) << " " << nodename() << " retransmit_packet " << endl;
     if (!_established){
         assert(_highest_sent == 1);
@@ -510,6 +518,7 @@ void SwiftSubflowSrc::doNextEvent() {
     if(_rtx_timeout_pending) {
         _rtx_timeout_pending = false;
 
+        _stats.timeouts++;
         _src.log(this, SwiftLogger::SWIFT_TIMEOUT);
 
         /*
@@ -546,6 +555,9 @@ SwiftSubflowSrc::connect(SwiftSink& sink, const Route& routeout, const Route& ro
     Route* new_route = routeout.clone(); // make a copy, as we may be switching routes and don't want to append the sink more than once
     new_route->push_back(_subflow_sink);
     _route = new_route;
+    if (flow_id != 0) {
+        _flow.set_flowid(flow_id);
+    }
     _flow.set_id(get_id()); // identify the packet flow with the source that generated it
     cout << "connect, flow id is now " << _flow.get_id() << endl;
     assert(scheduler);
@@ -600,6 +612,12 @@ SwiftSrc::SwiftSrc(SwiftRtxTimerScanner& rtx_scanner, SwiftLogger* logger, Traff
     _stopped = false;
     _app_limited = -1;
     _highest_dsn_sent = 0;
+    _flow_id = 0;
+    _dst = -1;
+    _end_trigger = NULL;
+    _start_trigger = NULL;
+    _flow_logger = NULL;
+    _finished = false;
 
     // swift cc init
     _ai = 1.0;  // increase constant.  Value is a guess
@@ -741,11 +759,13 @@ SwiftSrc::connect(const Route& routeout, const Route& routeback, SwiftSink& sink
     SwiftSubflowSrc* sub = new SwiftSubflowSrc(*this, _traffic_logger, _subs.size());
     _subs.push_back(sub);
     // Note: if we call set_paths after connect, this route will not (immediately) be used
-    sub->connect(sink, routeout, routeback, get_id(), _scheduler);
+    sub->connect(sink, routeout, routeback, _flow_id, _scheduler);
     _rtx_timer_scanner->registerSubflow(*sub);
     _sink=&sink;
 
-    eventlist().sourceIsPending(*this,starttime);
+    if (!_start_trigger) {
+        eventlist().sourceIsPending(*this,starttime);
+    }
     // cout << "starttime " << timeAsUs(starttime) << endl;
 }
 
@@ -762,7 +782,7 @@ SwiftSrc::multipath_connect(SwiftSink& sink, simtime_picosec starttime, uint32_t
         const Route* routeout = _paths[i%_paths.size()];
         const Route* routeback = _paths[i%_paths.size()]->reverse();
         assert(routeback);
-        subflow->connect(sink, *routeout, *routeback, get_id(), _scheduler);
+        subflow->connect(sink, *routeout, *routeback, _flow_id, _scheduler);
         _rtx_timer_scanner->registerSubflow(*subflow);
     }
     eventlist().sourceIsPending(*this,starttime);
@@ -795,8 +815,42 @@ SwiftSrc::targetDelay(uint32_t cwnd, const Route& route) {
 
 void SwiftSrc::update_dsn_ack(SwiftAck::seq_t ds_ackno) {
     //cout << "Flow " << _name << " dsn ack " << ds_ackno << endl;
-    if (ds_ackno >= _flow_size){
-        cout << "Flow " << _name << " finished at " << timeAsUs(eventlist().now()) << " total bytes " << ds_ackno << endl;
+    uint64_t effective_size = _flow_size;
+    uint64_t rem = effective_size % mss();
+    if (rem != 0 && effective_size > rem) {
+        // Swift only sends full packets; treat the tail as unsent.
+        effective_size -= rem;
+    }
+    if (effective_size == 0) {
+        effective_size = _flow_size;
+    }
+    if (ds_ackno + 1 >= effective_size){
+        _finished = true;
+        uint64_t packets_sent = 0;
+        uint64_t acks_received = 0;
+        uint64_t retransmits = 0;
+        uint64_t timeouts = 0;
+        for (auto* sub : _subs) {
+            const auto& stats = sub->get_stats();
+            packets_sent += stats.packets_sent;
+            acks_received += stats.acks_received;
+            retransmits += stats.retransmits;
+            timeouts += stats.timeouts;
+        }
+        cout << "Flow " << _name << " (flowid " << _flow_id << ") finished at "
+             << timeAsUs(eventlist().now()) << " total bytes " << ds_ackno
+             << " packets sent " << packets_sent
+             << " acks " << acks_received
+             << " retx " << retransmits
+             << " timeouts " << timeouts
+             << endl;
+        if (_end_trigger) {
+            _end_trigger->activate();
+        }
+        if (_flow_logger && !_subs.empty()) {
+            _flow_logger->logEvent(_subs.front()->flow(), *this,
+                                   FlowEventLogger::FINISH, _flow_size, ds_ackno);
+        }
     }
 }
 
@@ -813,6 +867,17 @@ SwiftSrc::drops() {
 void SwiftSrc::doNextEvent() {
     // cout << "Starting flow" << endl;
     startflow();
+}
+
+bool SwiftSrc::is_done() const {
+    if (_subs.empty()) {
+        return false;
+    }
+    uint64_t max_sent = 0;
+    for (auto* sub : _subs) {
+        max_sent = max(max_sent, sub->_highest_sent);
+    }
+    return max_sent >= _flow_size;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -990,7 +1055,7 @@ SwiftSubflowSink::drops(){
 ////////////////////////////////////////////////////////////////
 
 SwiftSink::SwiftSink() 
-    : DataReceiver("SwiftSink"), _cumulative_data_ack(0), _buffer_logger(NULL)
+    : DataReceiver("SwiftSink"), _cumulative_data_ack(0), _buffer_logger(NULL), _src_id(-1)
 {
     _src = 0;
     _nodename = "swiftsink";
@@ -1039,6 +1104,22 @@ SwiftSink::cumulative_ack() {
 uint32_t
 SwiftSink::drops(){
     return _src ? _src->drops() : 0;
+}
+
+uint64_t SwiftSink::get_cumulative_ack() const {
+    uint64_t max_ack = 0;
+    for (auto* sub : _subs) {
+        max_ack = max(max_ack, sub->_cumulative_ack);
+    }
+    return max_ack;
+}
+
+uint64_t SwiftSink::get_packets_received() const {
+    uint64_t total = 0;
+    for (auto* sub : _subs) {
+        total += sub->_packets;
+    }
+    return total;
 }
 
 ////////////////////////////////////////////////////////////////

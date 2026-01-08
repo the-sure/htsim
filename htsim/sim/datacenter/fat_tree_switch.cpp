@@ -324,6 +324,10 @@ double FatTreeSwitch::_speculative_threshold_fraction = 0.2;
 int8_t (*FatTreeSwitch::fn)(FibEntry*,FibEntry*)= &FatTreeSwitch::compare_queuesize;
 uint16_t FatTreeSwitch::_trim_size = 64;
 bool FatTreeSwitch::_disable_trim = false;
+std::unordered_set<flowid_t> FatTreeSwitch::_logged_uplink_flows = {};
+std::unordered_map<int, uint32_t> FatTreeSwitch::_bg_uplink_counts = {};
+std::unordered_set<flowid_t> FatTreeSwitch::_logged_bg_uplink_flows = {};
+flowid_t FatTreeSwitch::_bg_flowid_threshold = 1000;
 
 Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
     vector<FibEntry*> * available_hops = _fib->getRoutes(pkt.dst());
@@ -411,6 +415,53 @@ Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
         
         FibEntry* e = (*available_hops)[ecmp_choice];
         pkt.set_direction(e->getDirection());
+
+        if (_type == TOR && e->getDirection() == UP && pkt.flow_id() <= 32) {
+            if (_logged_uplink_flows.find(pkt.flow_id()) == _logged_uplink_flows.end()) {
+                BaseQueue* q = (BaseQueue*)e->getEgressPort()->at(0);
+                int uplink_index = -1;
+                int idx = 0;
+                auto& uplinks = _ft->queues_nlp_nup[_id];
+                for (size_t agg = 0; agg < uplinks.size(); agg++) {
+                    for (size_t b = 0; b < uplinks[agg].size(); b++) {
+                        if (uplinks[agg][b] == q) {
+                            uplink_index = idx;
+                            break;
+                        }
+                        idx++;
+                    }
+                    if (uplink_index >= 0) break;
+                }
+                cout << "Flow " << pkt.flow_id()
+                     << " uses uplink: " << uplink_index
+                     << " tor=" << _id
+                     << " dst=" << pkt.dst()
+                     << endl;
+                _logged_uplink_flows.insert(pkt.flow_id());
+            }
+        }
+        if (_type == TOR && e->getDirection() == UP && pkt.flow_id() > _bg_flowid_threshold) {
+            if (_logged_bg_uplink_flows.find(pkt.flow_id()) == _logged_bg_uplink_flows.end()) {
+                BaseQueue* q = (BaseQueue*)e->getEgressPort()->at(0);
+                int uplink_index = -1;
+                int idx = 0;
+                auto& uplinks = _ft->queues_nlp_nup[_id];
+                for (size_t agg = 0; agg < uplinks.size(); agg++) {
+                    for (size_t b = 0; b < uplinks[agg].size(); b++) {
+                        if (uplinks[agg][b] == q) {
+                            uplink_index = idx;
+                            break;
+                        }
+                        idx++;
+                    }
+                    if (uplink_index >= 0) break;
+                }
+                if (uplink_index >= 0) {
+                    _bg_uplink_counts[uplink_index]++;
+                    _logged_bg_uplink_flows.insert(pkt.flow_id());
+                }
+            }
+        }
         
         return e->getEgressPort();
     }

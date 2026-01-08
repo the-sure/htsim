@@ -7,6 +7,10 @@
 
 uint64_t LosslessInputQueue::_high_threshold = 0;
 uint64_t LosslessInputQueue::_low_threshold = 0;
+uint64_t LosslessInputQueue::_pause_sent = 0;
+uint64_t LosslessInputQueue::_pause_cleared = 0;
+std::unordered_map<const LosslessInputQueue*, uint64_t> LosslessInputQueue::_pause_sent_by_q = {};
+std::unordered_map<const LosslessInputQueue*, uint64_t> LosslessInputQueue::_pause_cleared_by_q = {};
 
 LosslessInputQueue::LosslessInputQueue(EventList& eventlist)
     : Queue(speedFromGbps(1),Packet::data_packet_size()*2000,eventlist,NULL),
@@ -76,7 +80,13 @@ LosslessInputQueue::receivePacket(Packet& pkt)
     //cout << timeAsMs(eventlist().now()) << " queue " << _name << " switch (" << _switch->_name << ") "<< " recv when paused pkt " << pkt.type() << " sz " << _queuesize << endl;        
 
     if (_queuesize > _maxsize){
-        cout << " Queue " << _name << " LOSSLESS not working! I should have dropped this packet" << _queuesize / Packet::data_packet_size() << endl;
+        static bool logged = false;
+        if (!logged) {
+            cout << " Queue " << _name
+                 << " LOSSLESS not working! I should have dropped this packet"
+                 << _queuesize / Packet::data_packet_size() << endl;
+            logged = true;
+        }
     }
     
     //tell the output queue we're here!
@@ -110,6 +120,13 @@ void LosslessInputQueue::sendPause(unsigned int wait){
         switchID = getSwitch()->getID();
 
     EthPausePacket* pkt = EthPausePacket::newpkt(wait,switchID);
+    if (wait > 0) {
+        _pause_sent++;
+        _pause_sent_by_q[this]++;
+    } else {
+        _pause_cleared++;
+        _pause_cleared_by_q[this]++;
+    }
 
     if (_wire)
         _wire->receivePacket(*pkt);
