@@ -1,0 +1,5 @@
+Command '-end' not found, did you mean:
+  command 'send' from deb mailutils-mh (1:3.14-1)
+  command 'send' from deb mmh (0.4-4)
+  command 'send' from deb nmh (1.7.1-11)
+Try: sudo apt install <deb name>

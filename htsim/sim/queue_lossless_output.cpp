@@ -85,9 +85,17 @@ LosslessOutputQueue::receivePacket(Packet& pkt,VirtualQueue* prev)
     Packet* pkt_p = &pkt;
     _enqueued.push(pkt_p);
 
+    mem_b prev_size = _queuesize;
     _queuesize += pkt.size();
     if (_queuesize > _max_recorded_size) {
         _max_recorded_size = _queuesize;
+    }
+    if (_ecn_enabled && _K > 0 && prev_size < _K && _queuesize >= _K) {
+        cout << "QUEUE_K_CROSS time_us " << timeAsUs(eventlist().now())
+             << " queue " << _name
+             << " queuesize " << _queuesize
+             << " K " << _K
+             << endl;
     }
 
     if (_queuesize > _maxsize){
@@ -129,8 +137,15 @@ void LosslessOutputQueue::completeService(){
     _vq.pop_back();
 
     //mark on deque
-    if (_ecn_enabled && _queuesize > _K)
-        pkt->set_flags(pkt->flags() | ECN_CE); 
+    if (_ecn_enabled && _queuesize > _K) {
+        pkt->set_flags(pkt->flags() | ECN_CE);
+        cout << "ECN_MARK time_us " << timeAsUs(eventlist().now())
+             << " flow " << pkt->flow_id()
+             << " queue " << _name
+             << " queuesize " << _queuesize
+             << " K " << _K
+             << endl;
+    }
 
     if (pkt->type()==HPCC){
         //HPPC INT information adding to packet

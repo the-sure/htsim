@@ -110,7 +110,7 @@ public:
     bool _flow_started;
     uint16_t _state_send;
 
-    void send_packet();
+    virtual void send_packet();
 
     virtual const string& nodename() { return _nodename; }
     inline uint32_t flow_id() const { return _flow.flow_id();}

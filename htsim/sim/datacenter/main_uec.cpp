@@ -4,9 +4,12 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
 #include <unordered_map>
 #include <memory>
 #include <sstream>
+#include <streambuf>
+#include <string>
 #include <string.h>
 
 #include <math.h>
@@ -54,7 +57,7 @@ uint32_t DEFAULT_NONTRIMMING_QUEUESIZE_FACTOR = 5;
 
 EventList eventlist;
 
-enum ForegroundCCType { FG_NSCC, FG_DCQCN, FG_SWIFT, FG_PFC_ONLY };
+enum ForegroundCCType { FG_NSCC, FG_DCQCN, FG_SWIFT, FG_MCC_IDEAL, FG_PFC_ONLY };
 
 static const char* fg_cc_name(ForegroundCCType type) {
     switch (type) {
@@ -64,12 +67,57 @@ static const char* fg_cc_name(ForegroundCCType type) {
         return "DCQCN";
     case FG_SWIFT:
         return "Swift";
+    case FG_MCC_IDEAL:
+        return "MCC-Ideal";
     case FG_PFC_ONLY:
         return "PFC-only";
     default:
         return "Unknown";
     }
 }
+
+class DebugOutputFilterBuf : public std::streambuf {
+public:
+    explicit DebugOutputFilterBuf(std::streambuf* dest) : _dest(dest) {}
+
+protected:
+    int overflow(int ch) override {
+        if (ch == EOF) {
+            return _dest->sputc(ch);
+        }
+        char c = static_cast<char>(ch);
+        _line.push_back(c);
+        if (c == '\n') {
+            flushLine();
+        }
+        return ch;
+    }
+
+    std::streamsize xsputn(const char* s, std::streamsize count) override {
+        for (std::streamsize i = 0; i < count; ++i) {
+            overflow(static_cast<unsigned char>(s[i]));
+        }
+        return count;
+    }
+
+private:
+    void flushLine() {
+        if (!shouldFilter(_line)) {
+            _dest->sputn(_line.data(), _line.size());
+        }
+        _line.clear();
+    }
+
+    bool shouldFilter(const std::string& line) const {
+        if (line.rfind("DEBUG_", 0) == 0) {
+            return true;
+        }
+        return line.find("mcc_ideal_update") != std::string::npos;
+    }
+
+    std::streambuf* _dest;
+    std::string _line;
+};
 
 class FlowEventLoggerFct : public FlowEventLogger {
 public:
@@ -110,7 +158,7 @@ private:
 };
 
 void exit_error(char* progr) {
-    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-pfc_thresholds low high]\n\t[-fg_cc nscc|dcqcn|swift|pfc]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n"<< endl;
+    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-pfc_thresholds low high]\n\t[-fg_cc nscc|dcqcn|swift|mcc|pfc]\n\t[-mcc_rtt_thresh us]\n\t[-mcc_r1 val]\n\t[-mcc_r2 val]\n\t[-mcc_r3 val]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n"<< endl;
     exit(1);
 }
 
@@ -133,6 +181,8 @@ uint32_t calculate_bdp_pkt(FatTreeTopologyCfg* t_cfg, linkspeed_bps host_linkspe
 }
 
 int main(int argc, char **argv) {
+    DebugOutputFilterBuf debug_filter(std::cout.rdbuf());
+    std::cout.rdbuf(&debug_filter);
     Clock c(timeFromSec(5 / 100.), eventlist);
     bool param_queuesize_set = false;
     uint32_t queuesize_pkt = 0;
@@ -155,7 +205,7 @@ int main(int argc, char **argv) {
     queue_type qt = LOSSLESS_INPUT;
 
     // ===== New：前后台混合拥塞控制变量 =====
-    ForegroundCCType fg_cc_type = FG_NSCC;  // 前台流控制类型
+    ForegroundCCType fg_cc_type = FG_MCC_IDEAL;  // 观测流量默认使用 MCC
     uint64_t bg_flowid_threshold = 1000;    // flowid > threshold 为背景流
     bool dcqcn_no_cc = false;
     // ===================================
@@ -184,6 +234,9 @@ int main(int argc, char **argv) {
 
     bool receiver_driven = false;
     bool sender_driven = true;
+    // Default foreground congestion control to MCC unless overridden.
+    UecSrc::_sender_cc_algo = UecSrc::MCC_IDEAL;
+    UecSrc::_sender_based_cc = true;
     uint64_t high_pfc = 150, low_pfc = 120;
     bool param_pfc_set = false;
 
@@ -210,6 +263,11 @@ int main(int argc, char **argv) {
     int8_t qa_gate = -1;
     bool conn_reuse = false;
     bool force_verbose = false;
+    simtime_picosec mcc_rtt_threshold = MccIdealParams::rtt_threshold;
+    double mcc_r1 = MccIdealParams::R1;
+    double mcc_r2 = MccIdealParams::R2;
+    double mcc_r3 = MccIdealParams::R3;
+    bool mcc_params_set = false;
 
     while (i<argc) {
         if (!strcmp(argv[i],"-o")) {
@@ -280,6 +338,8 @@ int main(int argc, char **argv) {
                 UecSrc::_sender_cc_algo = UecSrc::DCTCP;
             else if (!strcmp(argv[i+1],"nscc")) 
                 UecSrc::_sender_cc_algo = UecSrc::NSCC;
+            else if (!strcmp(argv[i+1],"mcc") || !strcmp(argv[i+1],"mcc_ideal"))
+                UecSrc::_sender_cc_algo = UecSrc::MCC_IDEAL;
             else if (!strcmp(argv[i+1],"constant")) 
                 UecSrc::_sender_cc_algo = UecSrc::CONSTANT;
             else {
@@ -287,6 +347,26 @@ int main(int argc, char **argv) {
                 exit(1);
             }    
             cout << "sender based algo "<< argv[i+1] << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-mcc_rtt_thresh")) {
+            mcc_rtt_threshold = timeFromUs(atof(argv[i+1]));
+            mcc_params_set = true;
+            cout << "MCC rtt threshold " << atof(argv[i+1]) << " us" << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-mcc_r1")) {
+            mcc_r1 = atof(argv[i+1]);
+            mcc_params_set = true;
+            cout << "MCC R1 " << mcc_r1 << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-mcc_r2")) {
+            mcc_r2 = atof(argv[i+1]);
+            mcc_params_set = true;
+            cout << "MCC R2 " << mcc_r2 << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-mcc_r3")) {
+            mcc_r3 = atof(argv[i+1]);
+            mcc_params_set = true;
+            cout << "MCC R3 " << mcc_r3 << endl;
             i++;
         } else if (!strcmp(argv[i],"-sender_cc")) {
             UecSrc::_sender_based_cc = true;
@@ -571,14 +651,22 @@ int main(int argc, char **argv) {
         } else if (!strcmp(argv[i],"-fg_cc")) {
             if (!strcmp(argv[i+1], "nscc")) {
                 fg_cc_type = FG_NSCC;
+                UecSrc::_sender_cc_algo = UecSrc::NSCC;
+                UecSrc::_sender_based_cc = true;
+                sender_driven = true;
             } else if (!strcmp(argv[i+1], "dcqcn")) {
                 fg_cc_type = FG_DCQCN;
             } else if (!strcmp(argv[i+1], "swift")) {
                 fg_cc_type = FG_SWIFT;
+            } else if (!strcmp(argv[i+1], "mcc") || !strcmp(argv[i+1], "mcc_ideal")) {
+                fg_cc_type = FG_MCC_IDEAL;
+                UecSrc::_sender_cc_algo = UecSrc::MCC_IDEAL;
+                UecSrc::_sender_based_cc = true;
+                sender_driven = true;
             } else if (!strcmp(argv[i+1], "pfc") || !strcmp(argv[i+1], "pfc_only")) {
                 fg_cc_type = FG_PFC_ONLY;
             } else {
-                cout << "Unknown foreground CC " << argv[i+1] << " expecting one of nscc|dcqcn|swift|pfc" << endl;
+                cout << "Unknown foreground CC " << argv[i+1] << " expecting one of nscc|dcqcn|swift|mcc|pfc" << endl;
                 exit(1);
             }
             cout << "Foreground CC: " << fg_cc_name(fg_cc_type) << endl;
@@ -911,13 +999,13 @@ int main(int argc, char **argv) {
         assert(ecn_high <= queuesize);
     }
 
-    if (fg_cc_type == FG_DCQCN && (qt == LOSSLESS_INPUT || qt == LOSSLESS_INPUT_ECN)) {
+    if ((fg_cc_type == FG_DCQCN || fg_cc_type == FG_MCC_IDEAL) && (qt == LOSSLESS_INPUT || qt == LOSSLESS_INPUT_ECN)) {
         if (!ecn) {
-            cout << "WARNING: ECN disabled; DCQCN will not receive CNP feedback" << endl;
+            cout << "WARNING: ECN disabled; MCC/DCQCN will not receive CNP feedback" << endl;
         } else {
             LosslessOutputQueue::_ecn_enabled = true;
             LosslessOutputQueue::_K = ecn_low;
-            cout << "DCQCN ECN marking enabled on lossless output queues, K=" << LosslessOutputQueue::_K << endl;
+            cout << "ECN marking enabled on lossless output queues, K=" << LosslessOutputQueue::_K << endl;
         }
     }
 
@@ -957,6 +1045,9 @@ int main(int argc, char **argv) {
         // UecSrc::parameterScaleToTargetQ();
         bool trimming_enabled = !disable_trim;
         UecSrc::initNsccParams(network_max_unloaded_rtt, linkspeed, target_Qdelay, qa_gate, trimming_enabled);
+    }
+    if (UecSrc::_sender_cc_algo == UecSrc::MCC_IDEAL || fg_cc_type == FG_MCC_IDEAL || mcc_params_set) {
+        MccIdealParams::initParams(mcc_rtt_threshold, mcc_r1, mcc_r2, mcc_r3);
     }
 
     vector<unique_ptr<UecPullPacer>> pacers;
@@ -1060,7 +1151,20 @@ int main(int argc, char **argv) {
                 cout << "Creating DCQCN flow " << current_flowid << " (" << src << "->" << dest << ")" << endl;
             }
 
-            DCQCNSrc* dcqcn_src = new DCQCNSrc(NULL, traffic_logger, eventlist, linkspeed);
+            unique_ptr<UecMultipath> mp = nullptr;
+            if (load_balancing_algo == REPS) {
+                mp = make_unique<UecMpReps>(path_entropy_size, UecSrc::_debug, !disable_trim);
+            } else if (load_balancing_algo == BITMAP) {
+                mp = make_unique<UecMpBitmap>(path_entropy_size, UecSrc::_debug);
+            } else if (load_balancing_algo == REPS_LEGACY) {
+                mp = make_unique<UecMpRepsLegacy>(path_entropy_size, UecSrc::_debug);
+            } else if (load_balancing_algo == OBLIVIOUS) {
+                mp = make_unique<UecMpOblivious>(path_entropy_size, UecSrc::_debug);
+            } else if (load_balancing_algo == MIXED) {
+                mp = make_unique<UecMpMixed>(path_entropy_size, UecSrc::_debug);
+            }
+
+            DCQCNSrc* dcqcn_src = new DCQCNSrc(NULL, traffic_logger, eventlist, linkspeed, std::move(mp));
             DCQCNSink* dcqcn_sink = new DCQCNSink(eventlist);
 
             // Set identifiers and endpoints before connect.
@@ -1114,14 +1218,22 @@ int main(int argc, char **argv) {
                 exit(1);
             }
 
-            uint32_t choice = rand() % paths_out->size();
-            Route* routeout = new Route(*(paths_out->at(choice)), *dcqcn_sink);
-            Route* routeback = new Route(*(paths_back->at(choice % paths_back->size())), *dcqcn_src);
-            routeout->add_endpoints(dcqcn_src, dcqcn_sink);
-            routeback->add_endpoints(dcqcn_sink, dcqcn_src);
+            Route* first_routeout = nullptr;
+            Route* first_routeback = nullptr;
+            for (size_t i = 0; i < paths_out->size(); i++) {
+                Route* routeout = new Route(*(paths_out->at(i)), *dcqcn_sink);
+                Route* routeback = new Route(*(paths_back->at(i % paths_back->size())), *dcqcn_src);
+                routeout->add_endpoints(dcqcn_src, dcqcn_sink);
+                routeback->add_endpoints(dcqcn_sink, dcqcn_src);
+                dcqcn_src->addPath(routeout, routeback);
+                if (i == 0) {
+                    first_routeout = routeout;
+                    first_routeback = routeback;
+                }
+            }
 
             simtime_picosec start_time = (crt->start == TRIGGER_START) ? 0 : timeFromUs((uint32_t)crt->start);
-            dcqcn_src->connect(routeout, routeback, *dcqcn_sink, start_time);
+            dcqcn_src->connect(first_routeout, first_routeback, *dcqcn_sink, start_time);
 
             FatTreeSwitch* src_switch = dynamic_cast<FatTreeSwitch*>(
                 topo[0]->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]
@@ -1196,13 +1308,26 @@ int main(int argc, char **argv) {
 
             vector<const Route*>* paths_out = topo[0]->get_paths(src, dest);
             vector<const Route*>* paths_back = topo[0]->get_paths(dest, src);
-            if (paths_out->empty() || paths_back->empty()) {
-                cout << "ERROR: no Swift paths for " << src << "->" << dest << endl;
+            if (!paths_out || paths_out->empty()) {
+                cout << "ERROR: no Swift forward paths for " << src << "->" << dest << endl;
                 exit(1);
             }
-            uint32_t choice = rand() % paths_out->size();
-            Route* routeout = new Route(*(paths_out->at(choice)));
-            Route* routeback = new Route(*(paths_back->at(choice % paths_back->size())));
+            if (!paths_back || paths_back->empty()) {
+                cout << "ERROR: no Swift reverse paths for " << dest << "->" << src << endl;
+                exit(1);
+            }
+
+            Route* first_routeout = nullptr;
+            Route* first_routeback = nullptr;
+            for (size_t i = 0; i < paths_out->size(); i++) {
+                Route* routeout = new Route(*(paths_out->at(i)));
+                Route* routeback = new Route(*(paths_back->at(i % paths_back->size())));
+                swift_src->addPath(routeout, routeback);
+                if (i == 0) {
+                    first_routeout = routeout;
+                    first_routeback = routeback;
+                }
+            }
 
             simtime_picosec start_time = (crt->start == TRIGGER_START) ? 0 : timeFromUs((uint32_t)crt->start);
 
@@ -1215,7 +1340,30 @@ int main(int argc, char **argv) {
                 Trigger* trig = conns->getTrigger(crt->send_done_trigger, eventlist);
                 swift_src->set_end_trigger(*trig);
             }
-            swift_src->connect(*routeout, *routeback, *swift_sink, start_time);
+            if (!first_routeout || !first_routeback) {
+                cout << "ERROR: no Swift routes for " << src << "->" << dest << endl;
+                exit(1);
+            }
+            swift_src->connect(*first_routeout, *first_routeback, *swift_sink, start_time);
+
+            SwiftSubflowSrc* subflow = swift_src->get_subflow();
+            if (subflow) {
+                unique_ptr<UecMultipath> mp = nullptr;
+                if (load_balancing_algo == BITMAP) {
+                    mp = make_unique<UecMpBitmap>(path_entropy_size, UecSrc::_debug);
+                } else if (load_balancing_algo == REPS) {
+                    mp = make_unique<UecMpReps>(path_entropy_size, UecSrc::_debug, !disable_trim);
+                } else if (load_balancing_algo == REPS_LEGACY) {
+                    mp = make_unique<UecMpRepsLegacy>(path_entropy_size, UecSrc::_debug);
+                } else if (load_balancing_algo == OBLIVIOUS) {
+                    mp = make_unique<UecMpOblivious>(path_entropy_size, UecSrc::_debug);
+                } else if (load_balancing_algo == MIXED) {
+                    mp = make_unique<UecMpMixed>(path_entropy_size, UecSrc::_debug);
+                }
+                if (mp) {
+                    subflow->set_multipath(std::move(mp), swift_src->get_no_of_paths());
+                }
+            }
 
             swift_srcs.push_back(swift_src);
             swift_sinks.push_back(swift_sink);
@@ -1540,7 +1688,11 @@ int main(int argc, char **argv) {
     cout << "Flow counts:" << endl;
     cout << "  Foreground: " << fg_count << endl;
     cout << "  Background: " << bg_count << endl;
-    cout << "  NSCC: " << uec_srcs.size() << endl;
+    if (UecSrc::_sender_cc_algo == UecSrc::MCC_IDEAL) {
+        cout << "  MCC-Ideal: " << uec_srcs.size() << endl;
+    } else {
+        cout << "  NSCC: " << uec_srcs.size() << endl;
+    }
     cout << "  DCQCN: " << dcqcn_srcs.size() << endl;
     cout << "  Swift: " << swift_srcs.size() << endl;
     cout << "  PFC-only: " << pfc_only_srcs.size() << endl;
@@ -1676,7 +1828,11 @@ int main(int argc, char **argv) {
     }
     
     if (uec_srcs.size() > 0) {
-        cout << "\nUEC/NSCC Statistics:" << endl;
+        if (UecSrc::_sender_cc_algo == UecSrc::MCC_IDEAL) {
+            cout << "\nUEC/MCC-Ideal Statistics:" << endl;
+        } else {
+            cout << "\nUEC/NSCC Statistics:" << endl;
+        }
         cout << "  New: " << new_pkts << " Rtx: " << rtx_pkts << " RTS: " << rts_pkts 
              << " Bounced: " << bounce_pkts << " ACKs: " << ack_pkts << " NACKs: " << nack_pkts 
              << " Pulls: " << pull_pkts << " SLEEK: " << sleek_pkts << endl;
@@ -1763,7 +1919,7 @@ int main(int argc, char **argv) {
         cout << "      Mixed Traffic Summary" << endl;
         cout << "========================================" << endl;
 
-        const char* cc_names[] = {"NSCC", "DCQCN", "Swift", "PFC-only"};
+        const char* cc_names[] = {"NSCC", "DCQCN", "Swift", "MCC-Ideal", "PFC-only"};
         cout << "Configuration:" << endl;
         cout << "  Foreground CC: " << cc_names[fg_cc_type] << endl;
         cout << "  Background CC: PFC-only" << endl;
@@ -1772,12 +1928,17 @@ int main(int argc, char **argv) {
         uint64_t fg_nscc = 0;
         uint64_t fg_dcqcn = 0;
         uint64_t fg_swift = 0;
+        uint64_t fg_mcc = 0;
         uint64_t fg_pfc = 0;
         uint64_t bg_pfc = 0;
 
         for (auto* src : uec_srcs) {
             if (src->flowId() <= bg_flowid_threshold) {
-                fg_nscc++;
+                if (UecSrc::_sender_cc_algo == UecSrc::MCC_IDEAL) {
+                    fg_mcc++;
+                } else {
+                    fg_nscc++;
+                }
             } else {
                 bg_pfc++;
             }
@@ -1809,13 +1970,14 @@ int main(int argc, char **argv) {
         cout << "    NSCC:     " << fg_nscc << endl;
         cout << "    DCQCN:    " << fg_dcqcn << endl;
         cout << "    Swift:    " << fg_swift << endl;
+        cout << "    MCC-Ideal:" << fg_mcc << endl;
         cout << "    PFC-only: " << fg_pfc << endl;
-        cout << "    Subtotal: " << (fg_nscc + fg_dcqcn + fg_swift + fg_pfc) << endl;
+        cout << "    Subtotal: " << (fg_nscc + fg_dcqcn + fg_swift + fg_mcc + fg_pfc) << endl;
         cout << "  Background flows:" << endl;
         cout << "    PFC-only: " << bg_pfc << endl;
-        cout << "  Total:      " << (fg_nscc + fg_dcqcn + fg_swift + fg_pfc + bg_pfc) << endl;
+        cout << "  Total:      " << (fg_nscc + fg_dcqcn + fg_swift + fg_mcc + fg_pfc + bg_pfc) << endl;
 
-        if ((fg_nscc > 0) + (fg_dcqcn > 0) + (fg_swift > 0) + (fg_pfc > 0) > 1) {
+        if ((fg_nscc > 0) + (fg_dcqcn > 0) + (fg_swift > 0) + (fg_mcc > 0) + (fg_pfc > 0) > 1) {
             cout << "\nPerformance Comparison:" << endl;
             cout << "  (Analyze FCT, throughput, and fairness)" << endl;
         }

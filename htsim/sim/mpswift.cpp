@@ -39,7 +39,7 @@ SwiftSrc::SwiftSrc(SwiftLogger* logger, TrafficLogger* pktlogger,
     _ai = 1.0;  // increase constant.  Value is a guess
     _beta = 0.8;   // decrease constant.  Value is a guess
     _max_mdf = 0.5; // max multiplicate decrease factor.  Value is a guess                                                      
-    _swift_cwnd = 12*_mss;  // initial window, in bytes  Note: values in paper are in packets; we're maintaining in bytes.
+    _swift_cwnd = 60*_mss;  // initial window, in bytes  Note: values in paper are in packets; we're maintaining in bytes.
     _base_delay = timeFromUs((uint32_t)20);    // configured base target delay.  To be confirmed by experiment - reproduce fig 17
     _h = _base_delay/6.55;	    // path length scaling constant.  Value is a guess, will be clarified by experiment
     _retransmit_cnt = 0;
@@ -411,14 +411,14 @@ SwiftSrc::receivePacket(Packet& pkt)
     // Not yet in fast recovery. What should we do instead?
     _dupacks++;
 
-    if (_dupacks!=3)  { // not yet serious worry
+    if (_dupacks!=64)  { // not yet serious worry
 	if (_logger) 
 	    _logger->logSwift(*this, SwiftLogger::SWIFT_RCV_DUP);
 	applySwiftLimits();
 	send_packets();
 	return;
     }
-    // _dupacks==3
+    // _dupacks==64
     if (_last_acked < _recoverq) {  
         /* See RFC 3782: if we haven't recovered from timeouts
 	   etc. don't do fast recovery */

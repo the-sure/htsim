@@ -73,6 +73,11 @@ LosslessInputQueue::receivePacket(Packet& pkt)
     assert(_queuesize > 0);
     if ((uint64_t)_queuesize > _high_threshold && _state_recv!=PAUSED){
         _state_recv = PAUSED;
+        cout << "PFC_PAUSE_SEND time_us " << timeAsUs(eventlist().now())
+             << " queue " << _name
+             << " queuesize " << _queuesize
+             << " high_threshold " << _high_threshold
+             << endl;
         sendPause(1000);
     }
 
@@ -109,6 +114,11 @@ void LosslessInputQueue::completedService(Packet& pkt){
     assert(_queuesize >= 0);
     if ((uint64_t)_queuesize < _low_threshold && _state_recv == PAUSED) {
         _state_recv = READY;
+        cout << "PFC_PAUSE_CLEAR time_us " << timeAsUs(eventlist().now())
+             << " queue " << _name
+             << " queuesize " << _queuesize
+             << " low_threshold " << _low_threshold
+             << endl;
         sendPause(0);
     }
 }

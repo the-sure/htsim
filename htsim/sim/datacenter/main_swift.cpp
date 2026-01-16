@@ -58,7 +58,7 @@ void exit_error(char* progr) {
 
 int main(int argc, char **argv) {
     Clock c(timeFromSec(5 / 100.), eventlist);
-    uint32_t cwnd = 15, no_of_nodes = DEFAULT_NODES,flowsize = 0;
+    uint32_t cwnd = 60, no_of_nodes = DEFAULT_NODES,flowsize = 0;
     mem_b queuesize = DEFAULT_QUEUE_SIZE;
     linkspeed_bps linkspeed = speedFromMbps((double)HOST_NIC);
     stringstream filename(ios_base::out);

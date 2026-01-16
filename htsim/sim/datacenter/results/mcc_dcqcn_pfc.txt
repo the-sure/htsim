@@ -1,0 +1,445 @@
+FatTree topology input file: topologies/mcc_partial.topo
+traffic matrix input file: connection_matrices/mcc_partial.cm
+Foreground CC: DCQCN
+Background flowid threshold set to 1000
+queue_type 8
+endtime(us) 100000
+Packet size (MTU) is 4000
+Parsed args
+Logging to logout.dat
+Linkspeed set to 400Gbps
+Loading connection matrix from  connection_matrices/mcc_partial.cm
+Nodes: 4096 Connections: 224 Triggers: 0 Failures: 0
+Automatic queue sizing enabled trimming queue-size-to-bdp-factor is 2xBDP
+Topology load done
+Fat Tree topology (0) with 1us Src-ToR links, 1us ToR-Agg links, 0us ToR switch latency, 0us Agg switch latency for 4us diameter latency.
+no_of_tor_uplinks: 1024
+No of nodes: 4096
+No of pods: 1
+Hosts per pod: 4096
+Hosts per pod: 4096
+ToR switches per pod: 64
+Agg switches per pod: 32
+No of core switches: 0
+FatTreeCfg constructor done.
+Tier 0 QueueSize Down 840000 bytes
+Tier 0 QueueSize Up 840000 bytes
+Tier 1 QueueSize Down 840000 bytes
+Tier 1 QueueSize Up 840000 bytes
+Tier 2 QueueSize Down 840000 bytes
+Auto PFC thresholds: high=105 pkts (420000 bytes, 50% queue) low=52 pkts (208000 bytes, 24.7619% queue)
+Setting min RTO to 115.8
+Setting ECN to parameters low 84000 high 336000 enable on tor downlink 1
+ECN marking enabled on lossless output queues, K=84000
+FatTreeTopologyCfg NCORE=0 NAGG=32 NTOR=64 NSRV=4096 NPOD=1 tor_switches_per_pod=64 agg_switches_per_pod=32 tiers=2 host_per_pod=4096 enabled_ecn=1 enable_ecn_on_tor_downlink=1 ecn_low=84000 ecn_high=336000 num_failed_links=0 failed_link_ratio=0.25 no_of_nodes=4096 hop_latency=0 switch_latency=0 diameter_latency=4000000 diameter=4 tier=0 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=400000000000 oversub=2 radix_down=64 queue_down=840000 radix_up=32 queue_up=840000 tier=1 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=800000000000 oversub=1 radix_down=32 queue_down=840000 radix_up=0 queue_up=840000
+network_max_unloaded_rtt 8.32512
+Initializing static NSCC parameters: _reference_network_linkspeed=100000000000 _reference_network_rtt=12000000 _reference_network_bdp=150000 _target_Qdelay=6243840 _network_linkspeed=400000000000 _network_rtt=8325120 _network_bdp=416256 _qa_gate=2^3 _qa_threshold=2.49754e+07 _scaling_factor_a=2.77504 _scaling_factor_b=0.52032 _alpha=0.00364085 _fi=54612.8 _eta=1638.38 _qa_scaling=1 _gamma=0.8 _fi_scale=0.69376 _delay_alpha=0.0125 _adjust_period_threshold=8325120 _adjust_bytes_threshold=32000
+MCC-Ideal parameters: rtt_threshold_us=10 R1=0.5 R2=0.1 R3=0.3
+Auto quiet enabled for 224 connections (use -verbose to keep per-flow logs)
+Starting simulation
+ Queue LS0->US30(0) LOSSLESS not working! I should have dropped this packet210
+Flow DCQCN_7_71 50144 finished at 658.529 total bytes 8000
+Flow DCQCN_21_85 50200 finished at 658.543 total bytes 8000
+Flow DCQCN_10_74 50156 finished at 658.563 total bytes 8000
+Flow DCQCN_26_90 50220 finished at 658.566 total bytes 8000
+Flow DCQCN_31_95 50240 finished at 658.571 total bytes 8000
+Flow DCQCN_11_75 50160 finished at 658.572 total bytes 8000
+Flow DCQCN_14_78 50172 finished at 658.585 total bytes 8000
+Flow DCQCN_19_83 50192 finished at 658.586 total bytes 8000
+Flow DCQCN_15_79 50176 finished at 658.605 total bytes 8000
+Flow DCQCN_20_84 50196 finished at 658.605 total bytes 8000
+Flow DCQCN_9_73 50152 finished at 658.606 total bytes 8000
+Flow DCQCN_8_72 50148 finished at 658.614 total bytes 8000
+Flow DCQCN_2_66 50124 finished at 658.63 total bytes 8000
+Flow DCQCN_4_68 50132 finished at 658.663 total bytes 8000
+Flow DCQCN_27_91 50224 finished at 658.69 total bytes 8000
+Flow DCQCN_28_92 50228 finished at 658.711 total bytes 8000
+Flow DCQCN_25_89 50216 finished at 996.111 total bytes 8000
+Flow DCQCN_16_80 50180 finished at 996.112 total bytes 8000
+Flow DCQCN_5_69 50136 finished at 996.129 total bytes 8000
+Flow DCQCN_24_88 50212 finished at 996.151 total bytes 8000
+Flow DCQCN_3_67 50128 finished at 996.152 total bytes 8000
+Flow DCQCN_30_94 50236 finished at 996.17 total bytes 8000
+Flow DCQCN_22_86 50204 finished at 1216.21 total bytes 8000
+Flow DCQCN_1_65 50120 finished at 1218.4 total bytes 8000
+Flow DCQCN_0_64 50116 finished at 1219.24 total bytes 8000
+Flow DCQCN_23_87 50208 finished at 1219.97 total bytes 8000
+Flow DCQCN_13_77 50168 finished at 1221.07 total bytes 8000
+Flow DCQCN_6_70 50140 finished at 1222.51 total bytes 8000
+Flow DCQCN_29_93 50232 finished at 1820.01 total bytes 8000
+Flow DCQCN_12_76 50164 finished at 1822.32 total bytes 8000
+Flow DCQCN_18_82 50188 finished at 1822.44 total bytes 8000
+Flow DCQCN_17_81 50184 finished at 1826.15 total bytes 8000
+Done
+
+========== Flow Statistics ==========
+Configuration:
+  Foreground CC: DCQCN
+  Background: PFC-only (threshold > 1000)
+Flow counts:
+  Foreground: 32
+  Background: 192
+  MCC-Ideal: 0
+  DCQCN: 32
+  Swift: 0
+  PFC-only: 192
+PFC Statistics:
+  pause_sent: 0
+  pause_cleared: 0
+  pfc_thresholds: low 208000 high 420000
+
+ToR 0 Uplink Queue Statistics:
+Uplink 0: packets_served=573 max_size=16000
+Uplink 1: packets_served=8615 max_size=20128
+Uplink 2: packets_served=8499 max_size=20192
+Uplink 3: packets_served=16339 max_size=259392
+Uplink 4: packets_served=8689 max_size=24128
+Uplink 5: packets_served=24387 max_size=705792
+Uplink 6: packets_served=24207 max_size=592640
+Uplink 7: packets_served=8374 max_size=16064
+Uplink 8: packets_served=8445 max_size=20128
+Uplink 9: packets_served=16394 max_size=295968
+Uplink 10: packets_served=8482 max_size=20128
+Uplink 11: packets_served=318 max_size=12000
+Uplink 12: packets_served=391 max_size=12000
+Uplink 13: packets_served=8538 max_size=16128
+Uplink 14: packets_served=8622 max_size=24128
+Uplink 15: packets_served=8741 max_size=24128
+Uplink 16: packets_served=8649 max_size=20128
+Uplink 17: packets_served=559 max_size=12000
+Uplink 18: packets_served=474 max_size=12000
+Uplink 19: packets_served=8620 max_size=24192
+Uplink 20: packets_served=8338 max_size=12128
+Uplink 21: packets_served=16210 max_size=215008
+Uplink 22: packets_served=8431 max_size=16064
+Uplink 23: packets_served=8509 max_size=20128
+Uplink 24: packets_served=650 max_size=12000
+Uplink 25: packets_served=683 max_size=16000
+Uplink 26: packets_served=8335 max_size=16064
+Uplink 27: packets_served=8470 max_size=16128
+Uplink 28: packets_served=521 max_size=16000
+Uplink 29: packets_served=360 max_size=12000
+Uplink 30: packets_served=32299 max_size=1245792
+Uplink 31: packets_served=530 max_size=12000
+
+ToR 0 Uplink Background Flow Counts:
+Uplink 0: bg_flows=6
+Uplink 1: bg_flows=4
+Uplink 2: bg_flows=6
+Uplink 3: bg_flows=4
+Uplink 4: bg_flows=7
+Uplink 5: bg_flows=4
+Uplink 6: bg_flows=4
+Uplink 7: bg_flows=6
+Uplink 8: bg_flows=0
+Uplink 9: bg_flows=7
+Uplink 10: bg_flows=5
+Uplink 11: bg_flows=9
+Uplink 12: bg_flows=6
+Uplink 13: bg_flows=3
+Uplink 14: bg_flows=5
+Uplink 15: bg_flows=6
+Uplink 16: bg_flows=3
+Uplink 17: bg_flows=2
+Uplink 18: bg_flows=9
+Uplink 19: bg_flows=4
+Uplink 20: bg_flows=7
+Uplink 21: bg_flows=8
+Uplink 22: bg_flows=12
+Uplink 23: bg_flows=6
+Uplink 24: bg_flows=7
+Uplink 25: bg_flows=6
+Uplink 26: bg_flows=4
+Uplink 27: bg_flows=9
+Uplink 28: bg_flows=5
+Uplink 29: bg_flows=5
+Uplink 30: bg_flows=7
+Uplink 31: bg_flows=4
+
+ToR 0 Uplink PFC Pause Counts:
+Uplink 0: pause_sent=0 pause_cleared=0
+Uplink 1: pause_sent=0 pause_cleared=0
+Uplink 2: pause_sent=0 pause_cleared=0
+Uplink 3: pause_sent=0 pause_cleared=0
+Uplink 4: pause_sent=0 pause_cleared=0
+Uplink 5: pause_sent=0 pause_cleared=0
+Uplink 6: pause_sent=0 pause_cleared=0
+Uplink 7: pause_sent=0 pause_cleared=0
+Uplink 8: pause_sent=0 pause_cleared=0
+Uplink 9: pause_sent=0 pause_cleared=0
+Uplink 10: pause_sent=0 pause_cleared=0
+Uplink 11: pause_sent=0 pause_cleared=0
+Uplink 12: pause_sent=0 pause_cleared=0
+Uplink 13: pause_sent=0 pause_cleared=0
+Uplink 14: pause_sent=0 pause_cleared=0
+Uplink 15: pause_sent=0 pause_cleared=0
+Uplink 16: pause_sent=0 pause_cleared=0
+Uplink 17: pause_sent=0 pause_cleared=0
+Uplink 18: pause_sent=0 pause_cleared=0
+Uplink 19: pause_sent=0 pause_cleared=0
+Uplink 20: pause_sent=0 pause_cleared=0
+Uplink 21: pause_sent=0 pause_cleared=0
+Uplink 22: pause_sent=0 pause_cleared=0
+Uplink 23: pause_sent=0 pause_cleared=0
+Uplink 24: pause_sent=0 pause_cleared=0
+Uplink 25: pause_sent=0 pause_cleared=0
+Uplink 26: pause_sent=0 pause_cleared=0
+Uplink 27: pause_sent=0 pause_cleared=0
+Uplink 28: pause_sent=0 pause_cleared=0
+Uplink 29: pause_sent=0 pause_cleared=0
+Uplink 30: pause_sent=0 pause_cleared=0
+Uplink 31: pause_sent=0 pause_cleared=0
+
+DCQCN Statistics:
+  Packets sent: 256000
+  CNPs received: 80
+  ACKs received: 256000
+  NACKs received: 0
+
+PFC-only flows: 192
+
+========================================
+      Mixed Traffic Summary
+========================================
+Configuration:
+  Foreground CC: DCQCN
+  Background CC: PFC-only
+  Threshold: flowid 1000
+
+Flow Distribution:
+  Foreground flows:
+    NSCC:     0
+    DCQCN:    32
+    Swift:    0
+    MCC-Ideal:0
+    PFC-only: 0
+    Subtotal: 32
+  Background flows:
+    PFC-only: 192
+  Total:      224
+========================================
+
+FCT flowid 1078 start_us 0 finish_us 107.385 fct_us 107.385
+FCT flowid 1065 start_us 0 finish_us 107.386 fct_us 107.386
+FCT flowid 1026 start_us 0 finish_us 107.388 fct_us 107.388
+FCT flowid 1143 start_us 0 finish_us 107.401 fct_us 107.401
+FCT flowid 1091 start_us 0 finish_us 107.411 fct_us 107.411
+FCT flowid 1039 start_us 0 finish_us 107.411 fct_us 107.411
+FCT flowid 1156 start_us 0 finish_us 107.417 fct_us 107.417
+FCT flowid 1130 start_us 0 finish_us 107.417 fct_us 107.417
+FCT flowid 1117 start_us 0 finish_us 107.417 fct_us 107.417
+FCT flowid 1104 start_us 0 finish_us 107.418 fct_us 107.418
+FCT flowid 1052 start_us 0 finish_us 107.424 fct_us 107.424
+FCT flowid 1013 start_us 0 finish_us 108.455 fct_us 108.455
+FCT flowid 1163 start_us 0 finish_us 109.871 fct_us 109.871
+FCT flowid 1172 start_us 0 finish_us 109.871 fct_us 109.871
+FCT flowid 1158 start_us 0 finish_us 109.874 fct_us 109.874
+FCT flowid 1184 start_us 0 finish_us 109.876 fct_us 109.876
+FCT flowid 1159 start_us 0 finish_us 109.879 fct_us 109.879
+FCT flowid 1161 start_us 0 finish_us 109.887 fct_us 109.887
+FCT flowid 1165 start_us 0 finish_us 109.888 fct_us 109.888
+FCT flowid 1171 start_us 0 finish_us 109.894 fct_us 109.894
+FCT flowid 1160 start_us 0 finish_us 109.895 fct_us 109.895
+FCT flowid 1175 start_us 0 finish_us 109.896 fct_us 109.896
+FCT flowid 1176 start_us 0 finish_us 109.897 fct_us 109.897
+FCT flowid 1185 start_us 0 finish_us 109.897 fct_us 109.897
+FCT flowid 1170 start_us 0 finish_us 109.901 fct_us 109.901
+FCT flowid 1183 start_us 0 finish_us 109.903 fct_us 109.903
+FCT flowid 1192 start_us 0 finish_us 109.907 fct_us 109.907
+FCT flowid 1174 start_us 0 finish_us 109.907 fct_us 109.907
+FCT flowid 1173 start_us 0 finish_us 109.907 fct_us 109.907
+FCT flowid 1164 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1186 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1178 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1187 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1177 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1179 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1191 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1162 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1168 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1182 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1190 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1166 start_us 0 finish_us 109.911 fct_us 109.911
+FCT flowid 1188 start_us 0 finish_us 109.92 fct_us 109.92
+FCT flowid 1189 start_us 0 finish_us 109.927 fct_us 109.927
+FCT flowid 1167 start_us 0 finish_us 109.945 fct_us 109.945
+FCT flowid 1180 start_us 0 finish_us 109.946 fct_us 109.946
+FCT flowid 1169 start_us 0 finish_us 110.23 fct_us 110.23
+FCT flowid 1181 start_us 0 finish_us 110.279 fct_us 110.279
+FCT flowid 1157 start_us 0 finish_us 110.305 fct_us 110.305
+FCT flowid 1146 start_us 0 finish_us 111.373 fct_us 111.373
+FCT flowid 1147 start_us 0 finish_us 111.38 fct_us 111.38
+FCT flowid 1153 start_us 0 finish_us 111.383 fct_us 111.383
+FCT flowid 1150 start_us 0 finish_us 111.383 fct_us 111.383
+FCT flowid 1149 start_us 0 finish_us 111.399 fct_us 111.399
+FCT flowid 1148 start_us 0 finish_us 111.4 fct_us 111.4
+FCT flowid 1155 start_us 0 finish_us 111.403 fct_us 111.403
+FCT flowid 1152 start_us 0 finish_us 111.404 fct_us 111.404
+FCT flowid 1151 start_us 0 finish_us 111.407 fct_us 111.407
+FCT flowid 1145 start_us 0 finish_us 111.408 fct_us 111.408
+FCT flowid 1154 start_us 0 finish_us 111.409 fct_us 111.409
+FCT flowid 1028 start_us 0 finish_us 111.427 fct_us 111.427
+FCT flowid 1116 start_us 0 finish_us 111.428 fct_us 111.428
+FCT flowid 1110 start_us 0 finish_us 111.429 fct_us 111.429
+FCT flowid 1113 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1051 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1089 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1074 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1020 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1107 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1093 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1024 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1098 start_us 0 finish_us 111.43 fct_us 111.43
+FCT flowid 1084 start_us 0 finish_us 111.431 fct_us 111.431
+FCT flowid 1142 start_us 0 finish_us 111.431 fct_us 111.431
+FCT flowid 1036 start_us 0 finish_us 111.431 fct_us 111.431
+FCT flowid 1096 start_us 0 finish_us 111.431 fct_us 111.431
+FCT flowid 1141 start_us 0 finish_us 111.433 fct_us 111.433
+FCT flowid 1045 start_us 0 finish_us 111.434 fct_us 111.434
+FCT flowid 1138 start_us 0 finish_us 111.443 fct_us 111.443
+FCT flowid 1086 start_us 0 finish_us 111.443 fct_us 111.443
+FCT flowid 1057 start_us 0 finish_us 111.445 fct_us 111.445
+FCT flowid 1044 start_us 0 finish_us 111.447 fct_us 111.447
+FCT flowid 1123 start_us 0 finish_us 111.451 fct_us 111.451
+FCT flowid 1132 start_us 0 finish_us 111.451 fct_us 111.451
+FCT flowid 1038 start_us 0 finish_us 111.452 fct_us 111.452
+FCT flowid 1015 start_us 0 finish_us 111.454 fct_us 111.454
+FCT flowid 1016 start_us 0 finish_us 111.454 fct_us 111.454
+FCT flowid 1021 start_us 0 finish_us 111.454 fct_us 111.454
+FCT flowid 1100 start_us 0 finish_us 111.454 fct_us 111.454
+FCT flowid 1067 start_us 0 finish_us 111.455 fct_us 111.455
+FCT flowid 1069 start_us 0 finish_us 111.455 fct_us 111.455
+FCT flowid 1081 start_us 0 finish_us 111.458 fct_us 111.458
+FCT flowid 1054 start_us 0 finish_us 111.459 fct_us 111.459
+FCT flowid 1136 start_us 0 finish_us 111.459 fct_us 111.459
+FCT flowid 1076 start_us 0 finish_us 111.46 fct_us 111.46
+FCT flowid 1029 start_us 0 finish_us 111.46 fct_us 111.46
+FCT flowid 1114 start_us 0 finish_us 111.46 fct_us 111.46
+FCT flowid 1095 start_us 0 finish_us 111.46 fct_us 111.46
+FCT flowid 1077 start_us 0 finish_us 111.461 fct_us 111.461
+FCT flowid 1060 start_us 0 finish_us 111.461 fct_us 111.461
+FCT flowid 1139 start_us 0 finish_us 111.461 fct_us 111.461
+FCT flowid 1106 start_us 0 finish_us 111.461 fct_us 111.461
+FCT flowid 1063 start_us 0 finish_us 111.462 fct_us 111.462
+FCT flowid 1041 start_us 0 finish_us 111.462 fct_us 111.462
+FCT flowid 1058 start_us 0 finish_us 111.462 fct_us 111.462
+FCT flowid 1112 start_us 0 finish_us 111.462 fct_us 111.462
+FCT flowid 1019 start_us 0 finish_us 111.462 fct_us 111.462
+FCT flowid 1033 start_us 0 finish_us 111.462 fct_us 111.462
+FCT flowid 1082 start_us 0 finish_us 111.463 fct_us 111.463
+FCT flowid 1072 start_us 0 finish_us 111.464 fct_us 111.464
+FCT flowid 1050 start_us 0 finish_us 111.464 fct_us 111.464
+FCT flowid 1134 start_us 0 finish_us 111.465 fct_us 111.465
+FCT flowid 1119 start_us 0 finish_us 111.465 fct_us 111.465
+FCT flowid 1128 start_us 0 finish_us 111.465 fct_us 111.465
+FCT flowid 1023 start_us 0 finish_us 111.465 fct_us 111.465
+FCT flowid 1101 start_us 0 finish_us 111.465 fct_us 111.465
+FCT flowid 1055 start_us 0 finish_us 111.465 fct_us 111.465
+FCT flowid 1064 start_us 0 finish_us 111.466 fct_us 111.466
+FCT flowid 1031 start_us 0 finish_us 111.466 fct_us 111.466
+FCT flowid 1047 start_us 0 finish_us 111.466 fct_us 111.466
+FCT flowid 1115 start_us 0 finish_us 111.466 fct_us 111.466
+FCT flowid 1090 start_us 0 finish_us 111.466 fct_us 111.466
+FCT flowid 1080 start_us 0 finish_us 111.466 fct_us 111.466
+FCT flowid 1129 start_us 0 finish_us 111.466 fct_us 111.466
+FCT flowid 1075 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1122 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1103 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1099 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1125 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1088 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1124 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1030 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1046 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1108 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1059 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1032 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1120 start_us 0 finish_us 111.467 fct_us 111.467
+FCT flowid 1094 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1127 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1043 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1137 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1035 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1135 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1066 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1017 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1062 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1018 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1068 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1042 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1071 start_us 0 finish_us 111.468 fct_us 111.468
+FCT flowid 1070 start_us 0 finish_us 111.47 fct_us 111.47
+FCT flowid 1053 start_us 0 finish_us 111.47 fct_us 111.47
+FCT flowid 1022 start_us 0 finish_us 111.47 fct_us 111.47
+FCT flowid 1083 start_us 0 finish_us 111.47 fct_us 111.47
+FCT flowid 1140 start_us 0 finish_us 111.47 fct_us 111.47
+FCT flowid 1034 start_us 0 finish_us 111.471 fct_us 111.471
+FCT flowid 1048 start_us 0 finish_us 111.471 fct_us 111.471
+FCT flowid 1102 start_us 0 finish_us 111.483 fct_us 111.483
+FCT flowid 1131 start_us 0 finish_us 111.485 fct_us 111.485
+FCT flowid 1056 start_us 0 finish_us 111.486 fct_us 111.486
+FCT flowid 1027 start_us 0 finish_us 111.495 fct_us 111.495
+FCT flowid 1079 start_us 0 finish_us 111.495 fct_us 111.495
+FCT flowid 1111 start_us 0 finish_us 111.496 fct_us 111.496
+FCT flowid 1118 start_us 0 finish_us 111.5 fct_us 111.5
+FCT flowid 1144 start_us 0 finish_us 111.5 fct_us 111.5
+FCT flowid 1105 start_us 0 finish_us 111.501 fct_us 111.501
+FCT flowid 1092 start_us 0 finish_us 111.501 fct_us 111.501
+FCT flowid 1126 start_us 0 finish_us 111.503 fct_us 111.503
+FCT flowid 1087 start_us 0 finish_us 111.508 fct_us 111.508
+FCT flowid 1040 start_us 0 finish_us 111.508 fct_us 111.508
+FCT flowid 1014 start_us 0 finish_us 111.535 fct_us 111.535
+FCT flowid 1121 start_us 0 finish_us 111.581 fct_us 111.581
+FCT flowid 1049 start_us 0 finish_us 111.626 fct_us 111.626
+FCT flowid 1109 start_us 0 finish_us 111.74 fct_us 111.74
+FCT flowid 1073 start_us 0 finish_us 111.745 fct_us 111.745
+FCT flowid 1025 start_us 0 finish_us 111.78 fct_us 111.78
+FCT flowid 1085 start_us 0 finish_us 111.783 fct_us 111.783
+FCT flowid 1061 start_us 0 finish_us 111.801 fct_us 111.801
+FCT flowid 1037 start_us 0 finish_us 111.804 fct_us 111.804
+FCT flowid 1004 start_us 0 finish_us 111.812 fct_us 111.812
+FCT flowid 1097 start_us 0 finish_us 111.819 fct_us 111.819
+FCT flowid 1011 start_us 0 finish_us 111.839 fct_us 111.839
+FCT flowid 1133 start_us 0 finish_us 111.86 fct_us 111.86
+FCT flowid 1002 start_us 0 finish_us 111.879 fct_us 111.879
+FCT flowid 1009 start_us 0 finish_us 111.89 fct_us 111.89
+FCT flowid 1006 start_us 0 finish_us 111.909 fct_us 111.909
+FCT flowid 1003 start_us 0 finish_us 111.919 fct_us 111.919
+FCT flowid 1010 start_us 0 finish_us 111.927 fct_us 111.927
+FCT flowid 1008 start_us 0 finish_us 111.996 fct_us 111.996
+FCT flowid 1007 start_us 0 finish_us 112.045 fct_us 112.045
+FCT flowid 1005 start_us 0 finish_us 112.235 fct_us 112.235
+FCT flowid 1012 start_us 0 finish_us 112.337 fct_us 112.337
+FCT flowid 1001 start_us 0 finish_us 112.435 fct_us 112.435
+FCT flowid 8 start_us 0 finish_us 658.529 fct_us 658.529
+FCT flowid 22 start_us 0 finish_us 658.543 fct_us 658.543
+FCT flowid 11 start_us 0 finish_us 658.563 fct_us 658.563
+FCT flowid 27 start_us 0 finish_us 658.566 fct_us 658.566
+FCT flowid 32 start_us 0 finish_us 658.571 fct_us 658.571
+FCT flowid 12 start_us 0 finish_us 658.572 fct_us 658.572
+FCT flowid 15 start_us 0 finish_us 658.585 fct_us 658.585
+FCT flowid 20 start_us 0 finish_us 658.586 fct_us 658.586
+FCT flowid 16 start_us 0 finish_us 658.605 fct_us 658.605
+FCT flowid 21 start_us 0 finish_us 658.605 fct_us 658.605
+FCT flowid 10 start_us 0 finish_us 658.606 fct_us 658.606
+FCT flowid 9 start_us 0 finish_us 658.614 fct_us 658.614
+FCT flowid 3 start_us 0 finish_us 658.63 fct_us 658.63
+FCT flowid 5 start_us 0 finish_us 658.663 fct_us 658.663
+FCT flowid 28 start_us 0 finish_us 658.69 fct_us 658.69
+FCT flowid 29 start_us 0 finish_us 658.711 fct_us 658.711
+FCT flowid 26 start_us 0 finish_us 996.111 fct_us 996.111
+FCT flowid 17 start_us 0 finish_us 996.112 fct_us 996.112
+FCT flowid 6 start_us 0 finish_us 996.129 fct_us 996.129
+FCT flowid 25 start_us 0 finish_us 996.151 fct_us 996.151
+FCT flowid 4 start_us 0 finish_us 996.152 fct_us 996.152
+FCT flowid 31 start_us 0 finish_us 996.17 fct_us 996.17
+FCT flowid 23 start_us 0 finish_us 1216.21 fct_us 1216.21
+FCT flowid 2 start_us 0 finish_us 1218.4 fct_us 1218.4
+FCT flowid 1 start_us 0 finish_us 1219.24 fct_us 1219.24
+FCT flowid 24 start_us 0 finish_us 1219.97 fct_us 1219.97
+FCT flowid 14 start_us 0 finish_us 1221.07 fct_us 1221.07
+FCT flowid 7 start_us 0 finish_us 1222.51 fct_us 1222.51
+FCT flowid 30 start_us 0 finish_us 1820.01 fct_us 1820.01
+FCT flowid 13 start_us 0 finish_us 1822.32 fct_us 1822.32
+FCT flowid 19 start_us 0 finish_us 1822.44 fct_us 1822.44
+FCT flowid 18 start_us 0 finish_us 1826.15 fct_us 1826.15

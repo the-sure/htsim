@@ -16,6 +16,7 @@
 #include "pciemodel.h"
 #include "oversubscribed_cc.h"
 #include "uec_mp.h"
+#include "mcc_ideal.h"
 
 #define timeInf 0
 // min RTO bound in us
@@ -202,6 +203,8 @@ public:
     bool isTotallyFinished();
 
     const Stats& stats() const { return _stats; }
+    static void mcc_record_ecn(uint32_t acked_pkts, bool ecn_marked);
+    static void mcc_get_ecn_stats(uint64_t& ecn_acks, uint64_t& total_acks);
 
     void setEndTrigger(Trigger& trigger);
     // called from a trigger to start the flow.
@@ -216,7 +219,7 @@ public:
     static bool _receiver_based_cc;
     static bool _quiet;
 
-    enum Sender_CC { DCTCP, NSCC, CONSTANT};
+    enum Sender_CC { DCTCP, NSCC, MCC_IDEAL, CONSTANT};
     static Sender_CC _sender_cc_algo;
 
     static bool _disable_quick_adapt;
@@ -234,11 +237,15 @@ public:
     optional<UecMsgTracker*> msg_tracker() { return _msg_tracker; };
 
     inline flowid_t flowId() const { return _flow.flow_id(); }
+    linkspeed_bps mcc_rate() const { return _mcc_rate; }
+    bool has_mcc_rate() const { return _mcc_rate > 0; }
 
     static bool _debug;
     static bool _shown;
     bool _debug_src;
     bool debug() const { return _debug_src; }
+    static uint64_t _mcc_ecn_acks;
+    static uint64_t _mcc_total_acks;
 
    private:
     unique_ptr<UecMultipath> _mp;
@@ -309,6 +316,8 @@ public:
 
     void updateCwndOnAck_DCTCP(bool skip, simtime_picosec delay, mem_b newly_acked_bytes);
     void updateCwndOnNack_DCTCP(bool skip, mem_b nacked_bytes, bool last_hop);
+    void updateCwndOnAck_MccIdeal(bool ecn_marked, simtime_picosec delay, mem_b newly_acked_bytes);
+    void updateCwndOnNack_MccIdeal(bool skip, mem_b nacked_bytes, bool last_hop);
 
     void dontUpdateCwndOnAck(bool skip, simtime_picosec delay, mem_b newly_acked_bytes);
     void dontUpdateCwndOnNack(bool skip, mem_b nacked_bytes, bool last_hop);
@@ -417,6 +426,12 @@ private:
     uint32_t _bytes_ignored = 0;
     uint32_t _inc_bytes = 0;
     simtime_picosec _avg_delay = 0;
+
+    // MCC-Ideal controller state.
+    MccIdealController _mcc_ideal;
+    linkspeed_bps _mcc_rate = 0;
+    mem_b _mcc_origin_cwnd = 0;
+    mem_b _mcc_cwnd = 0;
 
     simtime_picosec _last_eta_time = 0;
     simtime_picosec _last_adjust_time = 0;

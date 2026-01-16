@@ -19,7 +19,7 @@ mem_b UecSrc::_configured_maxwnd = 0;
 /* _min_rto can be tuned using setMinRTO. Don't change it here.  */
 simtime_picosec UecSrc::_min_rto = timeFromUs((uint32_t)DEFAULT_UEC_RTO_MIN);
 
-mem_b UecSink::_bytes_unacked_threshold = 16384;
+mem_b UecSink::_bytes_unacked_threshold = 4096;
 int UecSink::TGT_EV_SIZE = 7;
 
 bool UecSink::_model_pcie = false;
@@ -36,6 +36,8 @@ uint16_t UecSink::_mtus_per_pull = 4;
 UecBasePacket::pull_quanta UecSink::_credit_per_pull = (UecSrc::_mss * UecSink::_mtus_per_pull) >> UEC_PULL_SHIFT;
 
 bool UecSrc::_debug = false;
+uint64_t UecSrc::_mcc_ecn_acks = 0;
+uint64_t UecSrc::_mcc_total_acks = 0;
 
 bool UecSrc::_sender_based_cc = false;
 bool UecSrc::_receiver_based_cc = false;
@@ -170,7 +172,11 @@ void UecSrc::initNscc(mem_b cwnd, simtime_picosec peer_rtt) {
     setConfiguredMaxWnd(1.5*_bdp);
 
     if (cwnd == 0) {
-        _cwnd = memFromPkt(2);
+        if (_sender_cc_algo == MCC_IDEAL) {
+            _cwnd = _base_bdp;
+        } else {
+            _cwnd = memFromPkt(2);
+        }
     } else {
         _cwnd = cwnd;
     }
@@ -326,7 +332,11 @@ void UecNIC::startSending(UecSrc& src, mem_b pkt_size, const Route* rt) {
         assert(queued_src == &src);
     }
 
-    simtime_picosec endtime = eventlist().now() + (pkt_size * 8 * timeFromSec(1.0)) / _linkspeed;
+    linkspeed_bps send_rate = _linkspeed;
+    if (src.has_mcc_rate()) {
+        send_rate = min(send_rate, src.mcc_rate());
+    }
+    simtime_picosec endtime = eventlist().now() + (pkt_size * 8 * timeFromSec(1.0)) / send_rate;
     sendOnFreePortNow(endtime, rt);
 }
 
@@ -574,6 +584,9 @@ UecSrc::UecSrc(TrafficLogger* trafficLogger,
     _achieved_bytes = 0;
     _qa_endtime = 0;
     _fi_count = 0;
+    _mcc_rate = 0;
+    _mcc_origin_cwnd = 0;
+    _mcc_cwnd = 0;
 
     if (_sender_based_cc) {
         switch (_sender_cc_algo) {
@@ -584,6 +597,10 @@ UecSrc::UecSrc(TrafficLogger* trafficLogger,
             case NSCC:
                 updateCwndOnAck = &UecSrc::updateCwndOnAck_NSCC;
                 updateCwndOnNack = &UecSrc::updateCwndOnNack_NSCC;
+                break;
+            case MCC_IDEAL:
+                updateCwndOnAck = &UecSrc::updateCwndOnAck_MccIdeal;
+                updateCwndOnNack = &UecSrc::updateCwndOnNack_MccIdeal;
                 break;
             case CONSTANT:
                 updateCwndOnAck = &UecSrc::dontUpdateCwndOnAck;
@@ -831,7 +848,6 @@ void UecSrc::handlePull(UecBasePacket::pull_quanta pullno) {
 }
 
 bool UecSrc::checkFinished(UecDataPacket::seq_t cum_ack) {
-
     if (_done_sending) {
         // assert(_backlog == 0);
         // assert(_rtx_queue.empty());
@@ -1159,6 +1175,111 @@ void UecSrc::updateCwndOnNack_DCTCP(bool skip, mem_b nacked_bytes, bool last_hop
     }
     _cwnd -= nacked_bytes;
     _cwnd = max(_cwnd, (mem_b)_mtu);
+}
+
+void UecSrc::mcc_record_ecn(uint32_t acked_pkts, bool ecn_marked) {
+    _mcc_total_acks += acked_pkts;
+    if (ecn_marked) {
+        _mcc_ecn_acks += acked_pkts;
+    }
+}
+
+void UecSrc::mcc_get_ecn_stats(uint64_t& ecn_acks, uint64_t& total_acks) {
+    ecn_acks = _mcc_ecn_acks;
+    total_acks = _mcc_total_acks;
+}
+
+void UecSrc::updateCwndOnAck_MccIdeal(bool ecn_marked, simtime_picosec delay, mem_b newly_acked_bytes) {
+    if (_pfc_only_mode) {
+        return;
+    }
+
+    if (newly_acked_bytes == 0) {
+        return;
+    }
+
+    simtime_picosec rtt_sample = _base_rtt + delay;
+    uint32_t acked_pkts = 1;
+    mem_b origin_cwnd = 0;
+    if (_base_rtt > 0 && _nic.linkspeed() > 0) {
+        // origin_cwnd = base_RTT * bandwidth (bytes).
+        origin_cwnd = static_cast<mem_b>(timeAsSec(_base_rtt) * (_nic.linkspeed() / 8.0));
+    }
+
+    if (_mcc_cwnd == 0) {
+        _mcc_cwnd = (origin_cwnd > 0) ? origin_cwnd : _cwnd;
+    }
+    mem_b new_cwnd = _mcc_cwnd;
+    linkspeed_bps prev_rate = _mcc_rate;
+    bool updated = _mcc_ideal.onAck(ecn_marked,
+                         rtt_sample,
+                         acked_pkts,
+                         _mcc_cwnd,
+                         _min_cwnd,
+                         origin_cwnd > 0 ? origin_cwnd : _maxwnd,
+                         _mss,
+                         &new_cwnd);
+    
+    if (updated) {
+        if (origin_cwnd > 0 && new_cwnd > origin_cwnd) {
+            new_cwnd = origin_cwnd;
+        }
+        
+        if (origin_cwnd > 0) {
+            mem_b rate_window = new_cwnd;
+            double rate = (static_cast<double>(rate_window) / static_cast<double>(origin_cwnd))
+                * _nic.linkspeed();
+            if (rate < 1.0) {
+                rate = 1.0;
+            }
+            _mcc_rate = static_cast<linkspeed_bps>(rate);
+            _mcc_origin_cwnd = origin_cwnd;
+        }
+        if (_mcc_rate != prev_rate) {
+            int64_t delta_rate = static_cast<int64_t>(_mcc_rate) - static_cast<int64_t>(prev_rate);
+            cout << "MCC_RATE_CHANGE time_us " << timeAsUs(eventlist().now())
+                 << " flowid " << _flow.flow_id()
+                 << " prev_rate " << prev_rate
+                 << " new_rate " << _mcc_rate
+                 << " delta_rate " << delta_rate
+                 << " mcc_cwnd " << new_cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << endl;
+        }
+        {
+            linkspeed_bps actual_rate = _nic.linkspeed();
+            if (_mcc_rate > 0) {
+                actual_rate = min(actual_rate, _mcc_rate);
+            }
+            cout << "MCC_DEBUG time_us " << timeAsUs(eventlist().now())
+                 << " flowid " << _flow.flow_id()
+                 << " rtt_us " << timeAsUs(rtt_sample)
+                 << " cwnd " << _cwnd
+                 << " mcc_cwnd " << new_cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << " mcc_rate " << _mcc_rate
+                 << " actual_rate " << actual_rate
+                 << endl;
+        }
+        if (_flow.flow_id() == _debug_flowid || UecSrc::_debug || _flow.flow_id() == 1) {
+            cout << timeAsUs(eventlist().now()) << " flowid " << _flow.flow_id()
+                 << " mcc_ideal_update rate_cwnd " << _mcc_cwnd
+                 << " cwnd " << _cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << " rate_bps " << _mcc_rate
+                 << endl;
+        }
+    }
+}
+
+void UecSrc::updateCwndOnNack_MccIdeal(bool skip, mem_b nacked_bytes, bool last_hop) {
+    if (_pfc_only_mode) {
+        return;
+    }
+    (void)skip;
+    (void)last_hop;
+    (void)nacked_bytes;
+    // MCC-Ideal rate updates happen on ACK windows only.
 }
 
 bool UecSrc::can_send_RCCC() {
@@ -2678,7 +2799,6 @@ void UecSink::processData(UecDataPacket& pkt) {
     // should send an ACK; if incoming packet is ECN marked, the ACK will be sent straight away;
     // otherwise ack will be delayed until we have cumulated enough bytes / packets.
     bool ecn = (bool)(pkt.flags() & ECN_CE);
-
     if (ecn){
         _stats.ecn_received++;
         _stats.ecn_bytes_received += pkt.size();
@@ -2766,9 +2886,14 @@ void UecSink::processData(UecDataPacket& pkt) {
              << _out_of_order_count << " ecn " << ecn << " shouldSack " << shouldSack()
              << " forceack " << force_ack << endl;
     }
-    if (ecn || shouldSack() || force_ack) {
+    bool force_ack_for_mcc = (UecSrc::_sender_cc_algo == UecSrc::MCC_IDEAL);
+    if (ecn || shouldSack() || force_ack || force_ack_for_mcc) {
         UecAckPacket* ack_packet =
-            sack(pkt.path_id(), (ecn || pkt.ar()) ? pkt.epsn() : sackBitmapBase(pkt.epsn()), pkt.epsn(), ecn, pkt.retransmitted());
+            sack(pkt.path_id(),
+                 (ecn || pkt.ar() || force_ack_for_mcc) ? pkt.epsn() : sackBitmapBase(pkt.epsn()),
+                 pkt.epsn(),
+                 ecn,
+                 pkt.retransmitted());
 
         if (_src->debug()) {
             cout << " UecSink " << _nodename << " src " << _src->nodename()

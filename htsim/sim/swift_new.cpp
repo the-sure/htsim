@@ -27,7 +27,7 @@ SwiftSubflowSrc::SwiftSubflowSrc(SwiftSrc& src, TrafficLogger* pktlogger)
     _drops = 0;
 
     // swift cc init
-    _swift_cwnd = 12 * src._mss;  // initial window, in bytes  Note: values in paper are in packets; we're maintaining in bytes.
+    _swift_cwnd = 60 * src._mss;  // initial window, in bytes  Note: values in paper are in packets; we're maintaining in bytes.
     _retransmit_cnt = 0;
     _can_decrease = true;
     _last_decrease = 0;  // initial value shouldn't matter if _can_decrease is true
@@ -225,13 +225,13 @@ SwiftSubflowSrc::handle_ack(SwiftAck::seq_t ackno) {
     // Not yet in fast recovery. What should we do instead?
     _dupacks++;
 
-    if (_dupacks!=3)  { // not yet serious worry
+    if (_dupacks!=64)  { // not yet serious worry
 	_src.log(SwiftLogger::SWIFT_RCV_DUP);
 	applySwiftLimits();
 	send_packets();
 	return;
     }
-    // _dupacks==3
+    // _dupacks==64
     if (_last_acked < _recoverq) {  
         /* See RFC 3782: if we haven't recovered from timeouts
 	   etc. don't do fast recovery */

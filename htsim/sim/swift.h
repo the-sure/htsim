@@ -8,11 +8,13 @@
 
 #include <list>
 #include <set>
+#include <memory>
 #include "config.h"
 #include "network.h"
 #include "swiftpacket.h"
 #include "swift_scheduler.h"
 #include "eventlist.h"
+#include "uec_mp.h"
 #include "sent_packets.h"
 #include "trigger.h"
 
@@ -85,6 +87,9 @@ public:
     uint32_t get_cwnd() const { return _swift_cwnd; }
     simtime_picosec get_rtt() const { return _rtt; }
     bool is_established() const { return _established; }
+    void set_multipath(std::unique_ptr<UecMultipath> mp, uint16_t no_of_paths);
+    uint16_t selectPath();
+    void processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback);
 protected:
     // connection state
     bool _established;
@@ -130,6 +135,13 @@ protected:
     SwiftPacer _pacer;
     Stats _stats;
 
+    std::unique_ptr<UecMultipath> _mp;
+    uint16_t _no_of_paths;
+    uint16_t _last_path_id;
+    map<SwiftPacket::seq_t, uint16_t> _pkt_path_map;
+    bool _reps_logged;
+    vector<Route*> _mp_routes;
+
 private:
     int send_packets();
     void retransmit_packet();
@@ -141,6 +153,7 @@ private:
     bool _deferred_send;  // set if we tried to send and the scheduler said no.
     simtime_picosec _plb_interval;
     string _nodename;
+    void init_multipath_routes();
 };
 
 class SwiftSrc : public EventSource, public TriggerTarget {
@@ -197,6 +210,10 @@ public:
     uint32_t get_cwnd() const { return _subs.empty() ? 0 : _subs.front()->get_cwnd(); }
     bool is_done() const;
     bool is_finished() const { return _finished; }
+    void addPath(Route* routeout, Route* routeback);
+    Route* getPathRoute(uint16_t path_index);
+    Route* getPathBackRoute(uint16_t path_index);
+    uint16_t get_no_of_paths() const { return _no_of_paths; }
 
     void set_stoptime(simtime_picosec stop_time) {
         _stop_time = stop_time;
@@ -259,6 +276,9 @@ public:
 
     // paths for PLB or MPSwift
     vector<const Route*> _paths;
+    vector<Route*> _paths_out;
+    vector<Route*> _paths_back;
+    uint16_t _no_of_paths;
 
     SwiftSink* _sink;
     void set_app_limit(int pktps);

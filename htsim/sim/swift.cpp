@@ -3,12 +3,14 @@
 #include "loggers.h"
 #include <iostream>
 #include <math.h>
+#include <algorithm>
 
 #define KILL_THRESHOLD 5
+static const uint16_t kReorderDupAcks = 64;
 ////////////////////////////////////////////////////////////////
 //  SWIFT SUBFLOW SOURCE
 ////////////////////////////////////////////////////////////////
-uint32_t SwiftSubflowSrc::_default_cwnd = 12;
+uint32_t SwiftSubflowSrc::_default_cwnd = 60;
 
 SwiftSubflowSrc::SwiftSubflowSrc(SwiftSrc& src, TrafficLogger* pktlogger, int sub_id)
     : EventSource(src.eventlist(), "swift_subflow_src"), _flow(pktlogger), _src(src), _pacer(*this, src.eventlist())
@@ -47,6 +49,10 @@ SwiftSubflowSrc::SwiftSubflowSrc(SwiftSrc& src, TrafficLogger* pktlogger, int su
     _RFC2988_RTO_timeout = timeInf;
 
     _nodename = "swift_subsrc" + std::to_string(_src.get_id()) + "_" + std::to_string(sub_id);
+    _mp = nullptr;
+    _no_of_paths = 0;
+    _last_path_id = 0;
+    _reps_logged = false;
 }
 
 void
@@ -256,13 +262,13 @@ SwiftSubflowSrc::handle_ack(SwiftAck::seq_t ackno) {
     // Not yet in fast recovery. What should we do instead?
     _dupacks++;
 
-    if (_dupacks!=3)  { // not yet serious worry
+    if (_dupacks != kReorderDupAcks) { // tolerate reordering up to ~64 packets
         _src.log(this, SwiftLogger::SWIFT_RCV_DUP);
         applySwiftLimits();
         send_packets();
         return;
     }
-    // _dupacks==3
+    // _dupacks == kReorderDupAcks
     if (_last_acked < _recoverq) {  
         /* See RFC 3782: if we haven't recovered from timeouts
            etc. don't do fast recovery */
@@ -382,8 +388,24 @@ SwiftSubflowSrc::send_next_packet() {
 
     _dsn_map[_highest_sent+1] = dsn;
     
-    SwiftPacket* p = SwiftPacket::newpkt(_flow, *_route, _highest_sent+1, dsn, mss());
+    const Route* selected_route = _route;
+    if (_mp && _no_of_paths > 0) {
+        uint16_t path_index = selectPath();
+        if (path_index >= _mp_routes.size()) {
+            cout << "ERROR: Swift path_index " << path_index
+                 << " >= mp_routes " << _mp_routes.size() << endl;
+            return false;
+        }
+        selected_route = _mp_routes[path_index];
+    }
+
+    SwiftPacket* p = SwiftPacket::newpkt(_flow, *selected_route, _highest_sent+1, dsn, mss());
     //cout << timeAsUs(eventlist().now()) << " " << nodename() << " sent " << _highest_sent+1 << "-" << _highest_sent+mss() << " dsn " << dsn << endl;
+    if (_mp && _no_of_paths > 0) {
+        p->set_pathid(_last_path_id);
+        SwiftPacket::seq_t end_seq = _highest_sent + mss();
+        _pkt_path_map[end_seq] = _last_path_id;
+    }
     _highest_sent += mss();  
     _packets_sent += mss();
     _stats.packets_sent++;
@@ -445,6 +467,16 @@ SwiftSubflowSrc::receivePacket(Packet& pkt)
     pkt.flow().logTraffic(pkt,*this,TrafficLogger::PKT_RCVDESTROY);
   
     ts_echo = p->ts_echo();
+    if (_mp && _no_of_paths > 1) {
+        for (auto it = _pkt_path_map.begin(); it != _pkt_path_map.end();) {
+            if (it->first <= ackno) {
+                processPathFeedback(it->second, UecMultipath::PATH_GOOD);
+                it = _pkt_path_map.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
     p->free();
 
     //cout << timeAsUs(eventlist().now()) << " " << nodename() << " recvack  " << ackno << " ts_echo " << timeAsUs(ts_echo) << endl;
@@ -520,6 +552,11 @@ void SwiftSubflowSrc::doNextEvent() {
 
         _stats.timeouts++;
         _src.log(this, SwiftLogger::SWIFT_TIMEOUT);
+        if (_mp && _no_of_paths > 1) {
+            for (uint16_t i = 0; i < _no_of_paths; ++i) {
+                processPathFeedback(i, UecMultipath::PATH_TIMEOUT);
+            }
+        }
 
         /*
           if (_in_fast_recovery) {
@@ -562,6 +599,10 @@ SwiftSubflowSrc::connect(SwiftSink& sink, const Route& routeout, const Route& ro
     cout << "connect, flow id is now " << _flow.get_id() << endl;
     assert(scheduler);
     scheduler->add_src(_flow.flow_id(), this);
+
+    if (_mp && _no_of_paths > 0) {
+        init_multipath_routes();
+    }
 }
 
 void
@@ -593,6 +634,57 @@ double SwiftSubflowSrc::ai() const {return _src.ai();}
 double SwiftSubflowSrc::beta() const {return _src.beta();}
 double SwiftSubflowSrc::max_mdf() const {return _src.max_mdf();}
 
+void SwiftSubflowSrc::set_multipath(std::unique_ptr<UecMultipath> mp, uint16_t no_of_paths) {
+    _mp = std::move(mp);
+    _no_of_paths = no_of_paths;
+    init_multipath_routes();
+}
+
+void SwiftSubflowSrc::init_multipath_routes() {
+    if (!_mp || _no_of_paths == 0 || !_subflow_sink) {
+        return;
+    }
+    if (!_mp_routes.empty()) {
+        return;
+    }
+    _mp_routes.reserve(_no_of_paths);
+    for (uint16_t i = 0; i < _no_of_paths; ++i) {
+        Route* base_route = _src.getPathRoute(i);
+        if (!base_route) {
+            cout << "ERROR: Swift no base route for index " << i << endl;
+            continue;
+        }
+        Route* route = base_route->clone();
+        route->push_back(_subflow_sink);
+        _mp_routes.push_back(route);
+    }
+}
+
+uint16_t SwiftSubflowSrc::selectPath() {
+    if (!_mp || _no_of_paths == 0) {
+        _last_path_id = 0;
+        return 0;
+    }
+    if (!_reps_logged && dynamic_cast<UecMpReps*>(_mp.get())) {
+        _reps_logged = true;
+        cout << "SWIFT_REPS flowid " << _flow.flow_id()
+             << " time_us " << timeAsUs(eventlist().now())
+             << " paths " << _no_of_paths
+             << endl;
+    }
+    uint64_t cwnd_pkts = (_swift_cwnd > 0 && _src.mss() > 0)
+        ? std::max<uint64_t>(1, _swift_cwnd / _src.mss())
+        : 1;
+    _last_path_id = _mp->nextEntropy(_highest_sent, cwnd_pkts);
+    return _last_path_id % _no_of_paths;
+}
+
+void SwiftSubflowSrc::processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback) {
+    if (_mp) {
+        _mp->processEv(path_id, feedback);
+    }
+}
+
 
 
 
@@ -605,6 +697,7 @@ SwiftSrc::SwiftSrc(SwiftRtxTimerScanner& rtx_scanner, SwiftLogger* logger, Traff
     : EventSource(eventlst,"swift"),  _logger(logger), _traffic_logger(pktlogger), _rtx_timer_scanner(&rtx_scanner)
 {
     _mss = Packet::data_packet_size();
+    SwiftSubflowSrc::_default_cwnd = 60 * _mss; // start at 60 packets (bytes)
     _scheduler = NULL;
     _maxcwnd = 0xffffffff;//200*_mss;
     _flow_size = ((uint64_t)1)<<63;
@@ -618,6 +711,7 @@ SwiftSrc::SwiftSrc(SwiftRtxTimerScanner& rtx_scanner, SwiftLogger* logger, Traff
     _start_trigger = NULL;
     _flow_logger = NULL;
     _finished = false;
+    _no_of_paths = 0;
 
     // swift cc init
     _ai = 1.0;  // increase constant.  Value is a guess
@@ -717,6 +811,30 @@ SwiftSrc::set_paths(vector<const Route*>* rt_list){
         _subs[i]->_path_index = 0;
         _subs[i]->reroute(*_paths[i]);
     }
+}
+
+void SwiftSrc::addPath(Route* routeout, Route* routeback) {
+    _paths_out.push_back(routeout);
+    _paths_back.push_back(routeback);
+    _no_of_paths = static_cast<uint16_t>(_paths_out.size());
+}
+
+Route* SwiftSrc::getPathRoute(uint16_t path_index) {
+    if (path_index >= _no_of_paths) {
+        cout << "ERROR: Swift path_index " << path_index
+             << " >= _no_of_paths " << _no_of_paths << endl;
+        return nullptr;
+    }
+    return _paths_out[path_index];
+}
+
+Route* SwiftSrc::getPathBackRoute(uint16_t path_index) {
+    if (path_index >= _no_of_paths) {
+        cout << "ERROR: Swift back path_index " << path_index
+             << " >= _no_of_paths " << _no_of_paths << endl;
+        return nullptr;
+    }
+    return _paths_back[path_index];
 }
 
 void

@@ -73,13 +73,7 @@ UecMpBitmap::UecMpBitmap(uint16_t no_of_paths, bool debug)
 }
 
 void UecMpBitmap::processEv(uint16_t path_id, PathFeedback feedback) {
-    // _no_of_paths must be a power of 2
-    uint16_t mask = _no_of_paths - 1;
-    path_id &= mask;  // only take the relevant bits for an index
-
-    if (feedback != PathFeedback::PATH_GOOD && !_ev_skip_bitmap[path_id])
-        _ev_skip_count++;
-
+    (void)path_id;
     uint8_t penalty = 0;
 
     if (feedback == PathFeedback::PATH_ECN)
@@ -89,9 +83,19 @@ void UecMpBitmap::processEv(uint16_t path_id, PathFeedback feedback) {
     else if (feedback == PathFeedback::PATH_TIMEOUT)
         penalty = _max_penalty;
 
-    _ev_skip_bitmap[path_id] += penalty;
-    if (_ev_skip_bitmap[path_id] > _max_penalty) {
-        _ev_skip_bitmap[path_id] = _max_penalty;
+    if (penalty == 0) {
+        return;
+    }
+
+    // Downweight all paths for any negative feedback.
+    for (uint16_t i = 0; i < _no_of_paths; ++i) {
+        if (_ev_skip_bitmap[i] == 0) {
+            _ev_skip_count++;
+        }
+        _ev_skip_bitmap[i] += penalty;
+        if (_ev_skip_bitmap[i] > _max_penalty) {
+            _ev_skip_bitmap[i] = _max_penalty;
+        }
     }
 }
 

@@ -28,9 +28,20 @@ uint32_t DCQCNSrc::_F = 5;
 linkspeed_bps DCQCNSrc::_RAI = 0;
 linkspeed_bps DCQCNSrc::_RHAI = 0;
 bool DCQCNSrc::_quiet = false;
+bool DCQCNSrc::_log_rate = true;
+bool DCQCNSrc::_log_reps = true;
+bool DCQCNSrc::_log_finish = true;
 
-DCQCNSrc::DCQCNSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &eventlist, linkspeed_bps rate)
-    : RoceSrc(logger,pktlogger,eventlist,rate)
+DCQCNSrc::DCQCNSrc(RoceLogger* logger,
+                   TrafficLogger* pktlogger,
+                   EventList &eventlist,
+                   linkspeed_bps rate,
+                   std::unique_ptr<UecMultipath> mp)
+    : RoceSrc(logger,pktlogger,eventlist,rate),
+      _mp(std::move(mp)),
+      _no_of_paths(0),
+      _last_path_id(0),
+      _reps_logged(false)
 {
     _cnps_received = 0;
 
@@ -53,6 +64,53 @@ DCQCNSrc::DCQCNSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &even
     _byte_counter = 0;
     _old_highest_sent = 0;
     _no_cc = false;
+}
+
+DCQCNSrc::~DCQCNSrc() {
+    for (auto* route : _paths_out) {
+        delete route;
+    }
+    for (auto* route : _paths_back) {
+        delete route;
+    }
+}
+
+void DCQCNSrc::addPath(Route* routeout, Route* routeback) {
+    _paths_out.push_back(routeout);
+    _paths_back.push_back(routeback);
+    _no_of_paths = static_cast<uint16_t>(_paths_out.size());
+}
+
+Route* DCQCNSrc::getPathRoute(uint16_t path_index) {
+    if (path_index >= _no_of_paths) {
+        cout << "ERROR: path_index " << path_index
+             << " >= _no_of_paths " << _no_of_paths << endl;
+        return nullptr;
+    }
+    return _paths_out[path_index];
+}
+
+uint16_t DCQCNSrc::selectPath() {
+    if (!_mp || _no_of_paths == 0) {
+        _last_path_id = _pathid;
+        return 0;
+    }
+    if (!_reps_logged && _log_reps && dynamic_cast<UecMpReps*>(_mp.get())) {
+        _reps_logged = true;
+        cout << "DCQCN_REPS flowid " << _flow.flow_id()
+             << " time_us " << timeAsUs(eventlist().now())
+             << " paths " << _no_of_paths
+             << endl;
+    }
+    uint64_t cwnd_pkts = (_mss > 0) ? std::max<uint64_t>(1, _RC / _mss) : 1;
+    _last_path_id = _mp->nextEntropy(_highest_sent, cwnd_pkts);
+    return _last_path_id % _no_of_paths;
+}
+
+void DCQCNSrc::processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback) {
+    if (_mp) {
+        _mp->processEv(path_id, feedback);
+    }
 }
 
 void DCQCNSrc::set_no_cc(bool enable){
@@ -93,15 +151,45 @@ void DCQCNSrc::processCNP(const CNPPacket& cnp){
     _last_alpha_update = eventlist().now();
 
     eventlist().sourceIsPendingRel(*this, _cc_update_period);
+
+    if (_mp && _no_of_paths > 1) {
+        for (uint16_t i = 0; i < _no_of_paths; ++i) {
+            processPathFeedback(i, UecMultipath::PATH_ECN);
+        }
+    }
+
+    log_rate("CNP_DEC");
 }
 
 void DCQCNSrc::processAck(const RoceAck& ack) {
     RoceSrc::processAck(ack);
-    if (_done && !_quiet) {
+    if (_mp && _no_of_paths > 1) {
+        auto ackno = ack.ackno();
+        for (auto it = _pkt_path_map.begin(); it != _pkt_path_map.end();) {
+            if (it->first <= ackno) {
+                processPathFeedback(it->second, UecMultipath::PATH_GOOD);
+                it = _pkt_path_map.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+    if (_done && !_quiet && _log_finish) {
         cout << "DCQCN_FINISH flowid " << _flow.flow_id()
              << " time_ps " << eventlist().now()
              << " time_ns " << timeAsNs(eventlist().now())
              << endl;
+    }
+}
+
+void DCQCNSrc::processNack(const RoceNack& nack) {
+    RoceSrc::processNack(nack);
+    if (_mp && _no_of_paths > 1) {
+        auto it = _pkt_path_map.find(nack.ackno());
+        if (it != _pkt_path_map.end()) {
+            processPathFeedback(it->second, UecMultipath::PATH_NACK);
+            _pkt_path_map.erase(it);
+        }
     }
 }
 
@@ -140,7 +228,21 @@ void DCQCNSrc::increaseRate(){
     _pacing_rate = _RC;
     update_spacing();
 
-    // Silence verbose DCQCN rate updates to keep logs manageable.
+    log_rate("AI_INC");
+}
+
+void DCQCNSrc::log_rate(const char* reason) {
+    if (!_log_rate) {
+        return;
+    }
+    cout << "DCQCN_RATE"
+         << " flowid " << _flow.flow_id()
+         << " time_us " << timeAsUs(eventlist().now())
+         << " reason " << reason
+         << " RC " << _RC
+         << " RT " << _RT
+         << " alpha " << _alpha
+         << endl;
 }
 
 void DCQCNSrc::doNextEvent(){
@@ -239,6 +341,61 @@ void DCQCNSrc::receivePacket(Packet& pkt)
     default:
         abort();
     }
+}
+
+void DCQCNSrc::send_packet() {
+    RocePacket* p = NULL;
+    bool last_packet = false;
+    if (_log_me)
+        cout << "Src " << get_id() << " send_packet\n";
+    assert(_flow_started);
+
+    if (_flow_size && (_last_acked * _mss >= _flow_size || _highest_sent * _mss  > _flow_size)) {
+        if (_log_me)
+            cout << "Src " << get_id() << " flow is finished, not sending\n";
+        return;
+    }
+
+    if (_flow_size && (_highest_sent + 1) * _mss >= _flow_size) {
+        last_packet = true;
+        if (_log_me) {
+            cout << _name << " " << get_id() << " sending last packet with SEQNO " << _highest_sent+1
+                 << " at " << timeAsUs(eventlist().now()) << endl;
+        }
+    }
+
+    const Route* selected_route = _route;
+    uint16_t path_index = 0;
+    if (_mp && _no_of_paths > 0) {
+        path_index = selectPath();
+        selected_route = getPathRoute(path_index);
+    }
+
+    if (!selected_route) {
+        cout << "ERROR: No route available for DCQCN flow " << _flow.flow_id() << endl;
+        return;
+    }
+
+    p = RocePacket::newpkt(_flow, *selected_route, _highest_sent+1, _mss, false, last_packet,_dstaddr);
+    assert(p);
+
+    if (_mp && _no_of_paths > 0) {
+        p->set_pathid(_last_path_id);
+        _pkt_path_map[_highest_sent + 1] = _last_path_id;
+    } else {
+        p->set_pathid(_pathid);
+    }
+
+    p->flow().logTraffic(*p,*this,TrafficLogger::PKT_CREATESEND);
+    p->set_ts(eventlist().now());
+
+    if (_log_me) {
+        cout << "Src " << get_id() << " sent " << _highest_sent+1 << " Flow Size: " << _flow_size << endl;
+    }
+    _highest_sent ++;
+    _packets_sent++;
+
+    p->sendOn();
 }
 
 ////////////////////////////////////////////////////////////////

@@ -10,6 +10,9 @@
 
 #include <list>
 #include <map>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 //#include "util.h"
 #include "math.h"
 #include "config.h"
@@ -18,6 +21,7 @@
 #include "cnppacket.h"
 #include "queue.h"
 #include "roce.h"
+#include "uec_mp.h"
 #include "eventlist.h"
 #include "eth_pause_packet.h"
 #include "trigger.h"
@@ -30,16 +34,30 @@ class Switch;
 class DCQCNSrc : public RoceSrc {
     friend class DCQCNSink;
 public:
-    DCQCNSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &eventlist, linkspeed_bps rate);
+    DCQCNSrc(RoceLogger* logger,
+             TrafficLogger* pktlogger,
+             EventList &eventlist,
+             linkspeed_bps rate,
+             std::unique_ptr<UecMultipath> mp = nullptr);
+    virtual ~DCQCNSrc();
 
-    virtual void receivePacket(Packet& pkt);
-    virtual void processAck(const RoceAck& ack);
+    void addPath(Route* routeout, Route* routeback);
+    Route* getPathRoute(uint16_t path_index);
+    uint16_t selectPath();
+    void processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback);
+
+    virtual void receivePacket(Packet& pkt) override;
+    virtual void processAck(const RoceAck& ack) override;
+    virtual void processNack(const RoceNack& nack) override;
     virtual void processCNP(const CNPPacket& cnp);    
     virtual void increaseRate();
     virtual void doNextEvent();
     virtual bool isTraffic() override { return true; }
     void set_no_cc(bool enable);
     static void set_quiet(bool enable) { _quiet = enable; }
+    static void set_log_rate(bool enable) { _log_rate = enable; }
+    static void set_log_reps(bool enable) { _log_reps = enable; }
+    static void set_log_finish(bool enable) { _log_finish = enable; }
     bool isDone() const { return _done; }
     linkspeed_bps pacing_rate() const { return _pacing_rate; }
     simtime_picosec packet_spacing() const { return _packet_spacing; }
@@ -61,12 +79,26 @@ public:
     static linkspeed_bps _RAI, _RHAI;
     static uint64_t _B;
     static bool _quiet;
+    static bool _log_rate;
+    static bool _log_reps;
+    static bool _log_finish;
 
 private:
+    void send_packet() override;
+    void log_rate(const char* reason);
+
+    std::unique_ptr<UecMultipath> _mp;
+    uint16_t _no_of_paths;
+    uint16_t _last_path_id;
+    std::vector<Route*> _paths_out;
+    std::vector<Route*> _paths_back;
+    std::unordered_map<RocePacket::seq_t, uint16_t> _pkt_path_map;
+
     simtime_picosec _last_cc_update, _last_alpha_update;
     linkspeed_bps _RC, _RT, _link;
     linkspeed_bps _min_rate;
     bool _no_cc;
+    bool _reps_logged;
     
     enum increase_state {invalid = 0, fast_recovery=1,active_increase=2};
     //increase_state _ai_state;

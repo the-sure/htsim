@@ -19,7 +19,7 @@ using namespace std;
    alone. */
 //#define LOGSINK 2332
 #define LOGSINK   0 
-bool RoceSink::ooo_enabled = false;
+bool RoceSink::ooo_enabled = true;
 
 /* keep track of RTOs.  Generally, we shouldn't see RTOs if
    return-to-sender is enabled.  Otherwise we'll see them with very
@@ -105,7 +105,9 @@ void RoceSrc::log_me() {
 }
 
 void RoceSrc::startflow(){
-    cout << "startflow " << _flow._name << " at " << timeAsUs(eventlist().now()) << endl;
+    if (_log_me) {
+        cout << "startflow " << _flow._name << " at " << timeAsUs(eventlist().now()) << endl;
+    }
     _flow_started = true;
     _highest_sent = 0;
     _last_acked = 0;
