@@ -43,6 +43,7 @@ public:
     static uint64_t _pause_cleared;
     static std::unordered_map<const LosslessInputQueue*, uint64_t> _pause_sent_by_q;
     static std::unordered_map<const LosslessInputQueue*, uint64_t> _pause_cleared_by_q;
+    static bool _log_pfc_events;
 
 private:
     int _state_recv;

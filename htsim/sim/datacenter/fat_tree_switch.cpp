@@ -316,8 +316,13 @@ void FatTreeSwitch::permute_paths(vector<FibEntry *>* uproutes) {
 }
 
 FatTreeSwitch::routing_strategy FatTreeSwitch::_strategy = FatTreeSwitch::NIX;
+FatTreeSwitch::ArStrategy FatTreeSwitch::_fg_ar_strategy = FatTreeSwitch::AR_ADAPTIVE;
+FatTreeSwitch::ArStrategy FatTreeSwitch::_bg_ar_strategy = FatTreeSwitch::AR_ECMP;
 uint16_t FatTreeSwitch::_ar_fraction = 0;
 uint16_t FatTreeSwitch::_ar_sticky = FatTreeSwitch::PER_PACKET;
+bool FatTreeSwitch::_separate_ar_sticky = false;
+uint16_t FatTreeSwitch::_fg_ar_sticky = FatTreeSwitch::PER_PACKET;
+uint16_t FatTreeSwitch::_bg_ar_sticky = FatTreeSwitch::PER_PACKET;
 simtime_picosec FatTreeSwitch::_sticky_delta = timeFromUs((uint32_t)10);
 double FatTreeSwitch::_ecn_threshold_fraction = 0.2;
 double FatTreeSwitch::_speculative_threshold_fraction = 0.2;
@@ -327,6 +332,8 @@ bool FatTreeSwitch::_disable_trim = false;
 std::unordered_set<flowid_t> FatTreeSwitch::_logged_uplink_flows = {};
 std::unordered_map<int, uint32_t> FatTreeSwitch::_bg_uplink_counts = {};
 std::unordered_set<flowid_t> FatTreeSwitch::_logged_bg_uplink_flows = {};
+std::unordered_map<int, uint64_t> FatTreeSwitch::_fg_uplink_packets = {};
+std::unordered_map<int, uint64_t> FatTreeSwitch::_bg_uplink_packets = {};
 flowid_t FatTreeSwitch::_bg_flowid_threshold = 1000;
 
 Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
@@ -335,133 +342,49 @@ Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
     if (available_hops){
         //implement a form of ECMP hashing; might need to revisit based on measured performance.
         uint32_t ecmp_choice = 0;
-        if (available_hops->size()>1)
-            switch(_strategy){
-            case NIX:
-                abort();
-            case ECMP:
-                ecmp_choice = freeBSDHash(pkt.flow_id(),pkt.pathid(),_hash_salt) % available_hops->size();
+        flowid_t flow_id = pkt.flow_id();
+        bool is_background = (flow_id > _bg_flowid_threshold);
+        if (available_hops->size() > 1) {
+            ArStrategy ar_strategy = getArStrategyForFlow(flow_id);
+            switch (ar_strategy) {
+            case AR_ECMP:
+                ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
                 break;
-            case ADAPTIVE_ROUTING:
+            case AR_ADAPTIVE:
                 if (pkt.size() < 100) {
-                    // don't bother adaptive routing the small packets - don't want to pollute the tables
-                    ecmp_choice = freeBSDHash(pkt.flow_id(),pkt.pathid(),_hash_salt) % available_hops->size();
-                    break;
-                }
-                if (_ar_sticky==FatTreeSwitch::PER_PACKET){
-                    ecmp_choice = adaptive_route(available_hops,fn); 
-                } 
-                else if (_ar_sticky==FatTreeSwitch::PER_FLOWLET){     
-                    if (_flowlet_maps.find(pkt.flow_id())!=_flowlet_maps.end()){
-                        FlowletInfo* f = _flowlet_maps[pkt.flow_id()];
-                        
-                        // only reroute an existing flow if its inter packet time is larger than _sticky_delta and
-                        // and
-                        // 50% chance happens. 
-                        // and (commented out) if the switch has not taken any other placement decision that we've not seen the effects of.
-                        if (eventlist().now() - f->_last > _sticky_delta && /*eventlist().now() - _last_choice > _pipe->delay() + BaseQueue::_update_period  &&*/ random()%2==0){ 
-                            //cout << "AR 1 " << timeAsUs(eventlist().now()) << endl;
-                            uint32_t new_route = adaptive_route(available_hops,fn); 
-                            if (fn(available_hops->at(f->_egress),available_hops->at(new_route)) < 0){
-                                f->_egress = new_route;
-                                _last_choice = eventlist().now();
-                                //cout << "Switch " << _type << ":" << _id << " choosing new path "<<  f->_egress << " for " << pkt.flow_id() << " at " << timeAsUs(eventlist().now()) << " last is " << timeAsUs(f->_last) << endl;
-                            }
-                        }
-                        ecmp_choice = f->_egress;
-
-                        f->_last = eventlist().now();
-                    }
-                    else {
-                        //cout << "AR 2 " << timeAsUs(eventlist().now()) << endl;
-                        ecmp_choice = adaptive_route(available_hops,fn); 
-                        _last_choice = eventlist().now();
-
-                        _flowlet_maps[pkt.flow_id()] = new FlowletInfo(ecmp_choice,eventlist().now());
-                    }
-                }
-
-                break;
-            case ECMP_ADAPTIVE:
-                ecmp_choice = freeBSDHash(pkt.flow_id(),pkt.pathid(),_hash_salt) % available_hops->size();
-                if (random()%100 < 50)
-                    ecmp_choice = replace_worst_choice(available_hops,fn, ecmp_choice);
-                break;
-            case RR:
-                if (pkt.size()<128)
-                    ecmp_choice = freeBSDHash(pkt.flow_id(),pkt.pathid(),_hash_salt) % available_hops->size();
-                else {
-                    if (_crt_route>=1*available_hops->size()){
-                        _crt_route = 0;
-                        permute_paths(available_hops);
-                    }
-                    ecmp_choice = _crt_route % available_hops->size();
-                    _crt_route ++;
+                    ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+                } else if (getArStickyForFlow(flow_id) == FatTreeSwitch::PER_PACKET) {
+                    ecmp_choice = adaptive_route(available_hops, fn);
+                } else if (getArStickyForFlow(flow_id) == FatTreeSwitch::PER_FLOWLET) {
+                    ecmp_choice = selectAdaptiveFlowlet(pkt, available_hops);
                 }
                 break;
-            case RR_ECMP:
-                if (_type == TOR){
-                    if (_crt_route>=5 * available_hops->size()){
-                        _crt_route = 0;
-                        permute_paths(available_hops);
-                    }
-                    ecmp_choice = _crt_route % available_hops->size();
-                    _crt_route ++;
+            case AR_ECMP_ADAPTIVE:
+                ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+                if (random()%100 < 50) {
+                    ecmp_choice = replace_worst_choice(available_hops, fn, ecmp_choice);
                 }
-                else ecmp_choice = freeBSDHash(pkt.flow_id(),pkt.pathid(),_hash_salt) % available_hops->size();
-                
+                break;
+            default:
+                ecmp_choice = selectByOriginalStrategy(pkt, available_hops);
                 break;
             }
+        }
         
         FibEntry* e = (*available_hops)[ecmp_choice];
         pkt.set_direction(e->getDirection());
 
-        if (_type == TOR && e->getDirection() == UP && pkt.flow_id() <= 32) {
-            if (_logged_uplink_flows.find(pkt.flow_id()) == _logged_uplink_flows.end()) {
-                BaseQueue* q = (BaseQueue*)e->getEgressPort()->at(0);
-                int uplink_index = -1;
-                int idx = 0;
-                auto& uplinks = _ft->queues_nlp_nup[_id];
-                for (size_t agg = 0; agg < uplinks.size(); agg++) {
-                    for (size_t b = 0; b < uplinks[agg].size(); b++) {
-                        if (uplinks[agg][b] == q) {
-                            uplink_index = idx;
-                            break;
-                        }
-                        idx++;
-                    }
-                    if (uplink_index >= 0) break;
-                }
-                cout << "Flow " << pkt.flow_id()
-                     << " uses uplink: " << uplink_index
-                     << " tor=" << _id
-                     << " dst=" << pkt.dst()
-                     << endl;
-                _logged_uplink_flows.insert(pkt.flow_id());
-            }
-        }
-        if (_type == TOR && e->getDirection() == UP && pkt.flow_id() > _bg_flowid_threshold) {
-            if (_logged_bg_uplink_flows.find(pkt.flow_id()) == _logged_bg_uplink_flows.end()) {
-                BaseQueue* q = (BaseQueue*)e->getEgressPort()->at(0);
-                int uplink_index = -1;
-                int idx = 0;
-                auto& uplinks = _ft->queues_nlp_nup[_id];
-                for (size_t agg = 0; agg < uplinks.size(); agg++) {
-                    for (size_t b = 0; b < uplinks[agg].size(); b++) {
-                        if (uplinks[agg][b] == q) {
-                            uplink_index = idx;
-                            break;
-                        }
-                        idx++;
-                    }
-                    if (uplink_index >= 0) break;
-                }
-                if (uplink_index >= 0) {
-                    _bg_uplink_counts[uplink_index]++;
-                    _logged_bg_uplink_flows.insert(pkt.flow_id());
+        if (_type == TOR && e->getDirection() == UP) {
+            int uplink_index = getUplinkIndex((BaseQueue*)e->getEgressPort()->at(0));
+            if (uplink_index >= 0) {
+                if (is_background) {
+                    _bg_uplink_packets[uplink_index]++;
+                } else {
+                    _fg_uplink_packets[uplink_index]++;
                 }
             }
         }
+        logUplinkSelection(pkt, e);
         
         return e->getEgressPort();
     }
@@ -583,3 +506,147 @@ Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
     //FIB has been filled in; return choice. 
     return getNextHop(pkt, ingress_port);
 };
+
+uint32_t FatTreeSwitch::selectAdaptiveFlowlet(Packet& pkt, vector<FibEntry*>* available_hops) {
+    uint32_t ecmp_choice = 0;
+    flowid_t flow_id = pkt.flow_id();
+    if (_flowlet_maps.find(flow_id) != _flowlet_maps.end()) {
+        FlowletInfo* f = _flowlet_maps[flow_id];
+        if (eventlist().now() - f->_last > _sticky_delta && random()%2 == 0) {
+            uint32_t new_route = adaptive_route(available_hops, fn);
+            if (fn(available_hops->at(f->_egress), available_hops->at(new_route)) < 0) {
+                f->_egress = new_route;
+                _last_choice = eventlist().now();
+            }
+        }
+        ecmp_choice = f->_egress;
+        f->_last = eventlist().now();
+    } else {
+        ecmp_choice = adaptive_route(available_hops, fn);
+        _last_choice = eventlist().now();
+        _flowlet_maps[flow_id] = new FlowletInfo(ecmp_choice, eventlist().now());
+    }
+    return ecmp_choice;
+}
+
+uint32_t FatTreeSwitch::selectByOriginalStrategy(Packet& pkt, vector<FibEntry*>* available_hops) {
+    uint32_t ecmp_choice = 0;
+    switch(_strategy) {
+    case NIX:
+        abort();
+    case ECMP:
+        ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+        break;
+    case ADAPTIVE_ROUTING:
+        if (pkt.size() < 100) {
+            ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+            break;
+        }
+        if (getArStickyForFlow(pkt.flow_id()) == FatTreeSwitch::PER_PACKET) {
+            ecmp_choice = adaptive_route(available_hops, fn);
+        } else if (getArStickyForFlow(pkt.flow_id()) == FatTreeSwitch::PER_FLOWLET) {
+            ecmp_choice = selectAdaptiveFlowlet(pkt, available_hops);
+        }
+        break;
+    case ECMP_ADAPTIVE:
+        ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+        if (random()%100 < 50) {
+            ecmp_choice = replace_worst_choice(available_hops, fn, ecmp_choice);
+        }
+        break;
+    case RR:
+        if (pkt.size() < 128) {
+            ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+        } else {
+            if (_crt_route >= 1 * available_hops->size()) {
+                _crt_route = 0;
+                permute_paths(available_hops);
+            }
+            ecmp_choice = _crt_route % available_hops->size();
+            _crt_route++;
+        }
+        break;
+    case RR_ECMP:
+        if (_type == TOR) {
+            if (_crt_route >= 5 * available_hops->size()) {
+                _crt_route = 0;
+                permute_paths(available_hops);
+            }
+            ecmp_choice = _crt_route % available_hops->size();
+            _crt_route++;
+        } else {
+            ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+        }
+        break;
+    }
+    return ecmp_choice;
+}
+
+int FatTreeSwitch::getUplinkIndex(BaseQueue* q) {
+    if (_type != TOR) {
+        return -1;
+    }
+    int idx = 0;
+    auto& uplinks = _ft->queues_nlp_nup[_id];
+    for (size_t agg = 0; agg < uplinks.size(); agg++) {
+        for (size_t b = 0; b < uplinks[agg].size(); b++) {
+            if (uplinks[agg][b] == q) {
+                return idx;
+            }
+            idx++;
+        }
+    }
+    return -1;
+}
+
+void FatTreeSwitch::logUplinkSelection(Packet& pkt, FibEntry* e) {
+    if (_type != TOR || e->getDirection() != UP) {
+        return;
+    }
+    flowid_t flow_id = pkt.flow_id();
+    bool is_background = (flow_id > _bg_flowid_threshold);
+    if (!is_background && flow_id <= 32) {
+        if (_logged_uplink_flows.find(flow_id) == _logged_uplink_flows.end()) {
+            BaseQueue* q = (BaseQueue*)e->getEgressPort()->at(0);
+            int uplink_index = getUplinkIndex(q);
+            if (uplink_index >= 0) {
+                const char* ar_label = "ecmp";
+                switch (getArStrategyForFlow(flow_id)) {
+                case AR_ADAPTIVE:
+                    ar_label = "adaptive";
+                    break;
+                case AR_ECMP_ADAPTIVE:
+                    ar_label = "mixed";
+                    break;
+                case AR_ECMP:
+                default:
+                    ar_label = "ecmp";
+                    break;
+                }
+                cout << "[FG] Flow " << flow_id
+                     << " uses uplink: " << uplink_index
+                     << " (ToR " << _id << ", dst=" << pkt.dst() << ")"
+                     << " AR=" << ar_label
+                     << endl;
+                _logged_uplink_flows.insert(flow_id);
+            }
+        }
+    }
+    if (is_background) {
+        if (_logged_bg_uplink_flows.find(flow_id) == _logged_bg_uplink_flows.end()) {
+            BaseQueue* q = (BaseQueue*)e->getEgressPort()->at(0);
+            int uplink_index = getUplinkIndex(q);
+            if (uplink_index >= 0) {
+                _bg_uplink_counts[uplink_index]++;
+                _logged_bg_uplink_flows.insert(flow_id);
+                if (_bg_uplink_counts[uplink_index] == 1) {
+                    cout << "[BG] First background flow " << flow_id
+                         << " uses uplink: " << uplink_index
+                         << " (ToR " << _id << ", dst=" << pkt.dst() << ")"
+                         << " AR=ecmp"
+                         << endl;
+                }
+            }
+        }
+    }
+}

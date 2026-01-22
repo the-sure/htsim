@@ -931,6 +931,30 @@ loggers.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/loggers.cpp.s
 .PHONY : loggers.cpp.s
 
+mcc_hardware.o: mcc_hardware.cpp.o
+.PHONY : mcc_hardware.o
+
+# target to build an object file
+mcc_hardware.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/mcc_hardware.cpp.o
+.PHONY : mcc_hardware.cpp.o
+
+mcc_hardware.i: mcc_hardware.cpp.i
+.PHONY : mcc_hardware.i
+
+# target to preprocess a source file
+mcc_hardware.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/mcc_hardware.cpp.i
+.PHONY : mcc_hardware.cpp.i
+
+mcc_hardware.s: mcc_hardware.cpp.s
+.PHONY : mcc_hardware.s
+
+# target to generate assembly for a file
+mcc_hardware.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/mcc_hardware.cpp.s
+.PHONY : mcc_hardware.cpp.s
+
 mcc_ideal.o: mcc_ideal.cpp.o
 .PHONY : mcc_ideal.o
 
@@ -2066,6 +2090,9 @@ help:
 	@echo "... loggers.o"
 	@echo "... loggers.i"
 	@echo "... loggers.s"
+	@echo "... mcc_hardware.o"
+	@echo "... mcc_hardware.i"
+	@echo "... mcc_hardware.s"
 	@echo "... mcc_ideal.o"
 	@echo "... mcc_ideal.i"
 	@echo "... mcc_ideal.s"

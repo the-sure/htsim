@@ -172,7 +172,7 @@ void UecSrc::initNscc(mem_b cwnd, simtime_picosec peer_rtt) {
     setConfiguredMaxWnd(1.5*_bdp);
 
     if (cwnd == 0) {
-        if (_sender_cc_algo == MCC_IDEAL) {
+        if (_sender_cc_algo == MCC_IDEAL || _sender_cc_algo == MCC_HARDWARE) {
             _cwnd = _base_bdp;
         } else {
             _cwnd = memFromPkt(2);
@@ -602,6 +602,14 @@ UecSrc::UecSrc(TrafficLogger* trafficLogger,
                 updateCwndOnAck = &UecSrc::updateCwndOnAck_MccIdeal;
                 updateCwndOnNack = &UecSrc::updateCwndOnNack_MccIdeal;
                 break;
+            case MCC_HARDWARE:
+                updateCwndOnAck = &UecSrc::updateCwndOnAck_MccHardware;
+                updateCwndOnNack = &UecSrc::updateCwndOnNack_MccHardware;
+                break;
+            case MCC_INCAST:
+                updateCwndOnAck = &UecSrc::updateCwndOnAck_MccIncast;
+                updateCwndOnNack = &UecSrc::updateCwndOnNack_MccIncast;
+                break;
             case CONSTANT:
                 updateCwndOnAck = &UecSrc::dontUpdateCwndOnAck;
                 updateCwndOnNack = &UecSrc::dontUpdateCwndOnNack;
@@ -865,6 +873,11 @@ bool UecSrc::checkFinished(UecDataPacket::seq_t cum_ack) {
                         << " RTS " << _stats.rts_pkts_sent 
                         << " total bytes " << ((mem_b)cum_ack - _stats.rts_pkts_sent) * _mss
                         << " in_flight now " << _in_flight 
+                        << " rtx " << _stats.rtx_pkts_sent
+                        << " rto " << _stats.rto_events
+                        << " nack " << _stats.nacks_received
+                        << " dup " << _sink->stats().duplicates
+                        << " ooo " << _sink->stats().out_of_order
                         << " fair_inc " << _nscc_overall_stats.inc_fair_bytes
                         << " prop_inc " << _nscc_overall_stats.inc_prop_bytes
                         << " fast_inc " << _nscc_overall_stats.inc_fast_bytes 
@@ -872,6 +885,8 @@ bool UecSrc::checkFinished(UecDataPacket::seq_t cum_ack) {
                         << " multi_dec -" << _nscc_overall_stats.dec_multi_bytes 
                         << " quick_dec -" << _nscc_overall_stats.dec_quick_bytes 
                         << " nack_dec -" << _nscc_overall_stats.dec_nack_bytes 
+                        << " ecn_high_rtt " << _nscc_overall_stats.ecn_high_rtt_cnt
+                        << " ecn_low_rtt " << _nscc_overall_stats.ecn_low_rtt_cnt
                         << endl;
                     cout << "NSCC_FINISH flowid " << _flow.flow_id()
                         << " time_ps " << eventlist().now()
@@ -891,6 +906,11 @@ bool UecSrc::checkFinished(UecDataPacket::seq_t cum_ack) {
                         << " RTS " << _stats.rts_pkts_sent 
                         << " total bytes " << ((mem_b)cum_ack - _stats.rts_pkts_sent) * _mss
                         << " in_flight now " << _in_flight 
+                        << " rtx " << _stats.rtx_pkts_sent
+                        << " rto " << _stats.rto_events
+                        << " nack " << _stats.nacks_received
+                        << " dup " << _sink->stats().duplicates
+                        << " ooo " << _sink->stats().out_of_order
                         << " fair_inc " << _nscc_overall_stats.inc_fair_bytes
                         << " prop_inc " << _nscc_overall_stats.inc_prop_bytes
                         << " fast_inc " << _nscc_overall_stats.inc_fast_bytes 
@@ -898,6 +918,8 @@ bool UecSrc::checkFinished(UecDataPacket::seq_t cum_ack) {
                         << " multi_dec -" << _nscc_overall_stats.dec_multi_bytes 
                         << " quick_dec -" << _nscc_overall_stats.dec_quick_bytes 
                         << " nack_dec -" << _nscc_overall_stats.dec_nack_bytes 
+                        << " ecn_high_rtt " << _nscc_overall_stats.ecn_high_rtt_cnt
+                        << " ecn_low_rtt " << _nscc_overall_stats.ecn_low_rtt_cnt
                         << endl;
                     cout << "NSCC_FINISH flowid " << _flow.flow_id()
                         << " time_ps " << eventlist().now()
@@ -1282,6 +1304,199 @@ void UecSrc::updateCwndOnNack_MccIdeal(bool skip, mem_b nacked_bytes, bool last_
     // MCC-Ideal rate updates happen on ACK windows only.
 }
 
+void UecSrc::updateCwndOnAck_MccHardware(bool ecn_marked, simtime_picosec delay, mem_b newly_acked_bytes) {
+    if (_pfc_only_mode) {
+        return;
+    }
+
+    if (newly_acked_bytes == 0) {
+        return;
+    }
+
+    simtime_picosec rtt_sample = _base_rtt + delay;
+    uint32_t acked_pkts = 1;
+    if (_mss > 0) {
+        acked_pkts = static_cast<uint32_t>((newly_acked_bytes + _mss - 1) / _mss);
+        if (acked_pkts == 0) {
+            acked_pkts = 1;
+        }
+    }
+    mem_b origin_cwnd = 0;
+    if (_base_rtt > 0 && _nic.linkspeed() > 0) {
+        // origin_cwnd = base_RTT * bandwidth (bytes).
+        origin_cwnd = static_cast<mem_b>(timeAsSec(_base_rtt) * (_nic.linkspeed() / 8.0));
+    }
+
+    if (_mcc_cwnd == 0) {
+        _mcc_cwnd = (origin_cwnd > 0) ? origin_cwnd : _cwnd;
+    }
+    mem_b new_cwnd = _mcc_cwnd;
+    linkspeed_bps prev_rate = _mcc_rate;
+    bool updated = _mcc_hardware.onAck(ecn_marked,
+                         rtt_sample,
+                         acked_pkts,
+                         _mcc_cwnd,
+                         _min_cwnd,
+                         origin_cwnd > 0 ? origin_cwnd : _maxwnd,
+                         _mss,
+                         &new_cwnd);
+
+    if (updated) {
+        if (origin_cwnd > 0 && new_cwnd > origin_cwnd) {
+            new_cwnd = origin_cwnd;
+        }
+
+        if (origin_cwnd > 0) {
+            mem_b rate_window = new_cwnd;
+            double rate = (static_cast<double>(rate_window) / static_cast<double>(origin_cwnd))
+                * _nic.linkspeed();
+            if (rate < 1.0) {
+                rate = 1.0;
+            }
+            _mcc_rate = static_cast<linkspeed_bps>(rate);
+            _mcc_origin_cwnd = origin_cwnd;
+        }
+        if (_mcc_rate != prev_rate) {
+            int64_t delta_rate = static_cast<int64_t>(_mcc_rate) - static_cast<int64_t>(prev_rate);
+            cout << "MCC_RATE_CHANGE time_us " << timeAsUs(eventlist().now())
+                 << " flowid " << _flow.flow_id()
+                 << " prev_rate " << prev_rate
+                 << " new_rate " << _mcc_rate
+                 << " delta_rate " << delta_rate
+                 << " mcc_cwnd " << new_cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << endl;
+        }
+        {
+            linkspeed_bps actual_rate = _nic.linkspeed();
+            if (_mcc_rate > 0) {
+                actual_rate = min(actual_rate, _mcc_rate);
+            }
+            cout << "MCC_DEBUG time_us " << timeAsUs(eventlist().now())
+                 << " flowid " << _flow.flow_id()
+                 << " rtt_us " << timeAsUs(rtt_sample)
+                 << " cwnd " << _cwnd
+                 << " mcc_cwnd " << new_cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << " mcc_rate " << _mcc_rate
+                 << " actual_rate " << actual_rate
+                 << endl;
+        }
+        if (_flow.flow_id() == _debug_flowid || UecSrc::_debug || _flow.flow_id() == 1) {
+            cout << timeAsUs(eventlist().now()) << " flowid " << _flow.flow_id()
+                 << " mcc_hardware_update rate_cwnd " << _mcc_cwnd
+                 << " cwnd " << _cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << " rate_bps " << _mcc_rate
+                 << endl;
+        }
+    }
+}
+
+void UecSrc::updateCwndOnNack_MccHardware(bool skip, mem_b nacked_bytes, bool last_hop) {
+    if (_pfc_only_mode) {
+        return;
+    }
+    (void)skip;
+    (void)last_hop;
+    (void)nacked_bytes;
+    // MCC-Hardware rate updates happen on ACK windows only.
+}
+
+void UecSrc::updateCwndOnAck_MccIncast(bool ecn_marked, simtime_picosec delay, mem_b newly_acked_bytes) {
+    if (_pfc_only_mode) {
+        return;
+    }
+
+    if (newly_acked_bytes == 0) {
+        return;
+    }
+
+    simtime_picosec rtt_sample = _base_rtt + delay;
+    uint32_t acked_pkts = 1;
+    mem_b origin_cwnd = 0;
+    if (_base_rtt > 0 && _nic.linkspeed() > 0) {
+        // origin_cwnd = base_RTT * bandwidth (bytes).
+        origin_cwnd = static_cast<mem_b>(timeAsSec(_base_rtt) * (_nic.linkspeed() / 8.0));
+    }
+
+    if (_mcc_cwnd == 0) {
+        _mcc_cwnd = (origin_cwnd > 0) ? origin_cwnd : _cwnd;
+    }
+    mem_b new_cwnd = _mcc_cwnd;
+    linkspeed_bps prev_rate = _mcc_rate;
+    bool updated = _mcc_incast.onAck(ecn_marked,
+                         rtt_sample,
+                         acked_pkts,
+                         _mcc_cwnd,
+                         _min_cwnd,
+                         origin_cwnd > 0 ? origin_cwnd : _maxwnd,
+                         _mss,
+                         &new_cwnd);
+
+    if (updated) {
+        if (origin_cwnd > 0 && new_cwnd > origin_cwnd) {
+            new_cwnd = origin_cwnd;
+        }
+        _mcc_cwnd = new_cwnd;
+
+        if (origin_cwnd > 0) {
+            mem_b rate_window = new_cwnd;
+            double rate = (static_cast<double>(rate_window) / static_cast<double>(origin_cwnd))
+                * _nic.linkspeed();
+            if (rate < 1.0) {
+                rate = 1.0;
+            }
+            _mcc_rate = static_cast<linkspeed_bps>(rate);
+            _mcc_origin_cwnd = origin_cwnd;
+        }
+        if (_mcc_rate != prev_rate) {
+            int64_t delta_rate = static_cast<int64_t>(_mcc_rate) - static_cast<int64_t>(prev_rate);
+            cout << "MCC_INCAST_RATE_CHANGE time_us " << timeAsUs(eventlist().now())
+                 << " flowid " << _flow.flow_id()
+                 << " prev_rate " << prev_rate
+                 << " new_rate " << _mcc_rate
+                 << " delta_rate " << delta_rate
+                 << " mcc_cwnd " << new_cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << endl;
+        }
+        {
+            linkspeed_bps actual_rate = _nic.linkspeed();
+            if (_mcc_rate > 0) {
+                actual_rate = min(actual_rate, _mcc_rate);
+            }
+            cout << "MCC_INCAST_DEBUG time_us " << timeAsUs(eventlist().now())
+                 << " flowid " << _flow.flow_id()
+                 << " rtt_us " << timeAsUs(rtt_sample)
+                 << " cwnd " << _cwnd
+                 << " mcc_cwnd " << new_cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << " mcc_rate " << _mcc_rate
+                 << " actual_rate " << actual_rate
+                 << endl;
+        }
+        if (_flow.flow_id() == _debug_flowid || UecSrc::_debug || _flow.flow_id() == 1) {
+            cout << timeAsUs(eventlist().now()) << " flowid " << _flow.flow_id()
+                 << " mcc_incast_update rate_cwnd " << _mcc_cwnd
+                 << " cwnd " << _cwnd
+                 << " origin_cwnd " << _mcc_origin_cwnd
+                 << " rate_bps " << _mcc_rate
+                 << endl;
+        }
+    }
+}
+
+void UecSrc::updateCwndOnNack_MccIncast(bool skip, mem_b nacked_bytes, bool last_hop) {
+    if (_pfc_only_mode) {
+        return;
+    }
+    (void)skip;
+    (void)last_hop;
+    (void)nacked_bytes;
+    // MCC-Incast rate updates happen on ACK windows only.
+}
+
 bool UecSrc::can_send_RCCC() {
     assert(_receiver_based_cc);
     if (_pfc_only_mode) {
@@ -1495,12 +1710,16 @@ void UecSrc::updateCwndOnAck_NSCC(bool skip, simtime_picosec delay, mem_b newly_
             cout << timeAsUs(eventlist().now()) <<" flowid " << _flow.flow_id()<< " " << _flow.str() << " proportional_increase _nscc_cwnd " << _cwnd << endl;
         }
     } else if (skip && delay >= _target_Qdelay) {    
+        _nscc_overall_stats.ecn_high_rtt_cnt++;
+        _nscc_fulfill_stats.ecn_high_rtt_cnt++;
         multiplicative_decrease();
         if (_flow.flow_id() == _debug_flowid || UecSrc::_debug) {
             cout << timeAsUs(eventlist().now()) <<" flowid " << _flow.flow_id()<< " " << _flow.str() << " multiplicative_decrease _nscc_cwnd " << _cwnd << endl;
         }
     } else if (skip && delay < _target_Qdelay) {
         // NOOP, just switch path
+        _nscc_overall_stats.ecn_low_rtt_cnt++;
+        _nscc_fulfill_stats.ecn_low_rtt_cnt++;
     }
 
     // Check here, fulfill_adjustment requires valid cwnd.
@@ -2655,6 +2874,7 @@ UecSink::UecSink(TrafficLogger* trafficLogger, UecPullPacer* pullPacer, UecNIC& 
       _epsn_rx_bitmap(0),
       _out_of_order_count(0),
       _ack_request(false),
+      _mcc_hw_ack_counter(0),
       _entropy(0)  {
     
     _nodename = "uecSink";  // TBD: would be nice at add nodenum to nodename
@@ -2695,6 +2915,7 @@ UecSink::UecSink(TrafficLogger* trafficLogger,
       _epsn_rx_bitmap(0),
       _out_of_order_count(0),
       _ack_request(false),
+      _mcc_hw_ack_counter(0),
       _entropy(0) {
     
     if (UecSrc::_receiver_based_cc)
@@ -2815,10 +3036,7 @@ void UecSink::processData(UecDataPacket& pkt) {
         _stats.duplicates++;
         _nic.logReceivedData(pkt.size(), 0);
 
-        // if (_src->flow()->flow_id() == UecSrc::_debug_flowid){   
-            cout << timeAsUs(_src->eventlist().now()) << " flowid " << _src->flow()->flow_id()  
-                << " Spurious " << pkt.epsn() <<endl;
-        // }
+        // Spurious duplicate, ACK immediately.
         // sender is confused and sending us duplicates: ACK straight away.
         // this code is different from the proposed hardware implementation, as it keeps track of
         // the ACK state of OOO packets.
@@ -2880,17 +3098,27 @@ void UecSink::processData(UecDataPacket& pkt) {
         _out_of_order_count++;
         _stats.out_of_order++;
     }
+    bool force_ack_for_mcc_ideal = (UecSrc::_sender_cc_algo == UecSrc::MCC_IDEAL);
+    bool force_ack_for_mcc_hardware = (UecSrc::_sender_cc_algo == UecSrc::MCC_HARDWARE);
+    bool force_ack_for_mcc_hw_interval = false;
+    if (force_ack_for_mcc_hardware) {
+        _mcc_hw_ack_counter++;
+        if (_mcc_hw_ack_counter >= MccHardwareParams::kAcksPerUpdate) {
+            force_ack_for_mcc_hw_interval = true;
+        }
+    }
     if (_src->flow()->flow_id() == UecSrc::_debug_flowid) {
         cout << timeAsUs(_src->eventlist().now()) << " flowid " << _src->flow()->flow_id()
              << " checkSack: " << pkt.epsn() << " ooo_count "
              << _out_of_order_count << " ecn " << ecn << " shouldSack " << shouldSack()
              << " forceack " << force_ack << endl;
     }
-    bool force_ack_for_mcc = (UecSrc::_sender_cc_algo == UecSrc::MCC_IDEAL);
-    if (ecn || shouldSack() || force_ack || force_ack_for_mcc) {
+    if (ecn || shouldSack() || force_ack || force_ack_for_mcc_ideal || force_ack_for_mcc_hw_interval) {
         UecAckPacket* ack_packet =
             sack(pkt.path_id(),
-                 (ecn || pkt.ar() || force_ack_for_mcc) ? pkt.epsn() : sackBitmapBase(pkt.epsn()),
+                 (ecn || pkt.ar() || force_ack_for_mcc_ideal || force_ack_for_mcc_hw_interval)
+                     ? pkt.epsn()
+                     : sackBitmapBase(pkt.epsn()),
                  pkt.epsn(),
                  ecn,
                  pkt.retransmitted());
@@ -2912,6 +3140,9 @@ void UecSink::processData(UecDataPacket& pkt) {
                  << " ecn " << ecn << " shouldSack " << shouldSack() << " forceack " << force_ack << endl;
         }
         _accepted_bytes = 0;
+        if (force_ack_for_mcc_hardware) {
+            _mcc_hw_ack_counter = 0;
+        }
 
         // ack_packet->sendOn();
         _nic.sendControlPacket(ack_packet, NULL, this);

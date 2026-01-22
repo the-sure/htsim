@@ -92,6 +92,12 @@ public:
         NIX = 0, ECMP = 1, ADAPTIVE_ROUTING = 2, ECMP_ADAPTIVE = 3, RR = 4, RR_ECMP = 5
     };
 
+    enum ArStrategy {
+        AR_ECMP = 0,
+        AR_ADAPTIVE = 1,
+        AR_ECMP_ADAPTIVE = 2
+    };
+
     enum sticky_choices {
         PER_PACKET = 0, PER_FLOWLET = 1
     };
@@ -124,10 +130,39 @@ public:
 
     static void set_strategy(routing_strategy s) { assert (_strategy==NIX); _strategy = s; }
     static void set_ar_fraction(uint16_t f) { assert(f>=1);_ar_fraction = f;} 
+    static ArStrategy getArStrategyForFlow(flowid_t flow_id) {
+        if (flow_id > _bg_flowid_threshold) {
+            return _bg_ar_strategy;
+        }
+        return _fg_ar_strategy;
+    }
+    static sticky_choices getArStickyForFlow(flowid_t flow_id) {
+        if (!_separate_ar_sticky) {
+            return static_cast<sticky_choices>(_ar_sticky);
+        }
+        if (flow_id > _bg_flowid_threshold) {
+            return static_cast<sticky_choices>(_bg_ar_sticky);
+        }
+        return static_cast<sticky_choices>(_fg_ar_sticky);
+    }
+    static void set_fg_ar_strategy(ArStrategy strategy) { _fg_ar_strategy = strategy; }
+    static void set_bg_ar_strategy(ArStrategy strategy) { _bg_ar_strategy = strategy; }
+    static ArStrategy fg_ar_strategy() { return _fg_ar_strategy; }
+    static ArStrategy bg_ar_strategy() { return _bg_ar_strategy; }
+    static void set_ar_sticky_all(sticky_choices sticky) {
+        _ar_sticky = sticky;
+        _separate_ar_sticky = false;
+    }
+    static void set_fg_ar_sticky(sticky_choices sticky) { _fg_ar_sticky = sticky; }
+    static void set_bg_ar_sticky(sticky_choices sticky) { _bg_ar_sticky = sticky; }
+    static void set_separate_ar_sticky(bool separate) { _separate_ar_sticky = separate; }
 
     static routing_strategy _strategy;
     static uint16_t _ar_fraction;
     static uint16_t _ar_sticky;
+    static bool _separate_ar_sticky;
+    static uint16_t _fg_ar_sticky;
+    static uint16_t _bg_ar_sticky;
     static simtime_picosec _sticky_delta;
     static double _ecn_threshold_fraction;
     static double _speculative_threshold_fraction;
@@ -136,11 +171,16 @@ public:
     static std::unordered_set<flowid_t> _logged_uplink_flows;
     static std::unordered_map<int, uint32_t> _bg_uplink_counts;
     static std::unordered_set<flowid_t> _logged_bg_uplink_flows;
+    static std::unordered_map<int, uint64_t> _fg_uplink_packets;
+    static std::unordered_map<int, uint64_t> _bg_uplink_packets;
     static flowid_t _bg_flowid_threshold;
     static void set_bg_flowid_threshold(flowid_t threshold) {
         _bg_flowid_threshold = threshold;
     }
 private:
+    static ArStrategy _fg_ar_strategy;
+    static ArStrategy _bg_ar_strategy;
+
     switch_type _type;
     Pipe* _pipe;
     FatTreeTopology* _ft;
@@ -157,6 +197,11 @@ private:
     simtime_picosec _last_choice;
 
     unordered_map<Packet*,bool> _packets;
+
+    uint32_t selectAdaptiveFlowlet(Packet& pkt, vector<FibEntry*>* available_hops);
+    uint32_t selectByOriginalStrategy(Packet& pkt, vector<FibEntry*>* available_hops);
+    int getUplinkIndex(BaseQueue* q);
+    void logUplinkSelection(Packet& pkt, FibEntry* e);
 };
 
 #endif

@@ -5,7 +5,7 @@ Generate network flows in the specified format
 
 def generate_ecmp_flows():
     """
-    Generate DCQCN background flows
+    Generate background flows
     - 12*16=192 flows
     - Flow size: 5MB = 5,000,000 bytes
     """
@@ -21,7 +21,7 @@ def generate_ecmp_flows():
 
 def generate_ar_flows():
     """
-    Generate STrack flows
+    Generate flows
     - 32 flows
     - Flow size: 32MB = 32,000,000 bytes
     """
@@ -60,7 +60,7 @@ def export_flow_file(ecmp_flows, ar_flows, filename):
 def main():
     ecmp_flows = generate_ecmp_flows()
     ar_flows = generate_ar_flows()
-    export_flow_file(ecmp_flows, ar_flows, "mcc_partial.cm")
+    export_flow_file(ecmp_flows, ar_flows, "datacenter/connection_matrices/mcc_partial_nscc_16flow_5M.cm")
 
 if __name__ == "__main__":
     main()

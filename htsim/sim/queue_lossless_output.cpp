@@ -6,6 +6,7 @@
 #include "hpccpacket.h"
 #include "queue_lossless_output.h"
 #include "queue_lossless_input.h"
+#include "rocepacket.h"
 
 int LosslessOutputQueue::_ecn_enabled = false;
 int LosslessOutputQueue::_K = 0;
@@ -85,18 +86,25 @@ LosslessOutputQueue::receivePacket(Packet& pkt,VirtualQueue* prev)
     Packet* pkt_p = &pkt;
     _enqueued.push(pkt_p);
 
-    mem_b prev_size = _queuesize;
     _queuesize += pkt.size();
     if (_queuesize > _max_recorded_size) {
         _max_recorded_size = _queuesize;
     }
-    if (_ecn_enabled && _K > 0 && prev_size < _K && _queuesize >= _K) {
-        cout << "QUEUE_K_CROSS time_us " << timeAsUs(eventlist().now())
-             << " queue " << _name
-             << " queuesize " << _queuesize
-             << " K " << _K
-             << endl;
+    if (pkt.flow_id() > 0 && pkt.flow_id() <= 32 && pkt.type() == ROCE) {
+        RocePacket* rp = dynamic_cast<RocePacket*>(&pkt);
+        if (rp && rp->seqno() == 1) {
+            const Route* route = pkt.route();
+            cout << "QUEUE_FG_FIRST time_us " << timeAsUs(eventlist().now())
+                 << " flow " << pkt.flow_id()
+                 << " queue " << _name
+                 << " pathid " << pkt.pathid()
+                 << " route_ptr " << route
+                 << " route_path_id " << (route ? route->path_id() : -1)
+                 << " route_no_paths " << (route ? route->no_of_paths() : -1)
+                 << endl;
+        }
     }
+
 
     if (_queuesize > _maxsize){
         static bool logged = false;
@@ -125,6 +133,25 @@ void LosslessOutputQueue::beginService(){
     _sending = 1;
 }
 
+namespace {
+bool is_ecn_eligible(const Packet& pkt) {
+    switch (pkt.type()) {
+    case TCP:
+    case SWIFT:
+    case STRACK:
+    case NDP:
+    case NDPLITE:
+    case ROCE:
+    case HPCC:
+    case EQDSDATA:
+    case UECDATA:
+        return true;
+    default:
+        return false;
+    }
+}
+} // namespace
+
 void LosslessOutputQueue::completeService(){
     /* dequeue the packet */
     assert(!_enqueued.empty());
@@ -137,14 +164,8 @@ void LosslessOutputQueue::completeService(){
     _vq.pop_back();
 
     //mark on deque
-    if (_ecn_enabled && _queuesize > _K) {
+    if (_ecn_enabled && _queuesize > _K && is_ecn_eligible(*pkt)) {
         pkt->set_flags(pkt->flags() | ECN_CE);
-        cout << "ECN_MARK time_us " << timeAsUs(eventlist().now())
-             << " flow " << pkt->flow_id()
-             << " queue " << _name
-             << " queuesize " << _queuesize
-             << " K " << _K
-             << endl;
     }
 
     if (pkt->type()==HPCC){

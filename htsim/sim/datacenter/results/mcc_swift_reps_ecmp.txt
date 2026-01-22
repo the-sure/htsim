@@ -1,0 +1,816 @@
+FatTree topology input file: datacenter/topologies/mcc_partial.topo
+traffic matrix input file: datacenter/connection_matrices/mcc_partial.cm
+Foreground CC: Swift
+Background flowid threshold set to 1000
+endtime(us) 100000
+Verbose per-flow logging enabled
+logging tor upqueues
+Load balancing algorithm set to  reps
+queue_type 8
+Force ECN on lossless output queues
+Foreground AR strategy: ecmp
+Background AR strategy: ecmp
+no of paths 1
+host queue_type 12
+Packet size (MTU) is 4000
+Parsed args
+Logging to logout.dat
+Linkspeed set to 400Gbps
+Loading connection matrix from  datacenter/connection_matrices/mcc_partial.cm
+Nodes: 4096 Connections: 224 Triggers: 0 Failures: 0
+Automatic queue sizing enabled trimming queue-size-to-bdp-factor is 2xBDP
+Topology load done
+Fat Tree topology (0) with 1us Src-ToR links, 1us ToR-Agg links, 0us ToR switch latency, 0us Agg switch latency for 4us diameter latency.
+no_of_tor_uplinks: 1024
+No of nodes: 4096
+No of pods: 1
+Hosts per pod: 4096
+Hosts per pod: 4096
+ToR switches per pod: 64
+Agg switches per pod: 32
+No of core switches: 0
+FatTreeCfg constructor done.
+Tier 0 QueueSize Down 840000 bytes
+Tier 0 QueueSize Up 840000 bytes
+Tier 1 QueueSize Down 840000 bytes
+Tier 1 QueueSize Up 840000 bytes
+Tier 2 QueueSize Down 840000 bytes
+Auto PFC thresholds: high=105 pkts (420000 bytes, 50% queue) low=52 pkts (208000 bytes, 24.7619% queue)
+Setting min RTO to 115.8
+Setting ECN to parameters low 84000 high 336000 enable on tor downlink 1
+ECN marking enabled on lossless output queues, K=84000
+FatTreeTopologyCfg NCORE=0 NAGG=32 NTOR=64 NSRV=4096 NPOD=1 tor_switches_per_pod=64 agg_switches_per_pod=32 tiers=2 host_per_pod=4096 enabled_ecn=1 enable_ecn_on_tor_downlink=1 ecn_low=84000 ecn_high=336000 num_failed_links=0 failed_link_ratio=0.25 no_of_nodes=4096 hop_latency=0 switch_latency=0 diameter_latency=4000000 diameter=4 tier=0 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=400000000000 oversub=2 radix_down=64 queue_down=840000 radix_up=32 queue_up=840000 tier=1 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=800000000000 oversub=1 radix_down=32 queue_down=840000 radix_up=0 queue_up=840000
+network_max_unloaded_rtt 8.32512
+Initializing static NSCC parameters: _reference_network_linkspeed=100000000000 _reference_network_rtt=12000000 _reference_network_bdp=150000 _target_Qdelay=6243840 _network_linkspeed=400000000000 _network_rtt=8325120 _network_bdp=416256 _qa_gate=2^3 _qa_threshold=2.49754e+07 _scaling_factor_a=2.77504 _scaling_factor_b=0.52032 _alpha=0.00364085 _fi=54612.8 _eta=1638.38 _qa_scaling=1 _gamma=0.8 _fi_scale=0.69376 _delay_alpha=0.0125 _adjust_period_threshold=8325120 _adjust_bytes_threshold=32000
+MCC-Ideal parameters: rtt_threshold_us=10 R1=0.5 R2=0.1 R3=0.3
+MCC-Hardware parameters: rtt_threshold_us=10 R1=0.5 R2=0.1 R3=0.3 acks_per_update=8
+[BG] Flow 1001 (PFC-only): src=32 (0) dst=96 (1) ToR_src=0 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1001 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1002 (PFC-only): src=33 (0) dst=160 (2) ToR_src=0 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1002 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1003 (PFC-only): src=34 (0) dst=224 (3) ToR_src=0 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1003 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1004 (PFC-only): src=35 (0) dst=288 (4) ToR_src=0 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1004 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1005 (PFC-only): src=36 (0) dst=352 (5) ToR_src=0 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1005 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1006 (PFC-only): src=37 (0) dst=416 (6) ToR_src=0 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1006 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1007 (PFC-only): src=38 (0) dst=480 (7) ToR_src=0 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1007 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1008 (PFC-only): src=39 (0) dst=544 (8) ToR_src=0 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1008 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1009 (PFC-only): src=40 (0) dst=608 (9) ToR_src=0 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1009 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1010 (PFC-only): src=41 (0) dst=672 (10) ToR_src=0 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1010 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1011 (PFC-only): src=42 (0) dst=736 (11) ToR_src=0 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1011 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1012 (PFC-only): src=43 (0) dst=800 (12) ToR_src=0 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1012 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1013 (PFC-only): src=96 (1) dst=97 (1) ToR_src=1 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1013 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1014 (PFC-only): src=97 (1) dst=161 (2) ToR_src=1 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1014 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1015 (PFC-only): src=98 (1) dst=225 (3) ToR_src=1 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1015 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1016 (PFC-only): src=99 (1) dst=289 (4) ToR_src=1 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1016 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1017 (PFC-only): src=100 (1) dst=353 (5) ToR_src=1 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1017 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1018 (PFC-only): src=101 (1) dst=417 (6) ToR_src=1 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1018 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1019 (PFC-only): src=102 (1) dst=481 (7) ToR_src=1 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1019 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1020 (PFC-only): src=103 (1) dst=545 (8) ToR_src=1 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1020 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1021 (PFC-only): src=104 (1) dst=609 (9) ToR_src=1 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1021 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1022 (PFC-only): src=105 (1) dst=673 (10) ToR_src=1 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1022 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1023 (PFC-only): src=106 (1) dst=737 (11) ToR_src=1 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1023 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1024 (PFC-only): src=107 (1) dst=801 (12) ToR_src=1 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1024 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1025 (PFC-only): src=160 (2) dst=98 (1) ToR_src=2 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1025 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1026 (PFC-only): src=161 (2) dst=162 (2) ToR_src=2 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1026 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1027 (PFC-only): src=162 (2) dst=226 (3) ToR_src=2 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1027 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1028 (PFC-only): src=163 (2) dst=290 (4) ToR_src=2 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1028 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1029 (PFC-only): src=164 (2) dst=354 (5) ToR_src=2 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1029 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1030 (PFC-only): src=165 (2) dst=418 (6) ToR_src=2 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1030 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1031 (PFC-only): src=166 (2) dst=482 (7) ToR_src=2 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1031 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1032 (PFC-only): src=167 (2) dst=546 (8) ToR_src=2 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1032 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1033 (PFC-only): src=168 (2) dst=610 (9) ToR_src=2 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1033 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1034 (PFC-only): src=169 (2) dst=674 (10) ToR_src=2 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1034 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1035 (PFC-only): src=170 (2) dst=738 (11) ToR_src=2 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1035 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1036 (PFC-only): src=171 (2) dst=802 (12) ToR_src=2 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1036 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1037 (PFC-only): src=224 (3) dst=99 (1) ToR_src=3 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1037 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1038 (PFC-only): src=225 (3) dst=163 (2) ToR_src=3 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1038 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1039 (PFC-only): src=226 (3) dst=227 (3) ToR_src=3 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1039 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1040 (PFC-only): src=227 (3) dst=291 (4) ToR_src=3 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1040 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1041 (PFC-only): src=228 (3) dst=355 (5) ToR_src=3 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1041 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1042 (PFC-only): src=229 (3) dst=419 (6) ToR_src=3 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1042 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1043 (PFC-only): src=230 (3) dst=483 (7) ToR_src=3 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1043 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1044 (PFC-only): src=231 (3) dst=547 (8) ToR_src=3 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1044 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1045 (PFC-only): src=232 (3) dst=611 (9) ToR_src=3 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1045 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1046 (PFC-only): src=233 (3) dst=675 (10) ToR_src=3 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1046 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1047 (PFC-only): src=234 (3) dst=739 (11) ToR_src=3 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1047 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1048 (PFC-only): src=235 (3) dst=803 (12) ToR_src=3 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1048 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1049 (PFC-only): src=288 (4) dst=100 (1) ToR_src=4 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1049 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1050 (PFC-only): src=289 (4) dst=164 (2) ToR_src=4 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1050 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1051 (PFC-only): src=290 (4) dst=228 (3) ToR_src=4 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1051 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1052 (PFC-only): src=291 (4) dst=292 (4) ToR_src=4 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1052 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1053 (PFC-only): src=292 (4) dst=356 (5) ToR_src=4 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1053 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1054 (PFC-only): src=293 (4) dst=420 (6) ToR_src=4 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1054 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1055 (PFC-only): src=294 (4) dst=484 (7) ToR_src=4 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1055 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1056 (PFC-only): src=295 (4) dst=548 (8) ToR_src=4 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1056 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1057 (PFC-only): src=296 (4) dst=612 (9) ToR_src=4 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1057 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1058 (PFC-only): src=297 (4) dst=676 (10) ToR_src=4 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1058 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1059 (PFC-only): src=298 (4) dst=740 (11) ToR_src=4 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1059 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1060 (PFC-only): src=299 (4) dst=804 (12) ToR_src=4 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1060 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1061 (PFC-only): src=352 (5) dst=101 (1) ToR_src=5 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1061 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1062 (PFC-only): src=353 (5) dst=165 (2) ToR_src=5 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1062 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1063 (PFC-only): src=354 (5) dst=229 (3) ToR_src=5 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1063 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1064 (PFC-only): src=355 (5) dst=293 (4) ToR_src=5 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1064 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1065 (PFC-only): src=356 (5) dst=357 (5) ToR_src=5 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1065 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1066 (PFC-only): src=357 (5) dst=421 (6) ToR_src=5 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1066 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1067 (PFC-only): src=358 (5) dst=485 (7) ToR_src=5 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1067 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1068 (PFC-only): src=359 (5) dst=549 (8) ToR_src=5 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1068 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1069 (PFC-only): src=360 (5) dst=613 (9) ToR_src=5 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1069 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1070 (PFC-only): src=361 (5) dst=677 (10) ToR_src=5 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1070 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1071 (PFC-only): src=362 (5) dst=741 (11) ToR_src=5 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1071 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1072 (PFC-only): src=363 (5) dst=805 (12) ToR_src=5 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1072 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1073 (PFC-only): src=416 (6) dst=102 (1) ToR_src=6 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1073 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1074 (PFC-only): src=417 (6) dst=166 (2) ToR_src=6 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1074 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1075 (PFC-only): src=418 (6) dst=230 (3) ToR_src=6 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1075 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1076 (PFC-only): src=419 (6) dst=294 (4) ToR_src=6 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1076 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1077 (PFC-only): src=420 (6) dst=358 (5) ToR_src=6 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1077 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1078 (PFC-only): src=421 (6) dst=422 (6) ToR_src=6 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1078 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1079 (PFC-only): src=422 (6) dst=486 (7) ToR_src=6 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1079 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1080 (PFC-only): src=423 (6) dst=550 (8) ToR_src=6 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1080 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1081 (PFC-only): src=424 (6) dst=614 (9) ToR_src=6 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1081 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1082 (PFC-only): src=425 (6) dst=678 (10) ToR_src=6 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1082 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1083 (PFC-only): src=426 (6) dst=742 (11) ToR_src=6 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1083 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1084 (PFC-only): src=427 (6) dst=806 (12) ToR_src=6 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1084 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1085 (PFC-only): src=480 (7) dst=103 (1) ToR_src=7 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1085 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1086 (PFC-only): src=481 (7) dst=167 (2) ToR_src=7 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1086 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1087 (PFC-only): src=482 (7) dst=231 (3) ToR_src=7 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1087 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1088 (PFC-only): src=483 (7) dst=295 (4) ToR_src=7 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1088 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1089 (PFC-only): src=484 (7) dst=359 (5) ToR_src=7 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1089 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1090 (PFC-only): src=485 (7) dst=423 (6) ToR_src=7 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1090 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1091 (PFC-only): src=486 (7) dst=487 (7) ToR_src=7 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1091 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1092 (PFC-only): src=487 (7) dst=551 (8) ToR_src=7 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1092 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1093 (PFC-only): src=488 (7) dst=615 (9) ToR_src=7 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1093 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1094 (PFC-only): src=489 (7) dst=679 (10) ToR_src=7 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1094 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1095 (PFC-only): src=490 (7) dst=743 (11) ToR_src=7 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1095 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1096 (PFC-only): src=491 (7) dst=807 (12) ToR_src=7 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1096 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1097 (PFC-only): src=544 (8) dst=104 (1) ToR_src=8 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1097 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1098 (PFC-only): src=545 (8) dst=168 (2) ToR_src=8 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1098 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1099 (PFC-only): src=546 (8) dst=232 (3) ToR_src=8 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1099 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1100 (PFC-only): src=547 (8) dst=296 (4) ToR_src=8 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1100 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1101 (PFC-only): src=548 (8) dst=360 (5) ToR_src=8 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1101 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1102 (PFC-only): src=549 (8) dst=424 (6) ToR_src=8 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1102 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1103 (PFC-only): src=550 (8) dst=488 (7) ToR_src=8 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1103 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1104 (PFC-only): src=551 (8) dst=552 (8) ToR_src=8 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1104 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1105 (PFC-only): src=552 (8) dst=616 (9) ToR_src=8 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1105 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1106 (PFC-only): src=553 (8) dst=680 (10) ToR_src=8 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1106 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1107 (PFC-only): src=554 (8) dst=744 (11) ToR_src=8 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1107 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1108 (PFC-only): src=555 (8) dst=808 (12) ToR_src=8 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1108 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1109 (PFC-only): src=608 (9) dst=105 (1) ToR_src=9 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1109 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1110 (PFC-only): src=609 (9) dst=169 (2) ToR_src=9 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1110 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1111 (PFC-only): src=610 (9) dst=233 (3) ToR_src=9 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1111 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1112 (PFC-only): src=611 (9) dst=297 (4) ToR_src=9 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1112 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1113 (PFC-only): src=612 (9) dst=361 (5) ToR_src=9 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1113 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1114 (PFC-only): src=613 (9) dst=425 (6) ToR_src=9 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1114 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1115 (PFC-only): src=614 (9) dst=489 (7) ToR_src=9 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1115 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1116 (PFC-only): src=615 (9) dst=553 (8) ToR_src=9 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1116 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1117 (PFC-only): src=616 (9) dst=617 (9) ToR_src=9 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1117 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1118 (PFC-only): src=617 (9) dst=681 (10) ToR_src=9 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1118 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1119 (PFC-only): src=618 (9) dst=745 (11) ToR_src=9 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1119 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1120 (PFC-only): src=619 (9) dst=809 (12) ToR_src=9 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1120 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1121 (PFC-only): src=672 (10) dst=106 (1) ToR_src=10 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1121 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1122 (PFC-only): src=673 (10) dst=170 (2) ToR_src=10 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1122 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1123 (PFC-only): src=674 (10) dst=234 (3) ToR_src=10 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1123 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1124 (PFC-only): src=675 (10) dst=298 (4) ToR_src=10 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1124 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1125 (PFC-only): src=676 (10) dst=362 (5) ToR_src=10 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1125 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1126 (PFC-only): src=677 (10) dst=426 (6) ToR_src=10 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1126 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1127 (PFC-only): src=678 (10) dst=490 (7) ToR_src=10 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1127 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1128 (PFC-only): src=679 (10) dst=554 (8) ToR_src=10 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1128 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1129 (PFC-only): src=680 (10) dst=618 (9) ToR_src=10 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1129 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1130 (PFC-only): src=681 (10) dst=682 (10) ToR_src=10 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1130 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1131 (PFC-only): src=682 (10) dst=746 (11) ToR_src=10 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1131 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1132 (PFC-only): src=683 (10) dst=810 (12) ToR_src=10 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1132 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1133 (PFC-only): src=736 (11) dst=107 (1) ToR_src=11 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1133 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1134 (PFC-only): src=737 (11) dst=171 (2) ToR_src=11 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1134 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1135 (PFC-only): src=738 (11) dst=235 (3) ToR_src=11 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1135 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1136 (PFC-only): src=739 (11) dst=299 (4) ToR_src=11 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1136 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1137 (PFC-only): src=740 (11) dst=363 (5) ToR_src=11 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1137 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1138 (PFC-only): src=741 (11) dst=427 (6) ToR_src=11 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1138 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1139 (PFC-only): src=742 (11) dst=491 (7) ToR_src=11 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1139 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1140 (PFC-only): src=743 (11) dst=555 (8) ToR_src=11 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1140 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1141 (PFC-only): src=744 (11) dst=619 (9) ToR_src=11 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1141 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1142 (PFC-only): src=745 (11) dst=683 (10) ToR_src=11 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1142 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1143 (PFC-only): src=746 (11) dst=747 (11) ToR_src=11 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1143 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1144 (PFC-only): src=747 (11) dst=811 (12) ToR_src=11 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1144 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1145 (PFC-only): src=800 (12) dst=108 (1) ToR_src=12 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1145 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1146 (PFC-only): src=801 (12) dst=172 (2) ToR_src=12 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1146 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1147 (PFC-only): src=802 (12) dst=236 (3) ToR_src=12 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1147 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1148 (PFC-only): src=803 (12) dst=300 (4) ToR_src=12 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1148 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1149 (PFC-only): src=804 (12) dst=364 (5) ToR_src=12 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1149 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1150 (PFC-only): src=805 (12) dst=428 (6) ToR_src=12 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1150 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1151 (PFC-only): src=806 (12) dst=492 (7) ToR_src=12 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1151 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1152 (PFC-only): src=807 (12) dst=556 (8) ToR_src=12 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1152 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1153 (PFC-only): src=808 (12) dst=620 (9) ToR_src=12 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1153 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1154 (PFC-only): src=809 (12) dst=684 (10) ToR_src=12 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1154 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1155 (PFC-only): src=810 (12) dst=748 (11) ToR_src=12 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1155 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1156 (PFC-only): src=811 (12) dst=812 (12) ToR_src=12 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1156 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1157 (PFC-only): src=864 (13) dst=109 (1) ToR_src=13 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1157 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1158 (PFC-only): src=865 (13) dst=173 (2) ToR_src=13 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1158 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1159 (PFC-only): src=866 (13) dst=237 (3) ToR_src=13 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1159 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1160 (PFC-only): src=867 (13) dst=301 (4) ToR_src=13 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1160 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1161 (PFC-only): src=868 (13) dst=365 (5) ToR_src=13 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1161 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1162 (PFC-only): src=869 (13) dst=429 (6) ToR_src=13 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1162 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1163 (PFC-only): src=870 (13) dst=493 (7) ToR_src=13 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1163 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1164 (PFC-only): src=871 (13) dst=557 (8) ToR_src=13 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1164 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1165 (PFC-only): src=872 (13) dst=621 (9) ToR_src=13 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1165 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1166 (PFC-only): src=873 (13) dst=685 (10) ToR_src=13 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1166 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1167 (PFC-only): src=874 (13) dst=749 (11) ToR_src=13 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1167 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1168 (PFC-only): src=875 (13) dst=813 (12) ToR_src=13 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1168 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1169 (PFC-only): src=928 (14) dst=110 (1) ToR_src=14 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1169 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1170 (PFC-only): src=929 (14) dst=174 (2) ToR_src=14 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1170 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1171 (PFC-only): src=930 (14) dst=238 (3) ToR_src=14 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1171 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1172 (PFC-only): src=931 (14) dst=302 (4) ToR_src=14 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1172 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1173 (PFC-only): src=932 (14) dst=366 (5) ToR_src=14 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1173 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1174 (PFC-only): src=933 (14) dst=430 (6) ToR_src=14 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1174 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1175 (PFC-only): src=934 (14) dst=494 (7) ToR_src=14 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1175 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1176 (PFC-only): src=935 (14) dst=558 (8) ToR_src=14 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1176 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1177 (PFC-only): src=936 (14) dst=622 (9) ToR_src=14 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1177 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1178 (PFC-only): src=937 (14) dst=686 (10) ToR_src=14 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1178 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1179 (PFC-only): src=938 (14) dst=750 (11) ToR_src=14 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1179 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1180 (PFC-only): src=939 (14) dst=814 (12) ToR_src=14 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1180 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1181 (PFC-only): src=992 (15) dst=111 (1) ToR_src=15 ToR_dst=1
+Initialize per-instance NSCC parameters: flowid 1181 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1182 (PFC-only): src=993 (15) dst=175 (2) ToR_src=15 ToR_dst=2
+Initialize per-instance NSCC parameters: flowid 1182 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1183 (PFC-only): src=994 (15) dst=239 (3) ToR_src=15 ToR_dst=3
+Initialize per-instance NSCC parameters: flowid 1183 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1184 (PFC-only): src=995 (15) dst=303 (4) ToR_src=15 ToR_dst=4
+Initialize per-instance NSCC parameters: flowid 1184 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1185 (PFC-only): src=996 (15) dst=367 (5) ToR_src=15 ToR_dst=5
+Initialize per-instance NSCC parameters: flowid 1185 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1186 (PFC-only): src=997 (15) dst=431 (6) ToR_src=15 ToR_dst=6
+Initialize per-instance NSCC parameters: flowid 1186 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1187 (PFC-only): src=998 (15) dst=495 (7) ToR_src=15 ToR_dst=7
+Initialize per-instance NSCC parameters: flowid 1187 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1188 (PFC-only): src=999 (15) dst=559 (8) ToR_src=15 ToR_dst=8
+Initialize per-instance NSCC parameters: flowid 1188 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1189 (PFC-only): src=1000 (15) dst=623 (9) ToR_src=15 ToR_dst=9
+Initialize per-instance NSCC parameters: flowid 1189 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1190 (PFC-only): src=1001 (15) dst=687 (10) ToR_src=15 ToR_dst=10
+Initialize per-instance NSCC parameters: flowid 1190 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1191 (PFC-only): src=1002 (15) dst=751 (11) ToR_src=15 ToR_dst=11
+Initialize per-instance NSCC parameters: flowid 1191 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[BG] Flow 1192 (PFC-only): src=1003 (15) dst=815 (12) ToR_src=15 ToR_dst=12
+Initialize per-instance NSCC parameters: flowid 1192 _base_rtt=8325120 _base_bdp=416256 _bdp=416256 _min_cwnd=4000 _maxwnd=624384 _cwnd=416256
+[FG] Flow 1 (Swift): src=0 (0) dst=64 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 1 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62406
+[FG] Flow 2 (Swift): src=1 (0) dst=65 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 2 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62412
+[FG] Flow 3 (Swift): src=2 (0) dst=66 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 3 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62418
+[FG] Flow 4 (Swift): src=3 (0) dst=67 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 4 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62424
+[FG] Flow 5 (Swift): src=4 (0) dst=68 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 5 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62430
+[FG] Flow 6 (Swift): src=5 (0) dst=69 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 6 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62436
+[FG] Flow 7 (Swift): src=6 (0) dst=70 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 7 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62442
+[FG] Flow 8 (Swift): src=7 (0) dst=71 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 8 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62448
+[FG] Flow 9 (Swift): src=8 (0) dst=72 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 9 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62454
+[FG] Flow 10 (Swift): src=9 (0) dst=73 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 10 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62460
+[FG] Flow 11 (Swift): src=10 (0) dst=74 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 11 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62466
+[FG] Flow 12 (Swift): src=11 (0) dst=75 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 12 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62472
+[FG] Flow 13 (Swift): src=12 (0) dst=76 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 13 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62478
+[FG] Flow 14 (Swift): src=13 (0) dst=77 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 14 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62484
+[FG] Flow 15 (Swift): src=14 (0) dst=78 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 15 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62490
+[FG] Flow 16 (Swift): src=15 (0) dst=79 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 16 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62496
+[FG] Flow 17 (Swift): src=16 (0) dst=80 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 17 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62502
+[FG] Flow 18 (Swift): src=17 (0) dst=81 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 18 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62508
+[FG] Flow 19 (Swift): src=18 (0) dst=82 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 19 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62514
+[FG] Flow 20 (Swift): src=19 (0) dst=83 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 20 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62520
+[FG] Flow 21 (Swift): src=20 (0) dst=84 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 21 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62526
+[FG] Flow 22 (Swift): src=21 (0) dst=85 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 22 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62532
+[FG] Flow 23 (Swift): src=22 (0) dst=86 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 23 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62538
+[FG] Flow 24 (Swift): src=23 (0) dst=87 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 24 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62544
+[FG] Flow 25 (Swift): src=24 (0) dst=88 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 25 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62550
+[FG] Flow 26 (Swift): src=25 (0) dst=89 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 26 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62556
+[FG] Flow 27 (Swift): src=26 (0) dst=90 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 27 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62562
+[FG] Flow 28 (Swift): src=27 (0) dst=91 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 28 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62568
+[FG] Flow 29 (Swift): src=28 (0) dst=92 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 29 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62574
+[FG] Flow 30 (Swift): src=29 (0) dst=93 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 30 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62580
+[FG] Flow 31 (Swift): src=30 (0) dst=94 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 31 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62586
+[FG] Flow 32 (Swift): src=31 (0) dst=95 (1) ToR_src=0 ToR_dst=1
+Setting flow size to 32000000
+Swift flow 32 base_delay: 10 us
+subflow src constructor
+connect, flow id is now 62592
+Starting simulation
+Flow Uec_32_96 flowId 1001 uecSrc 0 starting at 0
+Flow Uec_33_160 flowId 1002 uecSrc 1 starting at 0
+Flow Uec_34_224 flowId 1003 uecSrc 2 starting at 0
+Flow Uec_35_288 flowId 1004 uecSrc 3 starting at 0
+Flow Uec_36_352 flowId 1005 uecSrc 4 starting at 0
+Flow Uec_37_416 flowId 1006 uecSrc 5 starting at 0
+Flow Uec_38_480 flowId 1007 uecSrc 6 starting at 0
+Flow Uec_39_544 flowId 1008 uecSrc 7 starting at 0
+Flow Uec_40_608 flowId 1009 uecSrc 8 starting at 0
+Flow Uec_41_672 flowId 1010 uecSrc 9 starting at 0
+Flow Uec_42_736 flowId 1011 uecSrc 10 starting at 0
+Flow Uec_43_800 flowId 1012 uecSrc 11 starting at 0
+Flow Uec_96_97 flowId 1013 uecSrc 12 starting at 0
+Flow Uec_97_161 flowId 1014 uecSrc 13 starting at 0
+Flow Uec_98_225 flowId 1015 uecSrc 14 starting at 0
+Flow Uec_99_289 flowId 1016 uecSrc 15 starting at 0
+Flow Uec_100_353 flowId 1017 uecSrc 16 starting at 0
+Flow Uec_101_417 flowId 1018 uecSrc 17 starting at 0
+Flow Uec_102_481 flowId 1019 uecSrc 18 starting at 0
+Flow Uec_103_545 flowId 1020 uecSrc 19 starting at 0
+Flow Uec_104_609 flowId 1021 uecSrc 20 starting at 0
+Flow Uec_105_673 flowId 1022 uecSrc 21 starting at 0
+Flow Uec_106_737 flowId 1023 uecSrc 22 starting at 0
+Flow Uec_107_801 flowId 1024 uecSrc 23 starting at 0
+Flow Uec_160_98 flowId 1025 uecSrc 24 starting at 0
+Flow Uec_161_162 flowId 1026 uecSrc 25 starting at 0
+Flow Uec_162_226 flowId 1027 uecSrc 26 starting at 0
+Flow Uec_163_290 flowId 1028 uecSrc 27 starting at 0
+Flow Uec_164_354 flowId 1029 uecSrc 28 starting at 0
+Flow Uec_165_418 flowId 1030 uecSrc 29 starting at 0
+Flow Uec_166_482 flowId 1031 uecSrc 30 starting at 0
+Flow Uec_167_546 flowId 1032 uecSrc 31 starting at 0
+Flow Uec_168_610 flowId 1033 uecSrc 32 starting at 0
+Flow Uec_169_674 flowId 1034 uecSrc 33 starting at 0
+Flow Uec_170_738 flowId 1035 uecSrc 34 starting at 0
+Flow Uec_171_802 flowId 1036 uecSrc 35 starting at 0
+Flow Uec_224_99 flowId 1037 uecSrc 36 starting at 0
+Flow Uec_225_163 flowId 1038 uecSrc 37 starting at 0
+Flow Uec_226_227 flowId 1039 uecSrc 38 starting at 0
+Flow Uec_227_291 flowId 1040 uecSrc 39 starting at 0
+Flow Uec_228_355 flowId 1041 uecSrc 40 starting at 0
+Flow Uec_229_419 flowId 1042 uecSrc 41 starting at 0
+Flow Uec_230_483 flowId 1043 uecSrc 42 starting at 0
+Flow Uec_231_547 flowId 1044 uecSrc 43 starting at 0
+Flow Uec_232_611 flowId 1045 uecSrc 44 starting at 0
+Flow Uec_233_675 flowId 1046 uecSrc 45 starting at 0
+Flow Uec_234_739 flowId 1047 uecSrc 46 starting at 0
+Flow Uec_235_803 flowId 1048 uecSrc 47 starting at 0
+Flow Uec_288_100 flowId 1049 uecSrc 48 starting at 0
+Flow Uec_289_164 flowId 1050 uecSrc 49 starting at 0
+Flow Uec_290_228 flowId 1051 uecSrc 50 starting at 0
+Flow Uec_291_292 flowId 1052 uecSrc 51 starting at 0
+Flow Uec_292_356 flowId 1053 uecSrc 52 starting at 0
+Flow Uec_293_420 flowId 1054 uecSrc 53 starting at 0
+Flow Uec_294_484 flowId 1055 uecSrc 54 starting at 0
+Flow Uec_295_548 flowId 1056 uecSrc 55 starting at 0
+Flow Uec_296_612 flowId 1057 uecSrc 56 starting at 0
+Flow Uec_297_676 flowId 1058 uecSrc 57 starting at 0
+Flow Uec_298_740 flowId 1059 uecSrc 58 starting at 0
+Flow Uec_299_804 flowId 1060 uecSrc 59 starting at 0
+Flow Uec_352_101 flowId 1061 uecSrc 60 starting at 0
+Flow Uec_353_165 flowId 1062 uecSrc 61 starting at 0
+Flow Uec_354_229 flowId 1063 uecSrc 62 starting at 0
+Flow Uec_355_293 flowId 1064 uecSrc 63 starting at 0
+Flow Uec_356_357 flowId 1065 uecSrc 64 starting at 0
+Flow Uec_357_421 flowId 1066 uecSrc 65 starting at 0
+Flow Uec_358_485 flowId 1067 uecSrc 66 starting at 0
+Flow Uec_359_549 flowId 1068 uecSrc 67 starting at 0
+Flow Uec_360_613 flowId 1069 uecSrc 68 starting at 0
+Flow Uec_361_677 flowId 1070 uecSrc 69 starting at 0
+Flow Uec_362_741 flowId 1071 uecSrc 70 starting at 0
+Flow Uec_363_805 flowId 1072 uecSrc 71 starting at 0
+Flow Uec_416_102 flowId 1073 uecSrc 72 starting at 0
+Flow Uec_417_166 flowId 1074 uecSrc 73 starting at 0
+Flow Uec_418_230 flowId 1075 uecSrc 74 starting at 0
+Flow Uec_419_294 flowId 1076 uecSrc 75 starting at 0
+Flow Uec_420_358 flowId 1077 uecSrc 76 starting at 0
+Flow Uec_421_422 flowId 1078 uecSrc 77 starting at 0
+Flow Uec_422_486 flowId 1079 uecSrc 78 starting at 0
+Flow Uec_423_550 flowId 1080 uecSrc 79 starting at 0
+Flow Uec_424_614 flowId 1081 uecSrc 80 starting at 0
+Flow Uec_425_678 flowId 1082 uecSrc 81 starting at 0
+Flow Uec_426_742 flowId 1083 uecSrc 82 starting at 0
+Flow Uec_427_806 flowId 1084 uecSrc 83 starting at 0
+Flow Uec_480_103 flowId 1085 uecSrc 84 starting at 0
+Flow Uec_481_167 flowId 1086 uecSrc 85 starting at 0
+Flow Uec_482_231 flowId 1087 uecSrc 86 starting at 0
+Flow Uec_483_295 flowId 1088 uecSrc 87 starting at 0
+Flow Uec_484_359 flowId 1089 uecSrc 88 starting at 0
+Flow Uec_485_423 flowId 1090 uecSrc 89 starting at 0
+Flow Uec_486_487 flowId 1091 uecSrc 90 starting at 0
+Flow Uec_487_551 flowId 1092 uecSrc 91 starting at 0
+Flow Uec_488_615 flowId 1093 uecSrc 92 starting at 0
+Flow Uec_489_679 flowId 1094 uecSrc 93 starting at 0
+Flow Uec_490_743 flowId 1095 uecSrc 94 starting at 0
+Flow Uec_491_807 flowId 1096 uecSrc 95 starting at 0
+Flow Uec_544_104 flowId 1097 uecSrc 96 starting at 0
+Flow Uec_545_168 flowId 1098 uecSrc 97 starting at 0
+Flow Uec_546_232 flowId 1099 uecSrc 98 starting at 0
+Flow Uec_547_296 flowId 1100 uecSrc 99 starting at 0
+Flow Uec_548_360 flowId 1101 uecSrc 100 starting at 0
+Flow Uec_549_424 flowId 1102 uecSrc 101 starting at 0
+Flow Uec_550_488 flowId 1103 uecSrc 102 starting at 0
+Flow Uec_551_552 flowId 1104 uecSrc 103 starting at 0
+Flow Uec_552_616 flowId 1105 uecSrc 104 starting at 0
+Flow Uec_553_680 flowId 1106 uecSrc 105 starting at 0
+Flow Uec_554_744 flowId 1107 uecSrc 106 starting at 0
+Flow Uec_555_808 flowId 1108 uecSrc 107 starting at 0
+Flow Uec_608_105 flowId 1109 uecSrc 108 starting at 0
+Flow Uec_609_169 flowId 1110 uecSrc 109 starting at 0
+Flow Uec_610_233 flowId 1111 uecSrc 110 starting at 0
+Flow Uec_611_297 flowId 1112 uecSrc 111 starting at 0
+Flow Uec_612_361 flowId 1113 uecSrc 112 starting at 0
+Flow Uec_613_425 flowId 1114 uecSrc 113 starting at 0
+Flow Uec_614_489 flowId 1115 uecSrc 114 starting at 0
+Flow Uec_615_553 flowId 1116 uecSrc 115 starting at 0
+Flow Uec_616_617 flowId 1117 uecSrc 116 starting at 0
+Flow Uec_617_681 flowId 1118 uecSrc 117 starting at 0
+Flow Uec_618_745 flowId 1119 uecSrc 118 starting at 0
+Flow Uec_619_809 flowId 1120 uecSrc 119 starting at 0
+Flow Uec_672_106 flowId 1121 uecSrc 120 starting at 0
+Flow Uec_673_170 flowId 1122 uecSrc 121 starting at 0
+Flow Uec_674_234 flowId 1123 uecSrc 122 starting at 0
+Flow Uec_675_298 flowId 1124 uecSrc 123 starting at 0
+Flow Uec_676_362 flowId 1125 uecSrc 124 starting at 0
+Flow Uec_677_426 flowId 1126 uecSrc 125 starting at 0
+Flow Uec_678_490 flowId 1127 uecSrc 126 starting at 0
+Flow Uec_679_554 flowId 1128 uecSrc 127 starting at 0
+Flow Uec_680_618 flowId 1129 uecSrc 128 starting at 0
+Flow Uec_681_682 flowId 1130 uecSrc 129 starting at 0
+Flow Uec_682_746 flowId 1131 uecSrc 130 starting at 0
+Flow Uec_683_810 flowId 1132 uecSrc 131 starting at 0
+Flow Uec_736_107 flowId 1133 uecSrc 132 starting at 0
+Flow Uec_737_171 flowId 1134 uecSrc 133 starting at 0
+Flow Uec_738_235 flowId 1135 uecSrc 134 starting at 0
+Flow Uec_739_299 flowId 1136 uecSrc 135 starting at 0
+Flow Uec_740_363 flowId 1137 uecSrc 136 starting at 0
+Flow Uec_741_427 flowId 1138 uecSrc 137 starting at 0
+Flow Uec_742_491 flowId 1139 uecSrc 138 starting at 0
+Flow Uec_743_555 flowId 1140 uecSrc 139 starting at 0
+Flow Uec_744_619 flowId 1141 uecSrc 140 starting at 0
+Flow Uec_745_683 flowId 1142 uecSrc 141 starting at 0
+Flow Uec_746_747 flowId 1143 uecSrc 142 starting at 0
+Flow Uec_747_811 flowId 1144 uecSrc 143 starting at 0
+Flow Uec_800_108 flowId 1145 uecSrc 144 starting at 0
+Flow Uec_801_172 flowId 1146 uecSrc 145 starting at 0
+Flow Uec_802_236 flowId 1147 uecSrc 146 starting at 0
+Flow Uec_803_300 flowId 1148 uecSrc 147 starting at 0
+Flow Uec_804_364 flowId 1149 uecSrc 148 starting at 0
+Flow Uec_805_428 flowId 1150 uecSrc 149 starting at 0
+Flow Uec_806_492 flowId 1151 uecSrc 150 starting at 0
+Flow Uec_807_556 flowId 1152 uecSrc 151 starting at 0
+Flow Uec_808_620 flowId 1153 uecSrc 152 starting at 0
+Flow Uec_809_684 flowId 1154 uecSrc 153 starting at 0
+Flow Uec_810_748 flowId 1155 uecSrc 154 starting at 0
+Flow Uec_811_812 flowId 1156 uecSrc 155 starting at 0
+Flow Uec_864_109 flowId 1157 uecSrc 156 starting at 0
+Flow Uec_865_173 flowId 1158 uecSrc 157 starting at 0
+Flow Uec_866_237 flowId 1159 uecSrc 158 starting at 0
+Flow Uec_867_301 flowId 1160 uecSrc 159 starting at 0
+Flow Uec_868_365 flowId 1161 uecSrc 160 starting at 0
+Flow Uec_869_429 flowId 1162 uecSrc 161 starting at 0
+Flow Uec_870_493 flowId 1163 uecSrc 162 starting at 0
+Flow Uec_871_557 flowId 1164 uecSrc 163 starting at 0
+Flow Uec_872_621 flowId 1165 uecSrc 164 starting at 0
+Flow Uec_873_685 flowId 1166 uecSrc 165 starting at 0
+Flow Uec_874_749 flowId 1167 uecSrc 166 starting at 0
+Flow Uec_875_813 flowId 1168 uecSrc 167 starting at 0
+Flow Uec_928_110 flowId 1169 uecSrc 168 starting at 0
+Flow Uec_929_174 flowId 1170 uecSrc 169 starting at 0
+Flow Uec_930_238 flowId 1171 uecSrc 170 starting at 0
+Flow Uec_931_302 flowId 1172 uecSrc 171 starting at 0
+Flow Uec_932_366 flowId 1173 uecSrc 172 starting at 0
+Flow Uec_933_430 flowId 1174 uecSrc 173 starting at 0
+Flow Uec_934_494 flowId 1175 uecSrc 174 starting at 0
+Flow Uec_935_558 flowId 1176 uecSrc 175 starting at 0
+Flow Uec_936_622 flowId 1177 uecSrc 176 starting at 0
+Flow Uec_937_686 flowId 1178 uecSrc 177 starting at 0
+Flow Uec_938_750 flowId 1179 uecSrc 178 starting at 0
+Flow Uec_939_814 flowId 1180 uecSrc 179 starting at 0
+Flow Uec_992_111 flowId 1181 uecSrc 180 starting at 0
+Flow Uec_993_175 flowId 1182 uecSrc 181 starting at 0
+Flow Uec_994_239 flowId 1183 uecSrc 182 starting at 0
+Flow Uec_995_303 flowId 1184 uecSrc 183 starting at 0
+Flow Uec_996_367 flowId 1185 uecSrc 184 starting at 0
+Flow Uec_997_431 flowId 1186 uecSrc 185 starting at 0
+Flow Uec_998_495 flowId 1187 uecSrc 186 starting at 0
+Flow Uec_999_559 flowId 1188 uecSrc 187 starting at 0
+Flow Uec_1000_623 flowId 1189 uecSrc 188 starting at 0
+Flow Uec_1001_687 flowId 1190 uecSrc 189 starting at 0
+Flow Uec_1002_751 flowId 1191 uecSrc 190 starting at 0
+Flow Uec_1003_815 flowId 1192 uecSrc 191 starting at 0
+SWIFT_REPS flowid 1 time_us 0 paths 32
+SWIFT_REPS flowid 2 time_us 0 paths 32
+SWIFT_REPS flowid 3 time_us 0 paths 32
+SWIFT_REPS flowid 4 time_us 0 paths 32
+SWIFT_REPS flowid 5 time_us 0 paths 32
+SWIFT_REPS flowid 6 time_us 0 paths 32
+SWIFT_REPS flowid 7 time_us 0 paths 32
+SWIFT_REPS flowid 8 time_us 0 paths 32
+SWIFT_REPS flowid 9 time_us 0 paths 32
+SWIFT_REPS flowid 10 time_us 0 paths 32
+SWIFT_REPS flowid 11 time_us 0 paths 32
+SWIFT_REPS flowid 12 time_us 0 paths 32
+SWIFT_REPS flowid 13 time_us 0 paths 32
+SWIFT_REPS flowid 14 time_us 0 paths 32
+SWIFT_REPS flowid 15 time_us 0 paths 32
+SWIFT_REPS flowid 16 time_us 0 paths 32
+SWIFT_REPS flowid 17 time_us 0 paths 32
+SWIFT_REPS flowid 18 time_us 0 paths 32
+SWIFT_REPS flowid 19 time_us 0 paths 32
+SWIFT_REPS flowid 20 time_us 0 paths 32
+SWIFT_REPS flowid 21 time_us 0 paths 32
+SWIFT_REPS flowid 22 time_us 0 paths 32
+SWIFT_REPS flowid 23 time_us 0 paths 32
+SWIFT_REPS flowid 24 time_us 0 paths 32
+SWIFT_REPS flowid 25 time_us 0 paths 32
+SWIFT_REPS flowid 26 time_us 0 paths 32
+SWIFT_REPS flowid 27 time_us 0 paths 32
+SWIFT_REPS flowid 28 time_us 0 paths 32
+SWIFT_REPS flowid 29 time_us 0 paths 32
+SWIFT_REPS flowid 30 time_us 0 paths 32
+SWIFT_REPS flowid 31 time_us 0 paths 32
+SWIFT_REPS flowid 32 time_us 0 paths 32
+[BG] First

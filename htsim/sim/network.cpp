@@ -97,9 +97,9 @@ Packet::sendOn2(VirtualQueue* crtSink) {
             _nexthop++;
         } else {
             assert(_nexthop<_route->size());
-            nextsink = _route->at(_nexthop);
-            _nexthop++;
-        }
+        nextsink = _route->at(_nexthop);
+        _nexthop++;
+    }
     } else if (_next_routed_hop)
         nextsink = _next_routed_hop;
     else {

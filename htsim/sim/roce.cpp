@@ -430,8 +430,6 @@ void RoceSink::receivePacket(Packet& pkt) {
             _epsn_rx_bitmap[seqno] = 1;
             _out_of_order_count++;
 
-            cout << this << " ooo count+ " << _out_of_order_count << endl;
-
             pkt.flow().logTraffic(pkt,*this,TrafficLogger::PKT_RCVDESTROY);
             p->free();
             return;
@@ -440,7 +438,6 @@ void RoceSink::receivePacket(Packet& pkt) {
         if (!_nack_sent){
             send_nack(ts,_cumulative_ack);  
             _nack_sent = true;
-            cout << "Wrong seqno received at Roce SINK " << seqno << " expecting " << _cumulative_ack << endl;
         }
         pkt.flow().logTraffic(pkt,*this,TrafficLogger::PKT_RCVDESTROY);
 
@@ -459,7 +456,6 @@ void RoceSink::receivePacket(Packet& pkt) {
                 _cumulative_ack ++;
                 _epsn_rx_bitmap[_cumulative_ack] = 0;
                 _out_of_order_count--;
-                cout << this << " ooo count- " << _out_of_order_count << endl;
             }
         }
         if (_nack_sent) 

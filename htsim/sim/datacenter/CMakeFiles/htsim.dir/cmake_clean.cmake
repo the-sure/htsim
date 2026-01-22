@@ -55,6 +55,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/htsim.dir/logfile.cpp.o.d"
   "CMakeFiles/htsim.dir/loggers.cpp.o"
   "CMakeFiles/htsim.dir/loggers.cpp.o.d"
+  "CMakeFiles/htsim.dir/mcc_hardware.cpp.o"
+  "CMakeFiles/htsim.dir/mcc_hardware.cpp.o.d"
   "CMakeFiles/htsim.dir/mcc_ideal.cpp.o"
   "CMakeFiles/htsim.dir/mcc_ideal.cpp.o.d"
   "CMakeFiles/htsim.dir/meter.cpp.o"

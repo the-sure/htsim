@@ -40,11 +40,13 @@ public:
              linkspeed_bps rate,
              std::unique_ptr<UecMultipath> mp = nullptr);
     virtual ~DCQCNSrc();
+    void connect(Route* routeout, Route* routeback, DCQCNSink& sink, simtime_picosec starttime);
 
     void addPath(Route* routeout, Route* routeback);
     Route* getPathRoute(uint16_t path_index);
     uint16_t selectPath();
     void processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback);
+    void set_entropy_paths(uint16_t entropy_paths) { _no_of_paths = entropy_paths; }
 
     virtual void receivePacket(Packet& pkt) override;
     virtual void processAck(const RoceAck& ack) override;
@@ -54,6 +56,7 @@ public:
     virtual void doNextEvent();
     virtual bool isTraffic() override { return true; }
     void set_no_cc(bool enable);
+    void update_spacing();
     static void set_quiet(bool enable) { _quiet = enable; }
     static void set_log_rate(bool enable) { _log_rate = enable; }
     static void set_log_reps(bool enable) { _log_reps = enable; }
@@ -99,11 +102,15 @@ private:
     linkspeed_bps _min_rate;
     bool _no_cc;
     bool _reps_logged;
+    bool _path_log_inited;
+    uint16_t _last_path_index_logged;
     
     enum increase_state {invalid = 0, fast_recovery=1,active_increase=2};
     //increase_state _ai_state;
     uint16_t _T,_BC;
     uint64_t _byte_counter, _old_highest_sent;
+    bool _cc_event_pending;
+    simtime_picosec _next_cc_update_time;
 
 };
 
@@ -124,6 +131,7 @@ private:
  
     uint32_t _marked_packets_since_last_cnp;
     uint32_t _packets_since_last_cnp;
+    bool _cnp_event_pending;
     static uint64_t _total_cnp_sent;
 
     // Mechanism

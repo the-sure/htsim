@@ -17,6 +17,8 @@
 #include "oversubscribed_cc.h"
 #include "uec_mp.h"
 #include "mcc_ideal.h"
+#include "mcc_hardware.h"
+#include "mcc_incast.h"
 
 #define timeInf 0
 // min RTO bound in us
@@ -123,6 +125,8 @@ public:
         mem_b dec_multi_bytes;
         mem_b dec_quick_bytes;
         mem_b dec_nack_bytes;
+        uint64_t ecn_high_rtt_cnt;
+        uint64_t ecn_low_rtt_cnt;
     };
     UecSrc(TrafficLogger* trafficLogger, 
            EventList& eventList, 
@@ -219,7 +223,7 @@ public:
     static bool _receiver_based_cc;
     static bool _quiet;
 
-    enum Sender_CC { DCTCP, NSCC, MCC_IDEAL, CONSTANT};
+    enum Sender_CC { DCTCP, NSCC, MCC_IDEAL, MCC_HARDWARE, MCC_INCAST, CONSTANT};
     static Sender_CC _sender_cc_algo;
 
     static bool _disable_quick_adapt;
@@ -318,6 +322,10 @@ public:
     void updateCwndOnNack_DCTCP(bool skip, mem_b nacked_bytes, bool last_hop);
     void updateCwndOnAck_MccIdeal(bool ecn_marked, simtime_picosec delay, mem_b newly_acked_bytes);
     void updateCwndOnNack_MccIdeal(bool skip, mem_b nacked_bytes, bool last_hop);
+    void updateCwndOnAck_MccHardware(bool ecn_marked, simtime_picosec delay, mem_b newly_acked_bytes);
+    void updateCwndOnNack_MccHardware(bool skip, mem_b nacked_bytes, bool last_hop);
+    void updateCwndOnAck_MccIncast(bool ecn_marked, simtime_picosec delay, mem_b newly_acked_bytes);
+    void updateCwndOnNack_MccIncast(bool skip, mem_b nacked_bytes, bool last_hop);
 
     void dontUpdateCwndOnAck(bool skip, simtime_picosec delay, mem_b newly_acked_bytes);
     void dontUpdateCwndOnNack(bool skip, mem_b nacked_bytes, bool last_hop);
@@ -427,8 +435,10 @@ private:
     uint32_t _inc_bytes = 0;
     simtime_picosec _avg_delay = 0;
 
-    // MCC-Ideal controller state.
+    // MCC controller states.
     MccIdealController _mcc_ideal;
+    MccHardwareController _mcc_hardware;
+    MccIncastController _mcc_incast;
     linkspeed_bps _mcc_rate = 0;
     mem_b _mcc_origin_cwnd = 0;
     mem_b _mcc_cwnd = 0;
@@ -621,6 +631,7 @@ class UecSink : public DataReceiver {
 
     uint32_t _out_of_order_count;
     bool _ack_request;
+    uint32_t _mcc_hw_ack_counter;
 
     uint16_t _entropy;
 

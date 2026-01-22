@@ -1380,7 +1380,7 @@ vector<const Route*>* FatTreeTopology::get_bidir_paths(uint32_t src, uint32_t de
                         routeout->set_reverse(routeback);
                         routeback->set_reverse(routeout);
                     }
-      
+
                     //print_route(*routeout);
                     paths->push_back(routeout);
                     check_non_null(routeout);

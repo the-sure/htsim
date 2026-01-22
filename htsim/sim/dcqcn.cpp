@@ -41,7 +41,11 @@ DCQCNSrc::DCQCNSrc(RoceLogger* logger,
       _mp(std::move(mp)),
       _no_of_paths(0),
       _last_path_id(0),
-      _reps_logged(false)
+      _reps_logged(false),
+      _path_log_inited(false),
+      _last_path_index_logged(UINT16_MAX),
+      _cc_event_pending(false),
+      _next_cc_update_time(0)
 {
     _cnps_received = 0;
 
@@ -75,16 +79,38 @@ DCQCNSrc::~DCQCNSrc() {
     }
 }
 
+void DCQCNSrc::connect(Route* routeout, Route* routeback, DCQCNSink& sink, simtime_picosec starttime) {
+    assert(routeout);
+    _route = routeout;
+
+    _sink = &sink;
+    _flow.set_id(get_id());
+    _flow._name = _name;
+    sink.connect(*this, routeback);
+
+    if (_paths_out.empty() && _paths_back.empty()) {
+        addPath(routeout, routeback);
+    }
+
+    if (starttime != TRIGGER_START) {
+        eventlist().sourceIsPending(*this, timeFromUs((double)starttime));
+    } else {
+        cout << "TRIGGER START " << _name << endl;
+    }
+}
+
 void DCQCNSrc::addPath(Route* routeout, Route* routeback) {
     _paths_out.push_back(routeout);
     _paths_back.push_back(routeback);
-    _no_of_paths = static_cast<uint16_t>(_paths_out.size());
+    if (_no_of_paths == 0) {
+        _no_of_paths = static_cast<uint16_t>(_paths_out.size());
+    }
 }
 
 Route* DCQCNSrc::getPathRoute(uint16_t path_index) {
-    if (path_index >= _no_of_paths) {
+    if (path_index >= _paths_out.size()) {
         cout << "ERROR: path_index " << path_index
-             << " >= _no_of_paths " << _no_of_paths << endl;
+             << " >= _no_of_paths " << _paths_out.size() << endl;
         return nullptr;
     }
     return _paths_out[path_index];
@@ -102,9 +128,21 @@ uint16_t DCQCNSrc::selectPath() {
              << " paths " << _no_of_paths
              << endl;
     }
-    uint64_t cwnd_pkts = (_mss > 0) ? std::max<uint64_t>(1, _RC / _mss) : 1;
+    simtime_picosec rtt_ps = _rtt;
+    if (rtt_ps == 0) {
+        rtt_ps = _base_rtt;
+    }
+    uint64_t cwnd_pkts = 1;
+    if (_mss > 0 && rtt_ps > 0) {
+        long double bdp_bits = static_cast<long double>(_RC) * static_cast<long double>(rtt_ps) / 1.0e12L;
+        long double cwnd = bdp_bits / (8.0L * static_cast<long double>(_mss));
+        cwnd_pkts = std::max<uint64_t>(1, static_cast<uint64_t>(cwnd));
+    }
     _last_path_id = _mp->nextEntropy(_highest_sent, cwnd_pkts);
-    return _last_path_id % _no_of_paths;
+    if (_paths_out.empty()) {
+        return 0;
+    }
+    return _last_path_id % _paths_out.size();
 }
 
 void DCQCNSrc::processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback) {
@@ -128,16 +166,11 @@ void DCQCNSrc::processCNP(const CNPPacket& cnp){
         return;
     }
     _RT = _RC;
-    _RC = _RC * (1-_alpha/2);
+    _RC = _RC * (1 - _alpha / 2);
     if (_RC < _min_rate) {
         _RC = _min_rate;
     }
-    if (_RT < _min_rate) {
-        _RT = _min_rate;
-    }
-    _alpha = (1-_g)*_alpha + _g;
-
-    //_ai_state = increase_state::fast_recovery;
+    _alpha = (1 - _g) * _alpha + _g;
 
     _T = 0;
     _BC = 0;
@@ -150,8 +183,6 @@ void DCQCNSrc::processCNP(const CNPPacket& cnp){
     _last_cc_update = eventlist().now();
     _last_alpha_update = eventlist().now();
 
-    eventlist().sourceIsPendingRel(*this, _cc_update_period);
-
     if (_mp && _no_of_paths > 1) {
         for (uint16_t i = 0; i < _no_of_paths; ++i) {
             processPathFeedback(i, UecMultipath::PATH_ECN);
@@ -159,6 +190,11 @@ void DCQCNSrc::processCNP(const CNPPacket& cnp){
     }
 
     log_rate("CNP_DEC");
+    if (!_cc_event_pending) {
+        _next_cc_update_time = eventlist().now() + _cc_update_period;
+        eventlist().sourceIsPending(*this, _next_cc_update_time);
+        _cc_event_pending = true;
+    }
 }
 
 void DCQCNSrc::processAck(const RoceAck& ack) {
@@ -232,73 +268,67 @@ void DCQCNSrc::increaseRate(){
 }
 
 void DCQCNSrc::log_rate(const char* reason) {
-    if (!_log_rate) {
-        return;
-    }
-    cout << "DCQCN_RATE"
-         << " flowid " << _flow.flow_id()
-         << " time_us " << timeAsUs(eventlist().now())
-         << " reason " << reason
-         << " RC " << _RC
-         << " RT " << _RT
-         << " alpha " << _alpha
-         << endl;
+    (void)reason;
 }
 
 void DCQCNSrc::doNextEvent(){
+    if (_cc_event_pending && eventlist().now() >= _next_cc_update_time) {
+        _cc_event_pending = false;
+        _next_cc_update_time = 0;
+    }
+
     if (!_flow_started) {
-        // Quiet startflow: avoid heavy stdout logging for large runs.
-        _flow_started = true;
-        _highest_sent = 0;
-        _last_acked = 0;
-        _acked_packets = 0;
-        _packets_sent = 0;
-        _done = false;
-        if (_flow_logger) {
-            _flow_logger->logEvent(_flow, *this, FlowEventLogger::START, _flow_size, 0);
+        RoceSrc::startflow();
+        _last_cc_update = eventlist().now();
+        _last_alpha_update = eventlist().now();
+        _byte_counter = 0;
+        _old_highest_sent = _highest_sent;
+        if (!_cc_event_pending) {
+            _next_cc_update_time = eventlist().now() + _cc_update_period;
+            eventlist().sourceIsPending(*this, _next_cc_update_time);
+            _cc_event_pending = true;
         }
-        eventlist().sourceIsPendingRel(*this, 0);
         return;
     }
-    bool reschedule = false;
 
     RoceSrc::doNextEvent();
 
-    if (_done) {
-        return;
-    }
-    if (_no_cc) {
+    if (_done || _no_cc) {
         return;
     }
 
-    _byte_counter += (_highest_sent - _old_highest_sent) * _mss;
+    bool reschedule = false;
+
+    _byte_counter += (_highest_sent - _old_highest_sent);
     _old_highest_sent = _highest_sent;
 
-    if (_byte_counter >= _B){
+    if (_byte_counter >= _B) {
         _byte_counter = 0;
         _BC++;
-
         increaseRate();
         reschedule = true;
     }
 
-    if (eventlist().now()-_last_alpha_update >= _cc_update_period){
-        _alpha = (1-_g)*_alpha;
+    if (eventlist().now() - _last_alpha_update >= _cc_update_period) {
+        _alpha = (1 - _g) * _alpha;
         _last_alpha_update = eventlist().now();
         reschedule = true;
-    }    
+    }
 
-
-    if (eventlist().now()-_last_cc_update >= _cc_update_period){
+    if (eventlist().now() - _last_cc_update >= _cc_update_period) {
         _last_cc_update = eventlist().now();
-        _T ++;
-
+        _T++;
         increaseRate();
         reschedule = true;
     }
 
-    if (reschedule)
-        eventlist().sourceIsPendingRel(*this, _cc_update_period);
+    if (reschedule) {
+        if (!_cc_event_pending) {
+            _next_cc_update_time = eventlist().now() + _cc_update_period;
+            eventlist().sourceIsPending(*this, _next_cc_update_time);
+            _cc_event_pending = true;
+        }
+    }
 }
 
 void DCQCNSrc::receivePacket(Packet& pkt) 
@@ -368,7 +398,9 @@ void DCQCNSrc::send_packet() {
     uint16_t path_index = 0;
     if (_mp && _no_of_paths > 0) {
         path_index = selectPath();
-        selected_route = getPathRoute(path_index);
+        if (!_paths_out.empty()) {
+            selected_route = getPathRoute(path_index);
+        }
     }
 
     if (!selected_route) {
@@ -398,6 +430,16 @@ void DCQCNSrc::send_packet() {
     p->sendOn();
 }
 
+void DCQCNSrc::update_spacing() {
+    if (_pacing_rate > 0) {
+        _packet_spacing = static_cast<simtime_picosec>(
+            (Packet::data_packet_size() * 8.0 * 1e12) / _pacing_rate
+        );
+    } else {
+        _packet_spacing = 0;
+    }
+}
+
 ////////////////////////////////////////////////////////////////
 //  DCQCN SINK
 ////////////////////////////////////////////////////////////////
@@ -409,6 +451,7 @@ DCQCNSink::DCQCNSink(EventList &eventlist)
     _last_cnp_sent_time = UINT64_MAX;
     _marked_packets_since_last_cnp = 0;
     _packets_since_last_cnp = 0;
+    _cnp_event_pending = false;
 }
 
 // Receive a packet.
@@ -422,29 +465,38 @@ void DCQCNSink::receivePacket(Packet& pkt) {
     bool ecn_marked = ((pkt.flags() & ECN_CE) != 0);
     RoceSink::receivePacket(pkt);
 
-    if (ecn_marked){
-        //generate CNPs here.
-        if (_last_cnp_sent_time == UINT64_MAX || eventlist().now() - _last_cnp_sent_time >= _cnp_interval){
+    if (ecn_marked) {
+        _marked_packets_since_last_cnp++;
+        if (_last_cnp_sent_time == UINT64_MAX ||
+            eventlist().now() - _last_cnp_sent_time >= _cnp_interval) {
             send_cnp();
-            eventlist().sourceIsPendingRel(*this,_cnp_interval);
+            if (!_cnp_event_pending) {
+                eventlist().sourceIsPendingRel(*this, _cnp_interval);
+                _cnp_event_pending = true;
+            }
         }               
-        else {
-            _marked_packets_since_last_cnp++;
-        }
     }
     _packets_since_last_cnp++;
 }
 
 void DCQCNSink::doNextEvent(){
-    if (eventlist().now() - _last_cnp_sent_time >= _cnp_interval && _marked_packets_since_last_cnp >0){
+    _cnp_event_pending = false;
+    if (eventlist().now() - _last_cnp_sent_time >= _cnp_interval &&
+        _marked_packets_since_last_cnp > 0) {
         send_cnp();
-        eventlist().sourceIsPendingRel(*this,_cnp_interval);
+        if (_marked_packets_since_last_cnp > 0) {
+            eventlist().sourceIsPendingRel(*this, _cnp_interval);
+            _cnp_event_pending = true;
+        }
     }
 }
 
 void DCQCNSink::send_cnp() {
+    if (!_route) {
+        return;
+    }
     CNPPacket *cnp = 0;
-    cnp = CNPPacket::newpkt(_src->_flow, *_route, _cumulative_ack,_srcaddr);
+    cnp = CNPPacket::newpkt(_src->_flow, *_route, _cumulative_ack, _srcaddr);
     cnp->set_pathid(0);
 
     cnp->sendOn();
