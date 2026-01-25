@@ -37,13 +37,6 @@ void MccIncastParams::initParams(simtime_picosec rtt_thresh,
     R1 = r1;
     R2 = r2;
     R3 = r3;
-
-    cout << "MCC-Incast parameters:"
-         << " rtt_threshold_us=" << timeAsUs(rtt_threshold)
-         << " R1=" << R1
-         << " R2=" << R2
-         << " R3=" << R3
-         << endl;
 }
 
 bool MccIncastController::onAck(bool ecn_marked,
@@ -58,9 +51,6 @@ bool MccIncastController::onAck(bool ecn_marked,
         return false;
     }
 
-    static uint64_t ack_count = 0;
-    ack_count += acked_pkts;
-
     // Classify packets into congested/mild/free states
     if (ecn_marked) {
         _period.congested_cnt += acked_pkts;
@@ -71,37 +61,10 @@ bool MccIncastController::onAck(bool ecn_marked,
     }
     _period.total_samples += acked_pkts;
 
-    if (ecn_marked) {
-        cout << "MCC_INCAST_ECN_MARKED ack_num=" << ack_count
-             << " rtt_us=" << timeAsUs(rtt)
-             << " total_samples=" << _period.total_samples
-             << endl;
-    } else if (rtt > MccIncastParams::rtt_threshold) {
-        cout << "MCC_INCAST_MILD rtt_us=" << timeAsUs(rtt)
-             << " threshold_us=" << timeAsUs(MccIncastParams::rtt_threshold)
-             << " total_samples=" << _period.total_samples
-             << endl;
-    } else {
-        if (_period.total_samples % 100 == 0) {
-            cout << "MCC_INCAST_FREE_SAMPLE total=" << _period.total_samples
-                 << " rtt_us=" << timeAsUs(rtt)
-                 << endl;
-        }
-    }
-
     // Wait for enough samples before updating window
     if (_period.total_samples < MccIncastParams::kMessageLevelPkts) {
         return false;
     }
-
-    cout << "MCC_INCAST_WINDOW_UPDATE"
-         << " total_samples=" << _period.total_samples
-         << " congested=" << _period.congested_cnt
-         << " mild=" << _period.mild_cnt
-         << " free=" << _period.free_cnt
-         << " ecn_ratio=" << (double)_period.congested_cnt / _period.total_samples
-         << " mild_ratio=" << (double)_period.mild_cnt / _period.total_samples
-         << endl;
 
     double cwnd_pkts = static_cast<double>(cwnd_bytes) / static_cast<double>(mss_bytes);
     double min_pkts = static_cast<double>(min_cwnd_bytes) / static_cast<double>(mss_bytes);
@@ -151,28 +114,9 @@ bool MccIncastController::onAck(bool ecn_marked,
         state = MCC_STATE_MILD;
     }
     if (!_has_last_state || state != _last_state) {
-        cout << "MCC_INCAST_CONGESTION_STATE"
-             << " prev_state " << (_has_last_state ? stateName(_last_state) : "none")
-             << " state " << stateName(state)
-             << " congested_cnt " << _period.congested_cnt
-             << " mild_cnt " << _period.mild_cnt
-             << " free_cnt " << _period.free_cnt
-             << " total_samples " << _period.total_samples
-             << endl;
         _last_state = state;
         _has_last_state = true;
     }
-
-    cout << "MCC_INCAST_CONGESTION_WINDOW"
-         << " congested_cnt " << _period.congested_cnt
-         << " mild_cnt " << _period.mild_cnt
-         << " free_cnt " << _period.free_cnt
-         << " total_samples " << _period.total_samples
-         << " delta_W " << delta_W
-         << " old_cwnd_pkts " << cwnd_pkts
-         << " new_cwnd_pkts " << new_pkts
-         << " rtt_thresh_us " << timeAsUs(MccIncastParams::rtt_threshold)
-         << endl;
 
     *new_cwnd_bytes = updated_cwnd;
     _period.reset();

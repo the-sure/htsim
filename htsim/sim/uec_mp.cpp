@@ -155,13 +155,18 @@ UecMpReps::UecMpReps(uint16_t no_of_paths, bool debug, bool is_trimming_enabled)
 
 void UecMpReps::processEv(uint16_t path_id, PathFeedback feedback) {
 
-    if ((feedback == PATH_TIMEOUT) && !circular_buffer_reps->isFrozenMode() && circular_buffer_reps->explore_counter == 0) {
+    bool negative = (feedback == PATH_TIMEOUT ||
+                     feedback == PATH_ECN ||
+                     feedback == PATH_NACK);
+    if (negative && !circular_buffer_reps->isFrozenMode() && circular_buffer_reps->explore_counter == 0) {
         if (_is_trimming_enabled) { // If we have trimming enabled
             circular_buffer_reps->setFrozenMode(true);
             circular_buffer_reps->can_exit_frozen_mode = EventList::getTheEventList().now() +  circular_buffer_reps->exit_freeze_after;
-        } else {
+        } else if (feedback == PATH_TIMEOUT) {
             cout << timeAsUs(EventList::getTheEventList().now()) << "REPS currently requires trimming in this implementation." << endl;
             exit(EXIT_FAILURE); // If we reach this point, it means we are trying to enter freezing mode without trimming enabled.
+        } else {
+            return;
         } // In this version of REPS, we do not enter freezing mode without trimming enabled. Check the REPS paper to implement it also without trimming.
     }
 
@@ -220,6 +225,7 @@ void UecMpRepsLegacy::processEv(uint16_t path_id, PathFeedback feedback) {
         }
     }
 }
+
 
 uint16_t UecMpRepsLegacy::nextEntropy(uint64_t seq_sent, uint64_t cur_cwnd_in_pkts) {
     if (seq_sent < min(cur_cwnd_in_pkts, (uint64_t)_no_of_paths)) {

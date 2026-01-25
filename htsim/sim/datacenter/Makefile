@@ -979,6 +979,30 @@ mcc_ideal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/mcc_ideal.cpp.s
 .PHONY : mcc_ideal.cpp.s
 
+mcc_incast.o: mcc_incast.cpp.o
+.PHONY : mcc_incast.o
+
+# target to build an object file
+mcc_incast.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/mcc_incast.cpp.o
+.PHONY : mcc_incast.cpp.o
+
+mcc_incast.i: mcc_incast.cpp.i
+.PHONY : mcc_incast.i
+
+# target to preprocess a source file
+mcc_incast.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/mcc_incast.cpp.i
+.PHONY : mcc_incast.cpp.i
+
+mcc_incast.s: mcc_incast.cpp.s
+.PHONY : mcc_incast.s
+
+# target to generate assembly for a file
+mcc_incast.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/htsim.dir/build.make CMakeFiles/htsim.dir/mcc_incast.cpp.s
+.PHONY : mcc_incast.cpp.s
+
 meter.o: meter.cpp.o
 .PHONY : meter.o
 
@@ -2096,6 +2120,9 @@ help:
 	@echo "... mcc_ideal.o"
 	@echo "... mcc_ideal.i"
 	@echo "... mcc_ideal.s"
+	@echo "... mcc_incast.o"
+	@echo "... mcc_incast.i"
+	@echo "... mcc_incast.s"
 	@echo "... meter.o"
 	@echo "... meter.i"
 	@echo "... meter.s"

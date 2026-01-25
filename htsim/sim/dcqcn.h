@@ -46,7 +46,10 @@ public:
     Route* getPathRoute(uint16_t path_index);
     uint16_t selectPath();
     void processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback);
-    void set_entropy_paths(uint16_t entropy_paths) { _no_of_paths = entropy_paths; }
+    void set_entropy_paths(uint16_t entropy_paths) {
+        _no_of_paths = entropy_paths;
+        _entropy_paths_set = true;
+    }
 
     virtual void receivePacket(Packet& pkt) override;
     virtual void processAck(const RoceAck& ack) override;
@@ -92,6 +95,7 @@ private:
 
     std::unique_ptr<UecMultipath> _mp;
     uint16_t _no_of_paths;
+    bool _entropy_paths_set;
     uint16_t _last_path_id;
     std::vector<Route*> _paths_out;
     std::vector<Route*> _paths_back;
@@ -132,6 +136,9 @@ private:
     uint32_t _marked_packets_since_last_cnp;
     uint32_t _packets_since_last_cnp;
     bool _cnp_event_pending;
+    const Route* _last_marked_route;
+    uint16_t _last_marked_pathid;
+    bool _last_marked_valid;
     static uint64_t _total_cnp_sent;
 
     // Mechanism

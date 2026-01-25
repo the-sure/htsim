@@ -117,6 +117,10 @@ class Packet {
         assert(_pathid != UINT32_MAX);
         return _pathid;
     }
+    inline uint32_t pathid() const {
+        assert(_pathid != UINT32_MAX);
+        return _pathid;
+    }
 
     inline void set_pathid(uint32_t p) { _pathid = p;}
     const Route* route() const {return _route;}

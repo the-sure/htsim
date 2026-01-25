@@ -38,6 +38,8 @@ RoceSrc::RoceSrc(RoceLogger* logger, TrafficLogger* pktlogger, EventList &eventl
 
     _stop_time = 0;
     _flow_started = false;
+    _flow_start_time = 0;
+    _flow_start_time_set = false;
     _base_rtt = timeInf;
     _acked_packets = 0;
     _packets_sent = 0;
@@ -109,6 +111,10 @@ void RoceSrc::startflow(){
         cout << "startflow " << _flow._name << " at " << timeAsUs(eventlist().now()) << endl;
     }
     _flow_started = true;
+    if (!_flow_start_time_set) {
+        _flow_start_time = eventlist().now();
+        _flow_start_time_set = true;
+    }
     _highest_sent = 0;
     _last_acked = 0;
     
@@ -212,7 +218,20 @@ void RoceSrc::processAck(const RoceAck& ack) {
         cout << "Src " << get_id() << " ackno " << ackno << endl;
 
     if (ackno * _mss >= _flow_size){
-        cout << "Flow " << _name << " " << get_id() << " finished at " << timeAsUs(eventlist().now()) << " total bytes " << ackno << endl;
+        uint64_t payload_bytes = (_flow_size / _mss) * _mss;
+        simtime_picosec start_time = _flow_start_time_set ? _flow_start_time : eventlist().now();
+        simtime_picosec duration = eventlist().now() - start_time;
+        double throughput_gbps = 0.0;
+        if (duration > 0 && payload_bytes > 0) {
+            long double throughput_bps =
+                static_cast<long double>(payload_bytes) * 8.0L * 1.0e12L /
+                static_cast<long double>(duration);
+            throughput_gbps = static_cast<double>(throughput_bps / 1.0e9L);
+        }
+        cout << "Flow " << _name << " " << get_id() << " finished at " << timeAsUs(eventlist().now())
+             << " total bytes " << payload_bytes
+             << " throughout_gbps " << throughput_gbps
+             << endl;
         _done = true;
         if (_flow_logger) {
             _flow_logger->logEvent(_flow, *this, FlowEventLogger::FINISH, _flow_size, ackno);

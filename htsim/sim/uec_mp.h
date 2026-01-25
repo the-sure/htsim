@@ -96,5 +96,4 @@ private:
     UecMpRepsLegacy _reps_legacy;
 };
 
-
 #endif  // UEC_MP_H

@@ -149,6 +149,8 @@ public:
     static void set_bg_ar_strategy(ArStrategy strategy) { _bg_ar_strategy = strategy; }
     static ArStrategy fg_ar_strategy() { return _fg_ar_strategy; }
     static ArStrategy bg_ar_strategy() { return _bg_ar_strategy; }
+    static void set_bg_paths(uint16_t paths) { _bg_paths = (paths == 0) ? 1 : paths; }
+    static uint16_t bg_paths() { return _bg_paths; }
     static void set_ar_sticky_all(sticky_choices sticky) {
         _ar_sticky = sticky;
         _separate_ar_sticky = false;
@@ -174,6 +176,7 @@ public:
     static std::unordered_map<int, uint64_t> _fg_uplink_packets;
     static std::unordered_map<int, uint64_t> _bg_uplink_packets;
     static flowid_t _bg_flowid_threshold;
+    static uint16_t _bg_paths;
     static void set_bg_flowid_threshold(flowid_t threshold) {
         _bg_flowid_threshold = threshold;
     }

@@ -17,8 +17,10 @@ struct MccIdealParams {
     static double R1;
     static double R2;
     static double R3;
+    static bool log_mcc;
 
     static void initParams(simtime_picosec rtt_thresh, double r1, double r2, double r3);
+    static void set_log_mcc(bool enable) { log_mcc = enable; }
 };
 
 // Per-period counters (message-level window).

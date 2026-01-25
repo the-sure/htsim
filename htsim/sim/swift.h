@@ -138,7 +138,11 @@ protected:
     std::unique_ptr<UecMultipath> _mp;
     uint16_t _no_of_paths;
     uint16_t _last_path_id;
-    map<SwiftPacket::seq_t, uint16_t> _pkt_path_map;
+    struct SwiftPathInfo {
+        uint16_t path_index;
+        simtime_picosec send_time;
+    };
+    map<SwiftPacket::seq_t, SwiftPathInfo> _pkt_path_map;
     bool _reps_logged;
     vector<Route*> _mp_routes;
 
@@ -308,6 +312,8 @@ private:
     // list of subflows
     vector<SwiftSubflowSrc*> _subs;
     bool _finished;
+    simtime_picosec _flow_start_time;
+    bool _flow_start_time_set;
 
 };
 

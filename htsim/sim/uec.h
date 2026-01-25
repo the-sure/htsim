@@ -367,6 +367,7 @@ public:
 
     // Record last time this UecSrc was scheduled.
     optional<simtime_picosec> _last_event_time;
+    optional<simtime_picosec> _flow_start_time;
 public:
     static linkspeed_bps _reference_network_linkspeed; 
     static simtime_picosec _reference_network_rtt; 

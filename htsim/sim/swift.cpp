@@ -404,7 +404,8 @@ SwiftSubflowSrc::send_next_packet() {
     if (_mp && _no_of_paths > 0) {
         p->set_pathid(_last_path_id);
         SwiftPacket::seq_t end_seq = _highest_sent + mss();
-        _pkt_path_map[end_seq] = _last_path_id;
+        uint16_t path_index = _last_path_id % _no_of_paths;
+        _pkt_path_map[end_seq] = {path_index, eventlist().now()};
     }
     _highest_sent += mss();  
     _packets_sent += mss();
@@ -467,10 +468,18 @@ SwiftSubflowSrc::receivePacket(Packet& pkt)
     pkt.flow().logTraffic(pkt,*this,TrafficLogger::PKT_RCVDESTROY);
   
     ts_echo = p->ts_echo();
+    simtime_picosec delay = eventlist().now() - ts_echo;
     if (_mp && _no_of_paths > 1) {
         for (auto it = _pkt_path_map.begin(); it != _pkt_path_map.end();) {
             if (it->first <= ackno) {
-                processPathFeedback(it->second, UecMultipath::PATH_GOOD);
+                simtime_picosec pkt_delay = eventlist().now() - it->second.send_time;
+                simtime_picosec target_delay = _src.targetDelay(_swift_cwnd, *_route);
+                if (it->second.path_index < _mp_routes.size()) {
+                    target_delay = _src.targetDelay(_swift_cwnd, *_mp_routes[it->second.path_index]);
+                }
+                UecMultipath::PathFeedback ack_feedback =
+                    (pkt_delay > target_delay) ? UecMultipath::PATH_ECN : UecMultipath::PATH_GOOD;
+                processPathFeedback(it->second.path_index, ack_feedback);
                 it = _pkt_path_map.erase(it);
             } else {
                 ++it;
@@ -496,7 +505,6 @@ SwiftSubflowSrc::receivePacket(Packet& pkt)
     }
 
     assert(ackno >= _last_acked);  // no dups or reordering allowed in this simple simulator
-    simtime_picosec delay = eventlist().now() - ts_echo;
     adjust_cwnd(delay, ackno);
 
     _src.update_dsn_ack(ds_ackno);
@@ -553,9 +561,11 @@ void SwiftSubflowSrc::doNextEvent() {
         _stats.timeouts++;
         _src.log(this, SwiftLogger::SWIFT_TIMEOUT);
         if (_mp && _no_of_paths > 1) {
-            for (uint16_t i = 0; i < _no_of_paths; ++i) {
-                processPathFeedback(i, UecMultipath::PATH_TIMEOUT);
+            uint16_t path_id = _last_path_id % _no_of_paths;
+            if (!_pkt_path_map.empty()) {
+                path_id = _pkt_path_map.begin()->second.path_index;
             }
+            processPathFeedback(path_id, UecMultipath::PATH_TIMEOUT);
         }
 
         /*
@@ -711,6 +721,8 @@ SwiftSrc::SwiftSrc(SwiftRtxTimerScanner& rtx_scanner, SwiftLogger* logger, Traff
     _start_trigger = NULL;
     _flow_logger = NULL;
     _finished = false;
+    _flow_start_time = 0;
+    _flow_start_time_set = false;
     _no_of_paths = 0;
 
     // swift cc init
@@ -851,6 +863,10 @@ SwiftSrc::permute_paths() {
 
 void 
 SwiftSrc::startflow() {
+    if (!_flow_start_time_set) {
+        _flow_start_time = eventlist().now();
+        _flow_start_time_set = true;
+    }
     for (size_t i = 0; i < _subs.size(); i++) {
         if (_subs[i]->_established)
             continue; // don't start twice
@@ -944,6 +960,16 @@ void SwiftSrc::update_dsn_ack(SwiftAck::seq_t ds_ackno) {
     }
     if (ds_ackno + 1 >= effective_size){
         _finished = true;
+        uint64_t payload_bytes = (_flow_size / mss()) * mss();
+        simtime_picosec start_time = _flow_start_time_set ? _flow_start_time : eventlist().now();
+        simtime_picosec duration = eventlist().now() - start_time;
+        double throughput_gbps = 0.0;
+        if (duration > 0 && payload_bytes > 0) {
+            long double throughput_bps =
+                static_cast<long double>(payload_bytes) * 8.0L * 1.0e12L /
+                static_cast<long double>(duration);
+            throughput_gbps = static_cast<double>(throughput_bps / 1.0e9L);
+        }
         uint64_t packets_sent = 0;
         uint64_t acks_received = 0;
         uint64_t retransmits = 0;
@@ -956,7 +982,8 @@ void SwiftSrc::update_dsn_ack(SwiftAck::seq_t ds_ackno) {
             timeouts += stats.timeouts;
         }
         cout << "Flow " << _name << " (flowid " << _flow_id << ") finished at "
-             << timeAsUs(eventlist().now()) << " total bytes " << ds_ackno
+             << timeAsUs(eventlist().now()) << " total bytes " << payload_bytes
+             << " throughout_gbps " << throughput_gbps
              << " packets sent " << packets_sent
              << " acks " << acks_received
              << " retx " << retransmits

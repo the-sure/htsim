@@ -335,6 +335,7 @@ std::unordered_set<flowid_t> FatTreeSwitch::_logged_bg_uplink_flows = {};
 std::unordered_map<int, uint64_t> FatTreeSwitch::_fg_uplink_packets = {};
 std::unordered_map<int, uint64_t> FatTreeSwitch::_bg_uplink_packets = {};
 flowid_t FatTreeSwitch::_bg_flowid_threshold = 1000;
+uint16_t FatTreeSwitch::_bg_paths = 1;
 
 Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
     vector<FibEntry*> * available_hops = _fib->getRoutes(pkt.dst());
@@ -344,34 +345,57 @@ Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
         uint32_t ecmp_choice = 0;
         flowid_t flow_id = pkt.flow_id();
         bool is_background = (flow_id > _bg_flowid_threshold);
-        if (available_hops->size() > 1) {
+        vector<FibEntry*> bg_hops;
+        vector<FibEntry*>* hops = available_hops;
+        if (is_background && _type == TOR && _bg_paths > 0 &&
+            _bg_paths < available_hops->size()) {
+            bg_hops.reserve(_bg_paths);
+            for (auto* entry : *available_hops) {
+                if (entry->getDirection() != UP) {
+                    continue;
+                }
+                int uplink_index = getUplinkIndex((BaseQueue*)entry->getEgressPort()->at(0));
+                if (uplink_index >= 0 && uplink_index < _bg_paths) {
+                    bg_hops.push_back(entry);
+                }
+            }
+            if (!bg_hops.empty()) {
+                hops = &bg_hops;
+            }
+        }
+
+        if (hops->size() > 1) {
             ArStrategy ar_strategy = getArStrategyForFlow(flow_id);
             switch (ar_strategy) {
-            case AR_ECMP:
-                ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+            case AR_ECMP: {
+                uint32_t hash = (is_background && _bg_paths <= 1)
+                    ? freeBSDHash(pkt.flow_id(), 0, _hash_salt)
+                    : freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt);
+                ecmp_choice = hash % hops->size();
                 break;
+            }
             case AR_ADAPTIVE:
                 if (pkt.size() < 100) {
-                    ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+                    ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % hops->size();
                 } else if (getArStickyForFlow(flow_id) == FatTreeSwitch::PER_PACKET) {
-                    ecmp_choice = adaptive_route(available_hops, fn);
+                    ecmp_choice = adaptive_route(hops, fn);
                 } else if (getArStickyForFlow(flow_id) == FatTreeSwitch::PER_FLOWLET) {
-                    ecmp_choice = selectAdaptiveFlowlet(pkt, available_hops);
+                    ecmp_choice = selectAdaptiveFlowlet(pkt, hops);
                 }
                 break;
             case AR_ECMP_ADAPTIVE:
-                ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % available_hops->size();
+                ecmp_choice = freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt) % hops->size();
                 if (random()%100 < 50) {
-                    ecmp_choice = replace_worst_choice(available_hops, fn, ecmp_choice);
+                    ecmp_choice = replace_worst_choice(hops, fn, ecmp_choice);
                 }
                 break;
             default:
-                ecmp_choice = selectByOriginalStrategy(pkt, available_hops);
+                ecmp_choice = selectByOriginalStrategy(pkt, hops);
                 break;
             }
         }
         
-        FibEntry* e = (*available_hops)[ecmp_choice];
+        FibEntry* e = (*hops)[ecmp_choice];
         pkt.set_direction(e->getDirection());
 
         if (_type == TOR && e->getDirection() == UP) {

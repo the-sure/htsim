@@ -118,13 +118,14 @@ int main(int argc, char** argv){
 
         //
         if (strstr(line, ": ")){
-            //logged names and ids
+            // logged names and ids; skip non-id lines that contain ":" without "="
             char* split = strstr(line,"=");
+            if (!split) {
+                continue;
+            }
 
-            int id = -1;
-            if (split)
-                id = atoi(split+1);
-            
+            int id = atoi(split + 1);
+
             split[0]=0;
             assert(id >= 0);
             object_names[id] = line + 2;

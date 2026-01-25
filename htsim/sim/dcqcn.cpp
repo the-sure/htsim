@@ -40,6 +40,7 @@ DCQCNSrc::DCQCNSrc(RoceLogger* logger,
     : RoceSrc(logger,pktlogger,eventlist,rate),
       _mp(std::move(mp)),
       _no_of_paths(0),
+      _entropy_paths_set(false),
       _last_path_id(0),
       _reps_logged(false),
       _path_log_inited(false),
@@ -183,10 +184,8 @@ void DCQCNSrc::processCNP(const CNPPacket& cnp){
     _last_cc_update = eventlist().now();
     _last_alpha_update = eventlist().now();
 
-    if (_mp && _no_of_paths > 1) {
-        for (uint16_t i = 0; i < _no_of_paths; ++i) {
-            processPathFeedback(i, UecMultipath::PATH_ECN);
-        }
+    if (_mp && _no_of_paths > 0) {
+        processPathFeedback(cnp.pathid(), UecMultipath::PATH_ECN);
     }
 
     log_rate("CNP_DEC");
@@ -199,7 +198,7 @@ void DCQCNSrc::processCNP(const CNPPacket& cnp){
 
 void DCQCNSrc::processAck(const RoceAck& ack) {
     RoceSrc::processAck(ack);
-    if (_mp && _no_of_paths > 1) {
+    if (_mp && _no_of_paths > 0) {
         auto ackno = ack.ackno();
         for (auto it = _pkt_path_map.begin(); it != _pkt_path_map.end();) {
             if (it->first <= ackno) {
@@ -220,7 +219,7 @@ void DCQCNSrc::processAck(const RoceAck& ack) {
 
 void DCQCNSrc::processNack(const RoceNack& nack) {
     RoceSrc::processNack(nack);
-    if (_mp && _no_of_paths > 1) {
+    if (_mp && _no_of_paths > 0) {
         auto it = _pkt_path_map.find(nack.ackno());
         if (it != _pkt_path_map.end()) {
             processPathFeedback(it->second, UecMultipath::PATH_NACK);
@@ -299,7 +298,7 @@ void DCQCNSrc::doNextEvent(){
 
     bool reschedule = false;
 
-    _byte_counter += (_highest_sent - _old_highest_sent);
+    _byte_counter += (_highest_sent - _old_highest_sent) * static_cast<uint64_t>(_mss);
     _old_highest_sent = _highest_sent;
 
     if (_byte_counter >= _B) {
@@ -452,17 +451,22 @@ DCQCNSink::DCQCNSink(EventList &eventlist)
     _marked_packets_since_last_cnp = 0;
     _packets_since_last_cnp = 0;
     _cnp_event_pending = false;
+    _last_marked_route = nullptr;
+    _last_marked_pathid = 0;
+    _last_marked_valid = false;
 }
 
 // Receive a packet.
 // Note: _cumulative_ack is the last byte we've ACKed.
 // seqno is the first byte of the new packet.
 void DCQCNSink::receivePacket(Packet& pkt) {
-    // Cache the reverse route for CNPs on first data packet.
-    if (_route == nullptr && pkt.reverse_route() != nullptr) {
-        _route = pkt.reverse_route();
-    }
     bool ecn_marked = ((pkt.flags() & ECN_CE) != 0);
+    if (ecn_marked) {
+        const Route* reverse_route = pkt.reverse_route();
+        _last_marked_route = reverse_route;
+        _last_marked_pathid = pkt.pathid();
+        _last_marked_valid = true;
+    }
     RoceSink::receivePacket(pkt);
 
     if (ecn_marked) {
@@ -492,12 +496,17 @@ void DCQCNSink::doNextEvent(){
 }
 
 void DCQCNSink::send_cnp() {
-    if (!_route) {
+    const Route* route = (_last_marked_valid && _last_marked_route) ? _last_marked_route : _route;
+    if (!route) {
         return;
     }
     CNPPacket *cnp = 0;
-    cnp = CNPPacket::newpkt(_src->_flow, *_route, _cumulative_ack, _srcaddr);
-    cnp->set_pathid(0);
+    cnp = CNPPacket::newpkt(_src->_flow, *route, _cumulative_ack, _srcaddr);
+    if (_last_marked_valid) {
+        cnp->set_pathid(_last_marked_pathid);
+    } else {
+        cnp->set_pathid(0);
+    }
 
     cnp->sendOn();
     _total_cnp_sent++;
@@ -505,4 +514,5 @@ void DCQCNSink::send_cnp() {
     _last_cnp_sent_time = eventlist().now();
     _packets_since_last_cnp = 0;
     _marked_packets_since_last_cnp = 0;
+    _last_marked_valid = false;
 }

@@ -108,6 +108,8 @@ public:
  
     const Route* _route;
     bool _flow_started;
+    simtime_picosec _flow_start_time;
+    bool _flow_start_time_set;
     uint16_t _state_send;
 
     virtual void send_packet();

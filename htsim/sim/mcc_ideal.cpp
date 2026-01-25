@@ -24,9 +24,9 @@ const char* MccIdealController::stateName(MccState state) {
 }
 
 simtime_picosec MccIdealParams::rtt_threshold = timeFromUs(10u);
-double MccIdealParams::R1 = 0.5;
-double MccIdealParams::R2 = 0.1;
-double MccIdealParams::R3 = 0.3;
+double MccIdealParams::R1 = 1.5;
+double MccIdealParams::R2 = 1.0;
+double MccIdealParams::R3 = 1.5;
 
 void MccIdealParams::initParams(simtime_picosec rtt_thresh,
                                 double r1,
@@ -36,13 +36,6 @@ void MccIdealParams::initParams(simtime_picosec rtt_thresh,
     R1 = r1;
     R2 = r2;
     R3 = r3;
-
-    cout << "MCC-Ideal parameters:"
-         << " rtt_threshold_us=" << timeAsUs(rtt_threshold)
-         << " R1=" << R1
-         << " R2=" << R2
-         << " R3=" << R3
-         << endl;
 }
 
 bool MccIdealController::onAck(bool ecn_marked,
@@ -57,9 +50,6 @@ bool MccIdealController::onAck(bool ecn_marked,
         return false;
     }
 
-    static uint64_t ack_count = 0;
-    ack_count += acked_pkts;
-
     if (ecn_marked) {
         _period.congested_cnt += acked_pkts;
     } else if (rtt > MccIdealParams::rtt_threshold) {
@@ -69,36 +59,9 @@ bool MccIdealController::onAck(bool ecn_marked,
     }
     _period.total_samples += acked_pkts;
 
-    if (ecn_marked) {
-        cout << "MCC_ECN_MARKED ack_num=" << ack_count
-             << " rtt_us=" << timeAsUs(rtt)
-             << " total_samples=" << _period.total_samples
-             << endl;
-    } else if (rtt > MccIdealParams::rtt_threshold) {
-        cout << "MCC_MILD rtt_us=" << timeAsUs(rtt)
-             << " threshold_us=" << timeAsUs(MccIdealParams::rtt_threshold)
-             << " total_samples=" << _period.total_samples
-             << endl;
-    } else {
-        if (_period.total_samples % 100 == 0) {
-            cout << "MCC_FREE_SAMPLE total=" << _period.total_samples
-                 << " rtt_us=" << timeAsUs(rtt)
-                 << endl;
-        }
-    }
-
     if (_period.total_samples < MccIdealParams::kMessageLevelPkts) {
         return false;
     }
-
-    cout << "MCC_WINDOW_UPDATE"
-         << " total_samples=" << _period.total_samples
-         << " congested=" << _period.congested_cnt
-         << " mild=" << _period.mild_cnt
-         << " free=" << _period.free_cnt
-         << " ecn_ratio=" << (double)_period.congested_cnt / _period.total_samples
-         << " mild_ratio=" << (double)_period.mild_cnt / _period.total_samples
-         << endl;
 
     double cwnd_pkts = static_cast<double>(cwnd_bytes) / static_cast<double>(mss_bytes);
     double min_pkts = static_cast<double>(min_cwnd_bytes) / static_cast<double>(mss_bytes);
@@ -109,7 +72,7 @@ bool MccIdealController::onAck(bool ecn_marked,
 
     double new_pkts = cwnd_pkts
         - (MccIdealParams::R1 * _period.congested_cnt)
-        + (MccIdealParams::R2 * _period.mild_cnt)
+        + (MccIdealParams::R2 / cwnd_pkts * _period.mild_cnt)
         + (MccIdealParams::R3 * _period.free_cnt);
 
     if (new_pkts < min_pkts) {
@@ -141,25 +104,9 @@ bool MccIdealController::onAck(bool ecn_marked,
         state = MCC_STATE_MILD;
     }
     if (!_has_last_state || state != _last_state) {
-        cout << "MCC_CONGESTION_STATE"
-             << " prev_state " << (_has_last_state ? stateName(_last_state) : "none")
-             << " state " << stateName(state)
-             << " congested_cnt " << _period.congested_cnt
-             << " mild_cnt " << _period.mild_cnt
-             << " free_cnt " << _period.free_cnt
-             << " total_samples " << _period.total_samples
-             << endl;
         _last_state = state;
         _has_last_state = true;
     }
-
-    cout << "MCC_CONGESTION_WINDOW"
-         << " congested_cnt " << _period.congested_cnt
-         << " mild_cnt " << _period.mild_cnt
-         << " free_cnt " << _period.free_cnt
-         << " total_samples " << _period.total_samples
-         << " rtt_thresh_us " << timeAsUs(MccIdealParams::rtt_threshold)
-         << endl;
 
     *new_cwnd_bytes = updated_cwnd;
     _period.reset();

@@ -160,7 +160,7 @@ private:
 };
 
 void exit_error(char* progr) {
-    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-lossless_ecn_enable] force ECN on lossless output queues\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-dcqcn_single_path] force DCQCN single path\n\t[-dcqcn_ar single|bitmap|reps|reps_legacy|oblivious|mixed]\n\t[-pfc_thresholds low high]\n\t[-ar_granularity packet|flow]\n\t[-fg_ar_granularity packet|flow]\n\t[-bg_ar_granularity packet|flow]\n\t[-ar_method pause|queue|bandwidth|pqb|pq|pb|qb]\n\t[-fg_cc nscc|dcqcn|swift|mcc|pfc]\n\t[-mcc_rtt_thresh us]\n\t[-mcc_r1 val]\n\t[-mcc_r2 val]\n\t[-mcc_r3 val]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n\t[-fg_ar ecmp|adaptive|mixed]\n\t[-bg_ar ecmp|adaptive]\n"<< endl;
+    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-lossless_ecn_enable] force ECN on lossless output queues\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-dcqcn_single_path] force DCQCN single path\n\t[-dcqcn_ar single|bitmap|reps|reps_legacy|oblivious|mixed]\n\t[-pfc_thresholds low high]\n\t[-min_rto us] minimum RTO in us\n\t[-ar_granularity packet|flow]\n\t[-fg_ar_granularity packet|flow]\n\t[-bg_ar_granularity packet|flow]\n\t[-fg_path|-fg_paths N] foreground paths (ECMP)\n\t[-bg_path|-bg_paths N] background paths (ECMP)\n\t[-ar_method pause|queue|bandwidth|pqb|pq|pb|qb]\n\t[-fg_cc nscc|dcqcn|swift|mcc|pfc]\n\t[-mcc_rtt_thresh us]\n\t[-mcc_r1 val]\n\t[-mcc_r2 val]\n\t[-mcc_r3 val]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n\t[-fg_ar ecmp|adaptive|mixed]\n\t[-bg_ar ecmp|adaptive]\n"<< endl;
     exit(1);
 }
 
@@ -191,6 +191,8 @@ int main(int argc, char **argv) {
     linkspeed_bps linkspeed = speedFromMbps((double)HOST_NIC);
     int packet_size = 4150;
     uint32_t path_entropy_size = 64;
+    uint32_t fg_path_entropy_size = 0;
+    uint32_t bg_path_entropy_size = 0;
     uint64_t cwnd = 0;
     uint64_t pfc_only_cwnd_pkts = 0;
     uint32_t no_of_nodes = 0;
@@ -277,6 +279,7 @@ int main(int argc, char **argv) {
     double mcc_r2 = MccIdealParams::R2;
     double mcc_r3 = MccIdealParams::R3;
     bool mcc_params_set = false;
+    uint32_t user_min_rto_us = 0;  // user-specified min RTO in microseconds, 0 means auto
     // MCC-Incast parameters
     simtime_picosec mcc_incast_rtt_threshold = MccIncastParams::rtt_threshold;
     double mcc_incast_r1 = MccIncastParams::R1;
@@ -663,6 +666,22 @@ int main(int argc, char **argv) {
             path_entropy_size = atoi(argv[i+1]);
             cout << "no of paths " << path_entropy_size << endl;
             i++;
+        } else if (!strcmp(argv[i],"-fg_path")){
+            fg_path_entropy_size = atoi(argv[i+1]);
+            cout << "foreground paths " << fg_path_entropy_size << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-fg_paths")){
+            fg_path_entropy_size = atoi(argv[i+1]);
+            cout << "foreground paths " << fg_path_entropy_size << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-bg_path")){
+            bg_path_entropy_size = atoi(argv[i+1]);
+            cout << "background paths " << bg_path_entropy_size << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-bg_paths")){
+            bg_path_entropy_size = atoi(argv[i+1]);
+            cout << "background paths " << bg_path_entropy_size << endl;
+            i++;
         } else if (!strcmp(argv[i],"-hop_latency")){
             hop_latency = timeFromUs(atof(argv[i+1]));
             cout << "Hop latency set to " << timeAsUs(hop_latency) << endl;
@@ -714,7 +733,7 @@ int main(int argc, char **argv) {
             }
             separate_ar_granularity = true;
             i++;
-        } else if (!strcmp(argv[i],"-ar_method")){
+        } else if (!strcmp(argv[i],"-ar_method") || !strcmp(argv[i],"-fg_ar_method")){
             if (!strcmp(argv[i+1],"pause")){
                 cout << "Adaptive routing based on pause state " << endl;
                 FatTreeSwitch::fn = &FatTreeSwitch::compare_pause;
@@ -823,7 +842,11 @@ int main(int argc, char **argv) {
             param_pfc_set = true;
             cout << "PFC thresholds high " << high_pfc << " low " << low_pfc << endl;
             i += 2;
-        } else if (!strcmp(argv[i],"-strat")){
+        } else if (!strcmp(argv[i],"-min_rto")){
+            user_min_rto_us = atoi(argv[i+1]);
+            cout << "User-specified min RTO: " << user_min_rto_us << " us" << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-strat") || !strcmp(argv[i],"-fg_strat")){
             if (!strcmp(argv[i+1], "ecmp_host")) {
                 route_strategy = ECMP_FIB;
                 FatTreeSwitch::set_strategy(FatTreeSwitch::ECMP);
@@ -869,6 +892,14 @@ int main(int argc, char **argv) {
         i++;
     }
 
+    uint32_t fg_paths = (fg_path_entropy_size > 0) ? fg_path_entropy_size : path_entropy_size;
+    uint32_t bg_paths = (bg_path_entropy_size > 0) ? bg_path_entropy_size : 1;
+    if (bg_paths == 0) {
+        bg_paths = 1;
+    }
+    LoadBalancing_Algo fg_lb_algo = load_balancing_algo;
+    LoadBalancing_Algo bg_lb_algo = OBLIVIOUS;
+
     if (fg_cc_type == FG_SWIFT && snd_type != SWIFT_SCHEDULER) {
         cout << "Warning: foreground Swift selected but host_queue_type is not swift; "
              << "use -host_queue_type swift for Swift scheduler." << endl;
@@ -899,6 +930,10 @@ int main(int argc, char **argv) {
         FatTreeSwitch::set_strategy(FatTreeSwitch::ECMP);
     }
 
+    FatTreeSwitch::set_bg_ar_strategy(FatTreeSwitch::AR_ECMP);
+    bg_ar_sticky = FatTreeSwitch::PER_FLOWLET;
+    separate_ar_granularity = true;
+
     /*
     UecSink::_oversubscribed_congestion_control = oversubscribed_congestion_control;
     */
@@ -910,6 +945,7 @@ int main(int argc, char **argv) {
     } else {
         FatTreeSwitch::set_ar_sticky_all(ar_sticky);
     }
+    FatTreeSwitch::set_bg_paths(static_cast<uint16_t>(bg_paths));
     FatTreeSwitch::_sticky_delta = timeFromUs(ar_sticky_delta);
     FatTreeSwitch::_ecn_threshold_fraction = ecn_thresh;
     FatTreeSwitch::_disable_trim = disable_trim;
@@ -929,7 +965,7 @@ int main(int argc, char **argv) {
         assert(ecn_thresh > 0 && ecn_thresh < 1);
         // no break, fall through
     case ECMP_FIB:
-        if (path_entropy_size > 10000) {
+        if (fg_paths > 10000) {
             fprintf(stderr, "Route Strategy is ECMP.  Must specify path count using -paths\n");
             exit(1);
         }
@@ -1121,8 +1157,16 @@ int main(int argc, char **argv) {
     } 
 
     //2 priority queues; 3 hops for incast
-    UecSrc::_min_rto = timeFromUs(15 + queuesize * 6.0 * 8 * 1000000 / linkspeed);
-    cout << "Setting min RTO to " << timeAsUs(UecSrc::_min_rto) << endl;
+    if (user_min_rto_us > 0) {
+        // User specified min RTO (useful for PFC-only mode where PFC pauses can add significant delay)
+        UecSrc::_min_rto = timeFromUs(user_min_rto_us);
+        cout << "Setting min RTO to " << timeAsUs(UecSrc::_min_rto)
+             << " us (user-specified)" << endl;
+    } else {
+        UecSrc::_min_rto = timeFromUs(15 + queuesize * 6.0 * 8 * 1000000 / linkspeed);
+        cout << "Setting min RTO to " << timeAsUs(UecSrc::_min_rto)
+             << " us (auto)" << endl;
+    }
 
     if (ecn){
         uint32_t bdp_pkt = calculate_bdp_pkt(topo_cfg.get(), linkspeed);
@@ -1300,19 +1344,19 @@ int main(int argc, char **argv) {
                 cout << "Creating DCQCN flow " << current_flowid << " (" << src << "->" << dest << ")" << endl;
             }
 
-            LoadBalancing_Algo dcqcn_algo = dcqcn_ar_override ? dcqcn_ar_algo : load_balancing_algo;
+            LoadBalancing_Algo dcqcn_algo = dcqcn_ar_override ? dcqcn_ar_algo : fg_lb_algo;
             unique_ptr<UecMultipath> mp = nullptr;
             if (!dcqcn_single_path) {
                 if (dcqcn_algo == REPS) {
-                    mp = make_unique<UecMpReps>(path_entropy_size, UecSrc::_debug, !disable_trim);
+                    mp = make_unique<UecMpReps>(static_cast<uint16_t>(fg_paths), UecSrc::_debug, !disable_trim);
                 } else if (dcqcn_algo == BITMAP) {
-                    mp = make_unique<UecMpBitmap>(path_entropy_size, UecSrc::_debug);
+                    mp = make_unique<UecMpBitmap>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
                 } else if (dcqcn_algo == REPS_LEGACY) {
-                    mp = make_unique<UecMpRepsLegacy>(path_entropy_size, UecSrc::_debug);
+                    mp = make_unique<UecMpRepsLegacy>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
                 } else if (dcqcn_algo == OBLIVIOUS) {
-                    mp = make_unique<UecMpOblivious>(path_entropy_size, UecSrc::_debug);
+                    mp = make_unique<UecMpOblivious>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
                 } else if (dcqcn_algo == MIXED) {
-                    mp = make_unique<UecMpMixed>(path_entropy_size, UecSrc::_debug);
+                    mp = make_unique<UecMpMixed>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
                 }
             }
 
@@ -1365,7 +1409,7 @@ int main(int argc, char **argv) {
             Route* first_routeout = nullptr;
             Route* first_routeback = nullptr;
             if (dcqcn_switch_ecmp) {
-                dcqcn_src->set_entropy_paths(static_cast<uint16_t>(path_entropy_size));
+                dcqcn_src->set_entropy_paths(static_cast<uint16_t>(fg_paths));
                 Route* srctotor = new Route();
                 srctotor->push_back(topo[0]->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]);
                 srctotor->push_back(topo[0]->pipes_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]);
@@ -1527,16 +1571,16 @@ int main(int argc, char **argv) {
             SwiftSubflowSrc* subflow = swift_src->get_subflow();
             if (subflow) {
                 unique_ptr<UecMultipath> mp = nullptr;
-                if (load_balancing_algo == BITMAP) {
-                    mp = make_unique<UecMpBitmap>(path_entropy_size, UecSrc::_debug);
-                } else if (load_balancing_algo == REPS) {
-                    mp = make_unique<UecMpReps>(path_entropy_size, UecSrc::_debug, !disable_trim);
-                } else if (load_balancing_algo == REPS_LEGACY) {
-                    mp = make_unique<UecMpRepsLegacy>(path_entropy_size, UecSrc::_debug);
-                } else if (load_balancing_algo == OBLIVIOUS) {
-                    mp = make_unique<UecMpOblivious>(path_entropy_size, UecSrc::_debug);
-                } else if (load_balancing_algo == MIXED) {
-                    mp = make_unique<UecMpMixed>(path_entropy_size, UecSrc::_debug);
+                if (fg_lb_algo == BITMAP) {
+                    mp = make_unique<UecMpBitmap>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
+                } else if (fg_lb_algo == REPS) {
+                    mp = make_unique<UecMpReps>(static_cast<uint16_t>(fg_paths), UecSrc::_debug, !disable_trim);
+                } else if (fg_lb_algo == REPS_LEGACY) {
+                    mp = make_unique<UecMpRepsLegacy>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
+                } else if (fg_lb_algo == OBLIVIOUS) {
+                    mp = make_unique<UecMpOblivious>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
+                } else if (fg_lb_algo == MIXED) {
+                    mp = make_unique<UecMpMixed>(static_cast<uint16_t>(fg_paths), UecSrc::_debug);
                 }
                 if (mp) {
                     subflow->set_multipath(std::move(mp), swift_src->get_no_of_paths());
@@ -1548,17 +1592,19 @@ int main(int argc, char **argv) {
 
         } else if (!conn_reuse 
             || (crt->flowid and flowmap.find(crt->flowid) == flowmap.end())) {
+            LoadBalancing_Algo flow_lb_algo = is_background ? bg_lb_algo : fg_lb_algo;
+            uint32_t flow_paths = is_background ? bg_paths : fg_paths;
             unique_ptr<UecMultipath> mp = nullptr;
-            if (load_balancing_algo == BITMAP){
-                mp = make_unique<UecMpBitmap>(path_entropy_size, UecSrc::_debug);
-            } else if (load_balancing_algo == REPS){
-                mp = make_unique<UecMpReps>(path_entropy_size, UecSrc::_debug, !disable_trim);
-            } else if (load_balancing_algo == REPS_LEGACY){
-                mp = make_unique<UecMpRepsLegacy>(path_entropy_size, UecSrc::_debug);
-            }else if (load_balancing_algo == OBLIVIOUS){
-                mp = make_unique<UecMpOblivious>(path_entropy_size, UecSrc::_debug);
-            } else if (load_balancing_algo == MIXED){
-                mp = make_unique<UecMpMixed>(path_entropy_size, UecSrc::_debug);
+            if (flow_lb_algo == BITMAP){
+                mp = make_unique<UecMpBitmap>(static_cast<uint16_t>(flow_paths), UecSrc::_debug);
+            } else if (flow_lb_algo == REPS){
+                mp = make_unique<UecMpReps>(static_cast<uint16_t>(flow_paths), UecSrc::_debug, !disable_trim);
+            } else if (flow_lb_algo == REPS_LEGACY){
+                mp = make_unique<UecMpRepsLegacy>(static_cast<uint16_t>(flow_paths), UecSrc::_debug);
+            } else if (flow_lb_algo == OBLIVIOUS){
+                mp = make_unique<UecMpOblivious>(static_cast<uint16_t>(flow_paths), UecSrc::_debug);
+            } else if (flow_lb_algo == MIXED){
+                mp = make_unique<UecMpMixed>(static_cast<uint16_t>(flow_paths), UecSrc::_debug);
             } else {
                 cout << "ERROR: Failed to set multipath algorithm, abort." << endl;
                 abort();
@@ -2230,7 +2276,7 @@ int main(int argc, char **argv) {
 
         if ((fg_nscc > 0) + (fg_dcqcn > 0) + (fg_swift > 0) + (fg_mcc > 0) + (fg_mcc_incast > 0) + (fg_pfc > 0) > 1) {
             cout << "\nPerformance Comparison:" << endl;
-            cout << "  (Analyze FCT, throughput, and fairness)" << endl;
+            cout << "  (Analyze FCT, throughout, and fairness)" << endl;
         }
 
         cout << "========================================\n" << endl;
