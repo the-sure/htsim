@@ -1,0 +1,400 @@
+traffic matrix input file: datacenter/connection_matrices/mcc_incast.cm
+FatTree topology input file: datacenter/topologies/mcc_partial.topo
+endtime(us) 1000000
+Foreground CC: MPRDMA
+Background flowid threshold set to 1000
+foreground paths 32
+background paths 12
+Background AR strategy: ecmp
+Foreground AR strategy: ecmp
+Load balancing algorithm set to  oblivious
+Adaptive routing based on pause, queuesize
+queue_type 8
+Force ECN on lossless output queues
+Setting queue size to 5x BDP.
+Packet size (MTU) is 4000
+Parsed args
+Logging to datacenter/results/incast_mprdma.dat
+Linkspeed set to 400Gbps
+Loading connection matrix from  datacenter/connection_matrices/mcc_incast.cm
+Nodes: 4096 Connections: 63 Triggers: 0 Failures: 0
+Automatic queue sizing enabled  queue-size-to-bdp-factor is 5xBDP
+Topology load done
+Fat Tree topology (0) with 1us Src-ToR links, 1us ToR-Agg links, 0us ToR switch latency, 0us Agg switch latency for 4us diameter latency.
+no_of_tor_uplinks: 1024
+No of nodes: 4096
+No of pods: 1
+Hosts per pod: 4096
+Hosts per pod: 4096
+ToR switches per pod: 64
+Agg switches per pod: 32
+No of core switches: 0
+FatTreeCfg constructor done.
+Tier 0 QueueSize Down 2100000 bytes
+Tier 0 QueueSize Up 2100000 bytes
+Tier 1 QueueSize Down 2100000 bytes
+Tier 1 QueueSize Up 2100000 bytes
+Tier 2 QueueSize Down 2100000 bytes
+Auto PFC thresholds: high=263 pkts (1052000 bytes, 50.0952% queue) low=158 pkts (632000 bytes, 30.0952% queue)
+Setting min RTO to 267 us (auto)
+Setting ECN to parameters low 84000 high 336000 enable on tor downlink 1
+ECN marking enabled on lossless output queues, K=84000
+FatTreeTopologyCfg NCORE=0 NAGG=32 NTOR=64 NSRV=4096 NPOD=1 tor_switches_per_pod=64 agg_switches_per_pod=32 tiers=2 host_per_pod=4096 enabled_ecn=1 enable_ecn_on_tor_downlink=1 ecn_low=84000 ecn_high=336000 num_failed_links=0 failed_link_ratio=0.25 no_of_nodes=4096 hop_latency=0 switch_latency=0 diameter_latency=4000000 diameter=4 tier=0 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=400000000000 oversub=2 radix_down=64 queue_down=2100000 radix_up=32 queue_up=2100000 tier=1 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=800000000000 oversub=1 radix_down=32 queue_down=2100000 radix_up=0 queue_up=2100000
+network_max_unloaded_rtt 8.32512
+Initializing static NSCC parameters: _reference_network_linkspeed=100000000000 _reference_network_rtt=12000000 _reference_network_bdp=150000 _target_Qdelay=6243840 _network_linkspeed=400000000000 _network_rtt=8325120 _network_bdp=416256 _qa_gate=2^3 _qa_threshold=2.49754e+07 _scaling_factor_a=2.77504 _scaling_factor_b=0.52032 _alpha=0.00364085 _fi=54612.8 _eta=1638.38 _qa_scaling=1 _gamma=0.8 _fi_scale=0.69376 _delay_alpha=0.0125 _adjust_period_threshold=8325120 _adjust_bytes_threshold=32000
+[FG] Flow 1 (MPRDMA): src=2 (0) dst=65 (1) ToR_src=0 ToR_dst=1
+[FG] Flow 2 (MPRDMA): src=128 (2) dst=65 (1) ToR_src=2 ToR_dst=1
+[FG] Flow 3 (MPRDMA): src=192 (3) dst=65 (1) ToR_src=3 ToR_dst=1
+[FG] Flow 4 (MPRDMA): src=256 (4) dst=65 (1) ToR_src=4 ToR_dst=1
+[FG] Flow 5 (MPRDMA): src=320 (5) dst=65 (1) ToR_src=5 ToR_dst=1
+[FG] Flow 6 (MPRDMA): src=384 (6) dst=65 (1) ToR_src=6 ToR_dst=1
+[FG] Flow 7 (MPRDMA): src=448 (7) dst=65 (1) ToR_src=7 ToR_dst=1
+[FG] Flow 8 (MPRDMA): src=512 (8) dst=65 (1) ToR_src=8 ToR_dst=1
+[FG] Flow 9 (MPRDMA): src=576 (9) dst=65 (1) ToR_src=9 ToR_dst=1
+[FG] Flow 10 (MPRDMA): src=640 (10) dst=65 (1) ToR_src=10 ToR_dst=1
+[FG] Flow 11 (MPRDMA): src=704 (11) dst=65 (1) ToR_src=11 ToR_dst=1
+[FG] Flow 12 (MPRDMA): src=768 (12) dst=65 (1) ToR_src=12 ToR_dst=1
+[FG] Flow 13 (MPRDMA): src=832 (13) dst=65 (1) ToR_src=13 ToR_dst=1
+[FG] Flow 14 (MPRDMA): src=896 (14) dst=65 (1) ToR_src=14 ToR_dst=1
+[FG] Flow 15 (MPRDMA): src=960 (15) dst=65 (1) ToR_src=15 ToR_dst=1
+[FG] Flow 16 (MPRDMA): src=1024 (16) dst=65 (1) ToR_src=16 ToR_dst=1
+[FG] Flow 17 (MPRDMA): src=1088 (17) dst=65 (1) ToR_src=17 ToR_dst=1
+[FG] Flow 18 (MPRDMA): src=1152 (18) dst=65 (1) ToR_src=18 ToR_dst=1
+[FG] Flow 19 (MPRDMA): src=1216 (19) dst=65 (1) ToR_src=19 ToR_dst=1
+[FG] Flow 20 (MPRDMA): src=1280 (20) dst=65 (1) ToR_src=20 ToR_dst=1
+[FG] Flow 21 (MPRDMA): src=1344 (21) dst=65 (1) ToR_src=21 ToR_dst=1
+[FG] Flow 22 (MPRDMA): src=1408 (22) dst=65 (1) ToR_src=22 ToR_dst=1
+[FG] Flow 23 (MPRDMA): src=1472 (23) dst=65 (1) ToR_src=23 ToR_dst=1
+[FG] Flow 24 (MPRDMA): src=1536 (24) dst=65 (1) ToR_src=24 ToR_dst=1
+[FG] Flow 25 (MPRDMA): src=1600 (25) dst=65 (1) ToR_src=25 ToR_dst=1
+[FG] Flow 26 (MPRDMA): src=1664 (26) dst=65 (1) ToR_src=26 ToR_dst=1
+[FG] Flow 27 (MPRDMA): src=1728 (27) dst=65 (1) ToR_src=27 ToR_dst=1
+[FG] Flow 28 (MPRDMA): src=1792 (28) dst=65 (1) ToR_src=28 ToR_dst=1
+[FG] Flow 29 (MPRDMA): src=1856 (29) dst=65 (1) ToR_src=29 ToR_dst=1
+[FG] Flow 30 (MPRDMA): src=1920 (30) dst=65 (1) ToR_src=30 ToR_dst=1
+[FG] Flow 31 (MPRDMA): src=1984 (31) dst=65 (1) ToR_src=31 ToR_dst=1
+[FG] Flow 32 (MPRDMA): src=2048 (32) dst=65 (1) ToR_src=32 ToR_dst=1
+Starting simulation
+[FG] Flow 1 uses uplink: 28 (ToR 0, dst=65) AR=ecmp
+[FG] Flow 2 uses uplink: 2 (ToR 2, dst=65) AR=ecmp
+[FG] Flow 3 uses uplink: 27 (ToR 3, dst=65) AR=ecmp
+[FG] Flow 4 uses uplink: 18 (ToR 4, dst=65) AR=ecmp
+[FG] Flow 5 uses uplink: 15 (ToR 5, dst=65) AR=ecmp
+[FG] Flow 6 uses uplink: 0 (ToR 6, dst=65) AR=ecmp
+[FG] Flow 7 uses uplink: 11 (ToR 7, dst=65) AR=ecmp
+[FG] Flow 8 uses uplink: 0 (ToR 8, dst=65) AR=ecmp
+[FG] Flow 9 uses uplink: 30 (ToR 9, dst=65) AR=ecmp
+[FG] Flow 10 uses uplink: 22 (ToR 10, dst=65) AR=ecmp
+[FG] Flow 11 uses uplink: 1 (ToR 11, dst=65) AR=ecmp
+[FG] Flow 12 uses uplink: 30 (ToR 12, dst=65) AR=ecmp
+[FG] Flow 13 uses uplink: 15 (ToR 13, dst=65) AR=ecmp
+[FG] Flow 14 uses uplink: 24 (ToR 14, dst=65) AR=ecmp
+[FG] Flow 15 uses uplink: 16 (ToR 15, dst=65) AR=ecmp
+[FG] Flow 16 uses uplink: 13 (ToR 16, dst=65) AR=ecmp
+[FG] Flow 17 uses uplink: 22 (ToR 17, dst=65) AR=ecmp
+[FG] Flow 18 uses uplink: 0 (ToR 18, dst=65) AR=ecmp
+[FG] Flow 19 uses uplink: 24 (ToR 19, dst=65) AR=ecmp
+[FG] Flow 20 uses uplink: 3 (ToR 20, dst=65) AR=ecmp
+[FG] Flow 21 uses uplink: 8 (ToR 21, dst=65) AR=ecmp
+[FG] Flow 22 uses uplink: 30 (ToR 22, dst=65) AR=ecmp
+[FG] Flow 23 uses uplink: 26 (ToR 23, dst=65) AR=ecmp
+[FG] Flow 24 uses uplink: 14 (ToR 24, dst=65) AR=ecmp
+[FG] Flow 25 uses uplink: 7 (ToR 25, dst=65) AR=ecmp
+[FG] Flow 26 uses uplink: 8 (ToR 26, dst=65) AR=ecmp
+[FG] Flow 27 uses uplink: 14 (ToR 27, dst=65) AR=ecmp
+[FG] Flow 28 uses uplink: 27 (ToR 28, dst=65) AR=ecmp
+[FG] Flow 29 uses uplink: 5 (ToR 29, dst=65) AR=ecmp
+[FG] Flow 30 uses uplink: 2 (ToR 30, dst=65) AR=ecmp
+[FG] Flow 31 uses uplink: 19 (ToR 31, dst=65) AR=ecmp
+[FG] Flow 32 uses uplink: 8 (ToR 32, dst=65) AR=ecmp
+ Queue LS1->DST65(0) LOSSLESS not working! I should have dropped this packet525
+MPRDMA_FCT FG flowid 4 start_us 0 finish_us 37977.6 fct_us 37977.6 throughput_gbps 6.74082
+MPRDMA_PATHS FG flowid 4 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 5 start_us 0 finish_us 37983.5 fct_us 37983.5 throughput_gbps 6.73976
+MPRDMA_PATHS FG flowid 5 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 7 start_us 0 finish_us 37997.4 fct_us 37997.4 throughput_gbps 6.7373
+MPRDMA_PATHS FG flowid 7 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 11 start_us 0 finish_us 38032.9 fct_us 38032.9 throughput_gbps 6.73101
+MPRDMA_PATHS FG flowid 11 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 14 start_us 0 finish_us 38038.9 fct_us 38038.9 throughput_gbps 6.72996
+MPRDMA_PATHS FG flowid 14 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 15 start_us 0 finish_us 38048.6 fct_us 38048.6 throughput_gbps 6.72823
+MPRDMA_PATHS FG flowid 15 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 16 start_us 0 finish_us 38058.8 fct_us 38058.8 throughput_gbps 6.72644
+MPRDMA_PATHS FG flowid 16 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 23 start_us 0 finish_us 38111 fct_us 38111 throughput_gbps 6.71721
+MPRDMA_PATHS FG flowid 23 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 24 start_us 0 finish_us 38117.4 fct_us 38117.4 throughput_gbps 6.71609
+MPRDMA_PATHS FG flowid 24 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 25 start_us 0 finish_us 38126.7 fct_us 38126.7 throughput_gbps 6.71445
+MPRDMA_PATHS FG flowid 25 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 29 start_us 0 finish_us 38136.9 fct_us 38136.9 throughput_gbps 6.71266
+MPRDMA_PATHS FG flowid 29 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 33 start_us 0 finish_us 38151.2 fct_us 38151.2 throughput_gbps 6.71014
+MPRDMA_PATHS FG flowid 33 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 39 start_us 0 finish_us 38174 fct_us 38174 throughput_gbps 6.70613
+MPRDMA_PATHS FG flowid 39 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 40 start_us 0 finish_us 38180.7 fct_us 38180.7 throughput_gbps 6.70496
+MPRDMA_PATHS FG flowid 40 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 45 start_us 0 finish_us 38190.1 fct_us 38190.1 throughput_gbps 6.70332
+MPRDMA_PATHS FG flowid 45 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 49 start_us 0 finish_us 38200.2 fct_us 38200.2 throughput_gbps 6.70153
+MPRDMA_PATHS FG flowid 49 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 51 start_us 0 finish_us 38210.4 fct_us 38210.4 throughput_gbps 6.69975
+MPRDMA_PATHS FG flowid 51 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 57 start_us 0 finish_us 38220.5 fct_us 38220.5 throughput_gbps 6.69797
+MPRDMA_PATHS FG flowid 57 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 59 start_us 0 finish_us 38230.7 fct_us 38230.7 throughput_gbps 6.69619
+MPRDMA_PATHS FG flowid 59 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 60 start_us 0 finish_us 38240.9 fct_us 38240.9 throughput_gbps 6.69441
+MPRDMA_PATHS FG flowid 60 paths_used 2 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 13 start_us 0 finish_us 38278.9 fct_us 38278.9 throughput_gbps 6.68776
+MPRDMA_PATHS FG flowid 13 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 19 start_us 0 finish_us 38289.1 fct_us 38289.1 throughput_gbps 6.68598
+MPRDMA_PATHS FG flowid 19 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 58 start_us 0 finish_us 38295 fct_us 38295 throughput_gbps 6.68495
+MPRDMA_PATHS FG flowid 58 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 27 start_us 0 finish_us 38327.8 fct_us 38327.8 throughput_gbps 6.67922
+MPRDMA_PATHS FG flowid 27 paths_used 3 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 47 start_us 0 finish_us 38332.5 fct_us 38332.5 throughput_gbps 6.67841
+MPRDMA_PATHS FG flowid 47 paths_used 4 max_paths 32 packets 8123
+MPRDMA_FCT FG flowid 53 start_us 0 finish_us 38341.1 fct_us 38341.1 throughput_gbps 6.67691
+MPRDMA_PATHS FG flowid 53 paths_used 2 max_paths 32 packets 8123
+MPRDMA_FCT FG flowid 43 start_us 0 finish_us 38377.1 fct_us 38377.1 throughput_gbps 6.67065
+MPRDMA_PATHS FG flowid 43 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 55 start_us 0 finish_us 38406.7 fct_us 38406.7 throughput_gbps 6.66551
+MPRDMA_PATHS FG flowid 55 paths_used 2 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 20 start_us 0 finish_us 38847.8 fct_us 38847.8 throughput_gbps 6.58982
+MPRDMA_PATHS FG flowid 20 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 48 start_us 0 finish_us 38919 fct_us 38919 throughput_gbps 6.57777
+MPRDMA_PATHS FG flowid 48 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 31 start_us 0 finish_us 39028.1 fct_us 39028.1 throughput_gbps 6.55937
+MPRDMA_PATHS FG flowid 31 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 41 start_us 0 finish_us 39124 fct_us 39124 throughput_gbps 6.54329
+MPRDMA_PATHS FG flowid 41 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 28 start_us 0 finish_us 39222.8 fct_us 39222.8 throughput_gbps 6.52682
+MPRDMA_PATHS FG flowid 28 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 52 start_us 0 finish_us 39256.4 fct_us 39256.4 throughput_gbps 6.52124
+MPRDMA_PATHS FG flowid 52 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 61 start_us 0 finish_us 39320.3 fct_us 39320.3 throughput_gbps 6.51064
+MPRDMA_PATHS FG flowid 61 paths_used 3 max_paths 32 packets 8080
+MPRDMA_FCT FG flowid 42 start_us 0 finish_us 39427 fct_us 39427 throughput_gbps 6.49302
+MPRDMA_PATHS FG flowid 42 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 10 start_us 0 finish_us 39466.9 fct_us 39466.9 throughput_gbps 6.48645
+MPRDMA_PATHS FG flowid 10 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 6 start_us 0 finish_us 39559.9 fct_us 39559.9 throughput_gbps 6.4712
+MPRDMA_PATHS FG flowid 6 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 8 start_us 0 finish_us 39570.1 fct_us 39570.1 throughput_gbps 6.46953
+MPRDMA_PATHS FG flowid 8 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 1 start_us 0 finish_us 39608.9 fct_us 39608.9 throughput_gbps 6.4632
+MPRDMA_PATHS FG flowid 1 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 38 start_us 0 finish_us 39619 fct_us 39619 throughput_gbps 6.46154
+MPRDMA_PATHS FG flowid 38 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 17 start_us 0 finish_us 39640.4 fct_us 39640.4 throughput_gbps 6.45806
+MPRDMA_PATHS FG flowid 17 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 56 start_us 0 finish_us 39650.6 fct_us 39650.6 throughput_gbps 6.4564
+MPRDMA_PATHS FG flowid 56 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 18 start_us 0 finish_us 39736.2 fct_us 39736.2 throughput_gbps 6.44248
+MPRDMA_PATHS FG flowid 18 paths_used 3 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 62 start_us 0 finish_us 39780.2 fct_us 39780.2 throughput_gbps 6.43536
+MPRDMA_PATHS FG flowid 62 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 3 start_us 0 finish_us 40127.9 fct_us 40127.9 throughput_gbps 6.3796
+MPRDMA_PATHS FG flowid 3 paths_used 2 max_paths 32 packets 8079
+MPRDMA_FCT FG flowid 34 start_us 0 finish_us 40924.2 fct_us 40924.2 throughput_gbps 6.25548
+MPRDMA_PATHS FG flowid 34 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 9 start_us 0 finish_us 40956.1 fct_us 40956.1 throughput_gbps 6.2506
+MPRDMA_PATHS FG flowid 9 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 12 start_us 0 finish_us 40966.3 fct_us 40966.3 throughput_gbps 6.24905
+MPRDMA_PATHS FG flowid 12 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 22 start_us 0 finish_us 40976.4 fct_us 40976.4 throughput_gbps 6.2475
+MPRDMA_PATHS FG flowid 22 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 21 start_us 0 finish_us 40989.9 fct_us 40989.9 throughput_gbps 6.24544
+MPRDMA_PATHS FG flowid 21 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 26 start_us 0 finish_us 41000.1 fct_us 41000.1 throughput_gbps 6.24389
+MPRDMA_PATHS FG flowid 26 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 36 start_us 0 finish_us 41008.9 fct_us 41008.9 throughput_gbps 6.24254
+MPRDMA_PATHS FG flowid 36 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 44 start_us 0 finish_us 41019.1 fct_us 41019.1 throughput_gbps 6.241
+MPRDMA_PATHS FG flowid 44 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 63 start_us 0 finish_us 41029.2 fct_us 41029.2 throughput_gbps 6.23945
+MPRDMA_PATHS FG flowid 63 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 54 start_us 0 finish_us 41061.2 fct_us 41061.2 throughput_gbps 6.2346
+MPRDMA_PATHS FG flowid 54 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 32 start_us 0 finish_us 41080.9 fct_us 41080.9 throughput_gbps 6.23161
+MPRDMA_PATHS FG flowid 32 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 37 start_us 0 finish_us 41091 fct_us 41091 throughput_gbps 6.23007
+MPRDMA_PATHS FG flowid 37 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 2 start_us 0 finish_us 41543.6 fct_us 41543.6 throughput_gbps 6.1622
+MPRDMA_PATHS FG flowid 2 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 30 start_us 0 finish_us 41555 fct_us 41555 throughput_gbps 6.16052
+MPRDMA_PATHS FG flowid 30 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 35 start_us 0 finish_us 41565.1 fct_us 41565.1 throughput_gbps 6.15901
+MPRDMA_PATHS FG flowid 35 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 46 start_us 0 finish_us 41575.3 fct_us 41575.3 throughput_gbps 6.1575
+MPRDMA_PATHS FG flowid 46 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 50 start_us 0 finish_us 41585.4 fct_us 41585.4 throughput_gbps 6.156
+MPRDMA_PATHS FG flowid 50 paths_used 1 max_paths 32 packets 8124
+Done
+
+========== Flow Statistics ==========
+Configuration:
+  Foreground CC: MPRDMA
+  Background: PFC-only (threshold > 1000)
+  Foreground AR: ECMP
+  Background AR: ECMP
+Flow counts:
+  Foreground: 0
+  Background: 0
+  MCC-Ideal: 0
+  DCQCN: 0
+  Swift: 0
+  PFC-only: 0
+
+AR Strategy Statistics:
+  Foreground AR: ECMP
+  Background AR: ECMP
+
+ToR 0 Uplink Packet Distribution:
+Uplink 0: FG=40870 pkts, BG=0 pkts
+Uplink 1: FG=56889 pkts, BG=0 pkts
+Uplink 2: FG=48744 pkts, BG=0 pkts
+Uplink 3: FG=24107 pkts, BG=0 pkts
+Uplink 4: FG=24372 pkts, BG=0 pkts
+Uplink 5: FG=8169 pkts, BG=0 pkts
+Uplink 6: FG=48746 pkts, BG=0 pkts
+Uplink 7: FG=16248 pkts, BG=0 pkts
+Uplink 8: FG=32502 pkts, BG=0 pkts
+Uplink 9: FG=81176 pkts, BG=0 pkts
+Uplink 10: FG=32464 pkts, BG=0 pkts
+Uplink 11: FG=24406 pkts, BG=0 pkts
+Uplink 12: FG=16320 pkts, BG=0 pkts
+Uplink 13: FG=24372 pkts, BG=0 pkts
+Uplink 14: FG=16231 pkts, BG=0 pkts
+Uplink 15: FG=32496 pkts, BG=0 pkts
+Uplink 16: FG=24367 pkts, BG=0 pkts
+Uplink 17: FG=24225 pkts, BG=0 pkts
+Uplink 18: FG=24381 pkts, BG=0 pkts
+Uplink 19: FG=40620 pkts, BG=0 pkts
+Uplink 20: FG=32416 pkts, BG=0 pkts
+Uplink 21: FG=32528 pkts, BG=0 pkts
+Uplink 22: FG=24372 pkts, BG=0 pkts
+Uplink 23: FG=48718 pkts, BG=0 pkts
+Uplink 24: FG=24372 pkts, BG=0 pkts
+Uplink 25: FG=16249 pkts, BG=0 pkts
+Uplink 26: FG=24256 pkts, BG=0 pkts
+Uplink 27: FG=40504 pkts, BG=0 pkts
+Uplink 28: FG=48744 pkts, BG=0 pkts
+Uplink 29: FG=40621 pkts, BG=0 pkts
+Uplink 30: FG=40649 pkts, BG=0 pkts
+Uplink 31: FG=8153 pkts, BG=0 pkts
+PFC Statistics:
+  pause_sent: 736
+  pause_cleared: 736
+  pfc_thresholds: low 632000 high 1052000
+
+ToR 0 Uplink Queue Statistics:
+Uplink 0: packets_served=0 max_size=0
+Uplink 1: packets_served=0 max_size=0
+Uplink 2: packets_served=0 max_size=0
+Uplink 3: packets_served=0 max_size=0
+Uplink 4: packets_served=0 max_size=0
+Uplink 5: packets_served=0 max_size=0
+Uplink 6: packets_served=0 max_size=0
+Uplink 7: packets_served=0 max_size=0
+Uplink 8: packets_served=0 max_size=0
+Uplink 9: packets_served=0 max_size=0
+Uplink 10: packets_served=0 max_size=0
+Uplink 11: packets_served=0 max_size=0
+Uplink 12: packets_served=0 max_size=0
+Uplink 13: packets_served=0 max_size=0
+Uplink 14: packets_served=0 max_size=0
+Uplink 15: packets_served=0 max_size=0
+Uplink 16: packets_served=0 max_size=0
+Uplink 17: packets_served=0 max_size=0
+Uplink 18: packets_served=0 max_size=0
+Uplink 19: packets_served=0 max_size=0
+Uplink 20: packets_served=0 max_size=0
+Uplink 21: packets_served=0 max_size=0
+Uplink 22: packets_served=0 max_size=0
+Uplink 23: packets_served=0 max_size=0
+Uplink 24: packets_served=0 max_size=0
+Uplink 25: packets_served=0 max_size=0
+Uplink 26: packets_served=0 max_size=0
+Uplink 27: packets_served=0 max_size=0
+Uplink 28: packets_served=8124 max_size=4064
+Uplink 29: packets_served=0 max_size=0
+Uplink 30: packets_served=0 max_size=0
+Uplink 31: packets_served=0 max_size=0
+
+ToR 0 Uplink Background Flow Counts:
+Uplink 0: bg_flows=0
+Uplink 1: bg_flows=0
+Uplink 2: bg_flows=0
+Uplink 3: bg_flows=0
+Uplink 4: bg_flows=0
+Uplink 5: bg_flows=0
+Uplink 6: bg_flows=0
+Uplink 7: bg_flows=0
+Uplink 8: bg_flows=0
+Uplink 9: bg_flows=0
+Uplink 10: bg_flows=0
+Uplink 11: bg_flows=0
+Uplink 12: bg_flows=0
+Uplink 13: bg_flows=0
+Uplink 14: bg_flows=0
+Uplink 15: bg_flows=0
+Uplink 16: bg_flows=0
+Uplink 17: bg_flows=0
+Uplink 18: bg_flows=0
+Uplink 19: bg_flows=0
+Uplink 20: bg_flows=0
+Uplink 21: bg_flows=0
+Uplink 22: bg_flows=0
+Uplink 23: bg_flows=0
+Uplink 24: bg_flows=0
+Uplink 25: bg_flows=0
+Uplink 26: bg_flows=0
+Uplink 27: bg_flows=0
+Uplink 28: bg_flows=0
+Uplink 29: bg_flows=0
+Uplink 30: bg_flows=0
+Uplink 31: bg_flows=0
+
+ToR 0 Uplink PFC Pause Counts:
+Uplink 0: pause_sent=0 pause_cleared=0
+Uplink 1: pause_sent=0 pause_cleared=0
+Uplink 2: pause_sent=0 pause_cleared=0
+Uplink 3: pause_sent=0 pause_cleared=0
+Uplink 4: pause_sent=0 pause_cleared=0
+Uplink 5: pause_sent=0 pause_cleared=0
+Uplink 6: pause_sent=0 pause_cleared=0
+Uplink 7: pause_sent=0 pause_cleared=0
+Uplink 8: pause_sent=0 pause_cleared=0
+Uplink 9: pause_sent=0 pause_cleared=0
+Uplink 10: pause_sent=0 pause_cleared=0
+Uplink 11: pause_sent=0 pause_cleared=0
+Uplink 12: pause_sent=0 pause_cleared=0
+Uplink 13: pause_sent=0 pause_cleared=0
+Uplink 14: pause_sent=0 pause_cleared=0
+Uplink 15: pause_sent=0 pause_cleared=0
+Uplink 16: pause_sent=0 pause_cleared=0
+Uplink 17: pause_sent=0 pause_cleared=0
+Uplink 18: pause_sent=0 pause_cleared=0
+Uplink 19: pause_sent=0 pause_cleared=0
+Uplink 20: pause_sent=0 pause_cleared=0
+Uplink 21: pause_sent=0 pause_cleared=0
+Uplink 22: pause_sent=0 pause_cleared=0
+Uplink 23: pause_sent=0 pause_cleared=0
+Uplink 24: pause_sent=0 pause_cleared=0
+Uplink 25: pause_sent=0 pause_cleared=0
+Uplink 26: pause_sent=0 pause_cleared=0
+Uplink 27: pause_sent=0 pause_cleared=0
+Uplink 28: pause_sent=0 pause_cleared=0
+Uplink 29: pause_sent=0 pause_cleared=0
+Uplink 30: pause_sent=0 pause_cleared=0
+Uplink 31: pause_sent=0 pause_cleared=0
+
+========================================
+      Mixed Traffic Summary
+========================================
+Configuration:

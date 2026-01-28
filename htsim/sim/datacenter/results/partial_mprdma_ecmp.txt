@@ -1,0 +1,513 @@
+traffic matrix input file: datacenter/connection_matrices/mcc_partial.cm
+FatTree topology input file: datacenter/topologies/mcc_partial.topo
+endtime(us) 1000000
+Foreground CC: MPRDMA
+Background flowid threshold set to 1000
+foreground paths 32
+background paths 12
+Background AR strategy: ecmp
+Foreground AR strategy: ecmp
+Load balancing algorithm set to  oblivious
+Adaptive routing based on pause, queuesize
+queue_type 8
+Force ECN on lossless output queues
+Setting queue size to 5x BDP.
+Packet size (MTU) is 4000
+Parsed args
+Logging to datacenter/results/partial_mprdma_ecmp.dat
+Linkspeed set to 400Gbps
+Loading connection matrix from  datacenter/connection_matrices/mcc_partial.cm
+Nodes: 4096 Connections: 224 Triggers: 0 Failures: 0
+Automatic queue sizing enabled  queue-size-to-bdp-factor is 5xBDP
+Topology load done
+Fat Tree topology (0) with 1us Src-ToR links, 1us ToR-Agg links, 0us ToR switch latency, 0us Agg switch latency for 4us diameter latency.
+no_of_tor_uplinks: 1024
+No of nodes: 4096
+No of pods: 1
+Hosts per pod: 4096
+Hosts per pod: 4096
+ToR switches per pod: 64
+Agg switches per pod: 32
+No of core switches: 0
+FatTreeCfg constructor done.
+Tier 0 QueueSize Down 2100000 bytes
+Tier 0 QueueSize Up 2100000 bytes
+Tier 1 QueueSize Down 2100000 bytes
+Tier 1 QueueSize Up 2100000 bytes
+Tier 2 QueueSize Down 2100000 bytes
+Auto PFC thresholds: high=263 pkts (1052000 bytes, 50.0952% queue) low=158 pkts (632000 bytes, 30.0952% queue)
+Setting min RTO to 267 us (auto)
+Setting ECN to parameters low 84000 high 336000 enable on tor downlink 1
+ECN marking enabled on lossless output queues, K=84000
+FatTreeTopologyCfg NCORE=0 NAGG=32 NTOR=64 NSRV=4096 NPOD=1 tor_switches_per_pod=64 agg_switches_per_pod=32 tiers=2 host_per_pod=4096 enabled_ecn=1 enable_ecn_on_tor_downlink=1 ecn_low=84000 ecn_high=336000 num_failed_links=0 failed_link_ratio=0.25 no_of_nodes=4096 hop_latency=0 switch_latency=0 diameter_latency=4000000 diameter=4 tier=0 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=400000000000 oversub=2 radix_down=64 queue_down=2100000 radix_up=32 queue_up=2100000 tier=1 link_latency=1000000 switch_latencies=0 bundlesize=1 downlink_speeds=800000000000 oversub=1 radix_down=32 queue_down=2100000 radix_up=0 queue_up=2100000
+network_max_unloaded_rtt 8.32512
+Initializing static NSCC parameters: _reference_network_linkspeed=100000000000 _reference_network_rtt=12000000 _reference_network_bdp=150000 _target_Qdelay=6243840 _network_linkspeed=400000000000 _network_rtt=8325120 _network_bdp=416256 _qa_gate=2^3 _qa_threshold=2.49754e+07 _scaling_factor_a=2.77504 _scaling_factor_b=0.52032 _alpha=0.00364085 _fi=54612.8 _eta=1638.38 _qa_scaling=1 _gamma=0.8 _fi_scale=0.69376 _delay_alpha=0.0125 _adjust_period_threshold=8325120 _adjust_bytes_threshold=32000
+Auto quiet enabled for 224 connections (use -verbose to keep per-flow logs)
+Starting simulation
+[BG] First background flow 1001 uses uplink: 11 (ToR 0, dst=96) AR=ecmp
+[BG] First background flow 1004 uses uplink: 2 (ToR 0, dst=288) AR=ecmp
+[BG] First background flow 1006 uses uplink: 9 (ToR 0, dst=416) AR=ecmp
+[BG] First background flow 1007 uses uplink: 8 (ToR 0, dst=480) AR=ecmp
+[BG] First background flow 1011 uses uplink: 5 (ToR 0, dst=736) AR=ecmp
+[BG] First background flow 1012 uses uplink: 0 (ToR 0, dst=800) AR=ecmp
+[BG] First background flow 1014 uses uplink: 7 (ToR 1, dst=161) AR=ecmp
+[BG] First background flow 1015 uses uplink: 1 (ToR 1, dst=225) AR=ecmp
+[BG] First background flow 1016 uses uplink: 4 (ToR 1, dst=289) AR=ecmp
+[BG] First background flow 1017 uses uplink: 3 (ToR 1, dst=353) AR=ecmp
+[BG] First background flow 1019 uses uplink: 6 (ToR 1, dst=481) AR=ecmp
+[BG] First background flow 1029 uses uplink: 10 (ToR 2, dst=354) AR=ecmp
+[FG] Flow 1 uses uplink: 24 (ToR 0, dst=64) AR=ecmp
+[FG] Flow 2 uses uplink: 22 (ToR 0, dst=65) AR=ecmp
+[FG] Flow 3 uses uplink: 23 (ToR 0, dst=66) AR=ecmp
+[FG] Flow 4 uses uplink: 20 (ToR 0, dst=67) AR=ecmp
+[FG] Flow 5 uses uplink: 17 (ToR 0, dst=68) AR=ecmp
+[FG] Flow 6 uses uplink: 28 (ToR 0, dst=69) AR=ecmp
+[FG] Flow 7 uses uplink: 3 (ToR 0, dst=70) AR=ecmp
+[FG] Flow 8 uses uplink: 28 (ToR 0, dst=71) AR=ecmp
+[FG] Flow 9 uses uplink: 11 (ToR 0, dst=72) AR=ecmp
+[FG] Flow 10 uses uplink: 20 (ToR 0, dst=73) AR=ecmp
+[FG] Flow 11 uses uplink: 19 (ToR 0, dst=74) AR=ecmp
+[FG] Flow 12 uses uplink: 16 (ToR 0, dst=75) AR=ecmp
+[FG] Flow 13 uses uplink: 31 (ToR 0, dst=76) AR=ecmp
+[FG] Flow 14 uses uplink: 17 (ToR 0, dst=77) AR=ecmp
+[FG] Flow 15 uses uplink: 18 (ToR 0, dst=78) AR=ecmp
+[FG] Flow 16 uses uplink: 9 (ToR 0, dst=79) AR=ecmp
+[FG] Flow 17 uses uplink: 11 (ToR 0, dst=80) AR=ecmp
+[FG] Flow 18 uses uplink: 24 (ToR 0, dst=81) AR=ecmp
+[FG] Flow 19 uses uplink: 9 (ToR 0, dst=82) AR=ecmp
+[FG] Flow 20 uses uplink: 1 (ToR 0, dst=83) AR=ecmp
+[FG] Flow 21 uses uplink: 30 (ToR 0, dst=84) AR=ecmp
+[FG] Flow 22 uses uplink: 14 (ToR 0, dst=85) AR=ecmp
+[FG] Flow 23 uses uplink: 5 (ToR 0, dst=86) AR=ecmp
+[FG] Flow 24 uses uplink: 25 (ToR 0, dst=87) AR=ecmp
+[FG] Flow 25 uses uplink: 15 (ToR 0, dst=88) AR=ecmp
+[FG] Flow 26 uses uplink: 21 (ToR 0, dst=89) AR=ecmp
+[FG] Flow 27 uses uplink: 4 (ToR 0, dst=90) AR=ecmp
+[FG] Flow 28 uses uplink: 15 (ToR 0, dst=91) AR=ecmp
+[FG] Flow 29 uses uplink: 5 (ToR 0, dst=92) AR=ecmp
+[FG] Flow 30 uses uplink: 0 (ToR 0, dst=93) AR=ecmp
+[FG] Flow 31 uses uplink: 2 (ToR 0, dst=94) AR=ecmp
+[FG] Flow 32 uses uplink: 3 (ToR 0, dst=95) AR=ecmp
+ Queue US6->LS_4(0) LOSSLESS not working! I should have dropped this packet525
+UEC_FCT BG flowid 1052 start_us 0 finish_us 107.224 fct_us 107.224 throughput_gbps 373.05
+UEC_FCT BG flowid 1026 start_us 0 finish_us 107.393 fct_us 107.393 throughput_gbps 372.465
+UEC_FCT BG flowid 1091 start_us 0 finish_us 107.394 fct_us 107.394 throughput_gbps 372.461
+UEC_FCT BG flowid 1039 start_us 0 finish_us 107.409 fct_us 107.409 throughput_gbps 372.41
+UEC_FCT BG flowid 1104 start_us 0 finish_us 107.421 fct_us 107.421 throughput_gbps 372.367
+UEC_FCT BG flowid 1065 start_us 0 finish_us 107.488 fct_us 107.488 throughput_gbps 372.136
+UEC_FCT BG flowid 1013 start_us 0 finish_us 107.505 fct_us 107.505 throughput_gbps 372.077
+UEC_FCT BG flowid 1130 start_us 0 finish_us 107.512 fct_us 107.512 throughput_gbps 372.051
+UEC_FCT BG flowid 1143 start_us 0 finish_us 107.524 fct_us 107.524 throughput_gbps 372.008
+UEC_FCT BG flowid 1117 start_us 0 finish_us 107.561 fct_us 107.561 throughput_gbps 371.883
+UEC_FCT BG flowid 1078 start_us 0 finish_us 107.62 fct_us 107.62 throughput_gbps 371.676
+UEC_FCT BG flowid 1156 start_us 0 finish_us 107.623 fct_us 107.623 throughput_gbps 371.669
+UEC_FCT BG flowid 1185 start_us 0 finish_us 109.95 fct_us 109.95 throughput_gbps 363.801
+UEC_FCT BG flowid 1183 start_us 0 finish_us 109.951 fct_us 109.951 throughput_gbps 363.799
+UEC_FCT BG flowid 1159 start_us 0 finish_us 109.951 fct_us 109.951 throughput_gbps 363.799
+UEC_FCT BG flowid 1165 start_us 0 finish_us 109.952 fct_us 109.952 throughput_gbps 363.795
+UEC_FCT BG flowid 1182 start_us 0 finish_us 109.953 fct_us 109.953 throughput_gbps 363.793
+UEC_FCT BG flowid 1176 start_us 0 finish_us 109.958 fct_us 109.958 throughput_gbps 363.776
+UEC_FCT BG flowid 1178 start_us 0 finish_us 109.982 fct_us 109.982 throughput_gbps 363.696
+UEC_FCT BG flowid 1175 start_us 0 finish_us 109.983 fct_us 109.983 throughput_gbps 363.692
+UEC_FCT BG flowid 1189 start_us 0 finish_us 109.989 fct_us 109.989 throughput_gbps 363.671
+UEC_FCT BG flowid 1190 start_us 0 finish_us 109.99 fct_us 109.99 throughput_gbps 363.668
+UEC_FCT BG flowid 1188 start_us 0 finish_us 109.991 fct_us 109.991 throughput_gbps 363.667
+UEC_FCT BG flowid 1184 start_us 0 finish_us 109.991 fct_us 109.991 throughput_gbps 363.667
+UEC_FCT BG flowid 1172 start_us 0 finish_us 109.996 fct_us 109.996 throughput_gbps 363.65
+UEC_FCT BG flowid 1164 start_us 0 finish_us 109.998 fct_us 109.998 throughput_gbps 363.642
+UEC_FCT BG flowid 1187 start_us 0 finish_us 110.009 fct_us 110.009 throughput_gbps 363.606
+UEC_FCT BG flowid 1160 start_us 0 finish_us 110.031 fct_us 110.031 throughput_gbps 363.534
+UEC_FCT BG flowid 1166 start_us 0 finish_us 110.038 fct_us 110.038 throughput_gbps 363.512
+UEC_FCT BG flowid 1163 start_us 0 finish_us 110.038 fct_us 110.038 throughput_gbps 363.509
+UEC_FCT BG flowid 1179 start_us 0 finish_us 110.043 fct_us 110.043 throughput_gbps 363.495
+UEC_FCT BG flowid 1191 start_us 0 finish_us 110.061 fct_us 110.061 throughput_gbps 363.435
+UEC_FCT BG flowid 1167 start_us 0 finish_us 110.071 fct_us 110.071 throughput_gbps 363.403
+UEC_FCT BG flowid 1181 start_us 0 finish_us 110.111 fct_us 110.111 throughput_gbps 363.271
+UEC_FCT BG flowid 1169 start_us 0 finish_us 110.194 fct_us 110.194 throughput_gbps 362.996
+UEC_FCT BG flowid 1157 start_us 0 finish_us 110.351 fct_us 110.351 throughput_gbps 362.481
+UEC_FCT BG flowid 1161 start_us 0 finish_us 110.711 fct_us 110.711 throughput_gbps 361.301
+UEC_FCT BG flowid 1173 start_us 0 finish_us 110.832 fct_us 110.832 throughput_gbps 360.908
+UEC_FCT BG flowid 1162 start_us 0 finish_us 110.979 fct_us 110.979 throughput_gbps 360.428
+UEC_FCT BG flowid 1186 start_us 0 finish_us 111.019 fct_us 111.019 throughput_gbps 360.298
+UEC_FCT BG flowid 1174 start_us 0 finish_us 111.1 fct_us 111.1 throughput_gbps 360.037
+UEC_FCT BG flowid 1152 start_us 0 finish_us 111.354 fct_us 111.354 throughput_gbps 359.215
+UEC_FCT BG flowid 1151 start_us 0 finish_us 111.384 fct_us 111.384 throughput_gbps 359.119
+UEC_FCT BG flowid 1150 start_us 0 finish_us 111.419 fct_us 111.419 throughput_gbps 359.007
+UEC_FCT BG flowid 1154 start_us 0 finish_us 111.43 fct_us 111.43 throughput_gbps 358.969
+UEC_FCT BG flowid 1029 start_us 0 finish_us 111.441 fct_us 111.441 throughput_gbps 358.935
+UEC_FCT BG flowid 1041 start_us 0 finish_us 111.459 fct_us 111.459 throughput_gbps 358.877
+UEC_FCT BG flowid 1008 start_us 0 finish_us 111.485 fct_us 111.485 throughput_gbps 358.791
+UEC_FCT BG flowid 1001 start_us 0 finish_us 111.489 fct_us 111.489 throughput_gbps 358.779
+UEC_FCT BG flowid 1032 start_us 0 finish_us 111.493 fct_us 111.493 throughput_gbps 358.768
+UEC_FCT BG flowid 1055 start_us 0 finish_us 111.493 fct_us 111.493 throughput_gbps 358.766
+UEC_FCT BG flowid 1056 start_us 0 finish_us 111.497 fct_us 111.497 throughput_gbps 358.754
+UEC_FCT BG flowid 1108 start_us 0 finish_us 111.503 fct_us 111.503 throughput_gbps 358.734
+UEC_FCT BG flowid 1069 start_us 0 finish_us 111.504 fct_us 111.504 throughput_gbps 358.732
+UEC_FCT BG flowid 1068 start_us 0 finish_us 111.505 fct_us 111.505 throughput_gbps 358.727
+UEC_FCT BG flowid 1044 start_us 0 finish_us 111.507 fct_us 111.507 throughput_gbps 358.722
+UEC_FCT BG flowid 1098 start_us 0 finish_us 111.516 fct_us 111.516 throughput_gbps 358.693
+UEC_FCT BG flowid 1033 start_us 0 finish_us 111.519 fct_us 111.519 throughput_gbps 358.683
+UEC_FCT BG flowid 1031 start_us 0 finish_us 111.521 fct_us 111.521 throughput_gbps 358.678
+UEC_FCT BG flowid 1113 start_us 0 finish_us 111.521 fct_us 111.521 throughput_gbps 358.677
+UEC_FCT BG flowid 1010 start_us 0 finish_us 111.522 fct_us 111.522 throughput_gbps 358.675
+UEC_FCT BG flowid 1011 start_us 0 finish_us 111.522 fct_us 111.522 throughput_gbps 358.675
+UEC_FCT BG flowid 1046 start_us 0 finish_us 111.523 fct_us 111.523 throughput_gbps 358.671
+UEC_FCT BG flowid 1129 start_us 0 finish_us 111.523 fct_us 111.523 throughput_gbps 358.671
+UEC_FCT BG flowid 1115 start_us 0 finish_us 111.526 fct_us 111.526 throughput_gbps 358.661
+UEC_FCT BG flowid 1123 start_us 0 finish_us 111.527 fct_us 111.527 throughput_gbps 358.658
+UEC_FCT BG flowid 1067 start_us 0 finish_us 111.528 fct_us 111.528 throughput_gbps 358.655
+UEC_FCT BG flowid 1058 start_us 0 finish_us 111.529 fct_us 111.529 throughput_gbps 358.652
+UEC_FCT BG flowid 1062 start_us 0 finish_us 111.531 fct_us 111.531 throughput_gbps 358.644
+UEC_FCT BG flowid 1142 start_us 0 finish_us 111.537 fct_us 111.537 throughput_gbps 358.626
+UEC_FCT BG flowid 1018 start_us 0 finish_us 111.537 fct_us 111.537 throughput_gbps 358.626
+UEC_FCT BG flowid 1083 start_us 0 finish_us 111.538 fct_us 111.538 throughput_gbps 358.623
+UEC_FCT BG flowid 1006 start_us 0 finish_us 111.538 fct_us 111.538 throughput_gbps 358.621
+UEC_FCT BG flowid 1059 start_us 0 finish_us 111.54 fct_us 111.54 throughput_gbps 358.617
+UEC_FCT BG flowid 1102 start_us 0 finish_us 111.54 fct_us 111.54 throughput_gbps 358.617
+UEC_FCT BG flowid 1047 start_us 0 finish_us 111.54 fct_us 111.54 throughput_gbps 358.615
+UEC_FCT BG flowid 1116 start_us 0 finish_us 111.54 fct_us 111.54 throughput_gbps 358.615
+UEC_FCT BG flowid 1106 start_us 0 finish_us 111.541 fct_us 111.541 throughput_gbps 358.613
+UEC_FCT BG flowid 1128 start_us 0 finish_us 111.542 fct_us 111.542 throughput_gbps 358.61
+UEC_FCT BG flowid 1043 start_us 0 finish_us 111.543 fct_us 111.543 throughput_gbps 358.607
+UEC_FCT BG flowid 1071 start_us 0 finish_us 111.543 fct_us 111.543 throughput_gbps 358.605
+UEC_FCT BG flowid 1082 start_us 0 finish_us 111.544 fct_us 111.544 throughput_gbps 358.603
+UEC_FCT BG flowid 1016 start_us 0 finish_us 111.544 fct_us 111.544 throughput_gbps 358.602
+UEC_FCT BG flowid 1094 start_us 0 finish_us 111.546 fct_us 111.546 throughput_gbps 358.597
+UEC_FCT BG flowid 1127 start_us 0 finish_us 111.548 fct_us 111.548 throughput_gbps 358.588
+UEC_FCT BG flowid 1140 start_us 0 finish_us 111.548 fct_us 111.548 throughput_gbps 358.588
+UEC_FCT BG flowid 1023 start_us 0 finish_us 111.558 fct_us 111.558 throughput_gbps 358.559
+UEC_FCT BG flowid 1080 start_us 0 finish_us 111.563 fct_us 111.563 throughput_gbps 358.542
+UEC_FCT BG flowid 1007 start_us 0 finish_us 111.564 fct_us 111.564 throughput_gbps 358.538
+UEC_FCT BG flowid 1022 start_us 0 finish_us 111.565 fct_us 111.565 throughput_gbps 358.534
+UEC_FCT BG flowid 1035 start_us 0 finish_us 111.568 fct_us 111.568 throughput_gbps 358.526
+UEC_FCT BG flowid 1034 start_us 0 finish_us 111.57 fct_us 111.57 throughput_gbps 358.52
+UEC_FCT BG flowid 1020 start_us 0 finish_us 111.571 fct_us 111.571 throughput_gbps 358.515
+UEC_FCT BG flowid 1053 start_us 0 finish_us 111.572 fct_us 111.572 throughput_gbps 358.514
+UEC_FCT BG flowid 1133 start_us 0 finish_us 111.573 fct_us 111.573 throughput_gbps 358.509
+UEC_FCT BG flowid 1107 start_us 0 finish_us 111.575 fct_us 111.575 throughput_gbps 358.503
+UEC_FCT BG flowid 1119 start_us 0 finish_us 111.584 fct_us 111.584 throughput_gbps 358.474
+UEC_FCT BG flowid 1092 start_us 0 finish_us 111.585 fct_us 111.585 throughput_gbps 358.472
+UEC_FCT BG flowid 1079 start_us 0 finish_us 111.585 fct_us 111.585 throughput_gbps 358.472
+UEC_FCT BG flowid 1005 start_us 0 finish_us 111.585 fct_us 111.585 throughput_gbps 358.472
+UEC_FCT BG flowid 1037 start_us 0 finish_us 111.588 fct_us 111.588 throughput_gbps 358.462
+UEC_FCT BG flowid 1070 start_us 0 finish_us 111.588 fct_us 111.588 throughput_gbps 358.46
+UEC_FCT BG flowid 1061 start_us 0 finish_us 111.588 fct_us 111.588 throughput_gbps 358.46
+UEC_FCT BG flowid 1103 start_us 0 finish_us 111.59 fct_us 111.59 throughput_gbps 358.456
+UEC_FCT BG flowid 1118 start_us 0 finish_us 111.596 fct_us 111.596 throughput_gbps 358.436
+UEC_FCT BG flowid 1085 start_us 0 finish_us 111.601 fct_us 111.601 throughput_gbps 358.419
+UEC_FCT BG flowid 1095 start_us 0 finish_us 111.605 fct_us 111.605 throughput_gbps 358.408
+UEC_FCT BG flowid 1139 start_us 0 finish_us 111.625 fct_us 111.625 throughput_gbps 358.344
+UEC_FCT BG flowid 1131 start_us 0 finish_us 111.635 fct_us 111.635 throughput_gbps 358.31
+UEC_FCT BG flowid 1019 start_us 0 finish_us 111.645 fct_us 111.645 throughput_gbps 358.277
+UEC_FCT BG flowid 1126 start_us 0 finish_us 111.656 fct_us 111.656 throughput_gbps 358.243
+UEC_FCT BG flowid 1109 start_us 0 finish_us 111.687 fct_us 111.687 throughput_gbps 358.145
+UEC_FCT BG flowid 1121 start_us 0 finish_us 111.701 fct_us 111.701 throughput_gbps 358.098
+UEC_FCT BG flowid 1097 start_us 0 finish_us 111.74 fct_us 111.74 throughput_gbps 357.975
+UEC_FCT BG flowid 1017 start_us 0 finish_us 111.74 fct_us 111.74 throughput_gbps 357.973
+UEC_FCT BG flowid 1077 start_us 0 finish_us 111.745 fct_us 111.745 throughput_gbps 357.957
+UEC_FCT BG flowid 1090 start_us 0 finish_us 111.765 fct_us 111.765 throughput_gbps 357.894
+UEC_FCT BG flowid 1066 start_us 0 finish_us 111.784 fct_us 111.784 throughput_gbps 357.832
+UEC_FCT BG flowid 1125 start_us 0 finish_us 111.791 fct_us 111.791 throughput_gbps 357.81
+UEC_FCT BG flowid 1049 start_us 0 finish_us 111.811 fct_us 111.811 throughput_gbps 357.748
+UEC_FCT BG flowid 1073 start_us 0 finish_us 111.839 fct_us 111.839 throughput_gbps 357.658
+UEC_FCT BG flowid 1138 start_us 0 finish_us 111.846 fct_us 111.846 throughput_gbps 357.634
+UEC_FCT BG flowid 1054 start_us 0 finish_us 111.846 fct_us 111.846 throughput_gbps 357.633
+UEC_FCT BG flowid 1145 start_us 0 finish_us 111.852 fct_us 111.852 throughput_gbps 357.616
+UEC_FCT BG flowid 1042 start_us 0 finish_us 111.863 fct_us 111.863 throughput_gbps 357.58
+UEC_FCT BG flowid 1114 start_us 0 finish_us 111.875 fct_us 111.875 throughput_gbps 357.541
+UEC_FCT BG flowid 1177 start_us 0 finish_us 111.879 fct_us 111.879 throughput_gbps 357.528
+UEC_FCT BG flowid 1030 start_us 0 finish_us 111.918 fct_us 111.918 throughput_gbps 357.403
+UEC_FCT BG flowid 1137 start_us 0 finish_us 111.95 fct_us 111.95 throughput_gbps 357.303
+UEC_FCT BG flowid 1009 start_us 0 finish_us 111.958 fct_us 111.958 throughput_gbps 357.276
+UEC_FCT BG flowid 1149 start_us 0 finish_us 111.978 fct_us 111.978 throughput_gbps 357.213
+UEC_FCT BG flowid 1025 start_us 0 finish_us 112.003 fct_us 112.003 throughput_gbps 357.133
+UEC_FCT BG flowid 1089 start_us 0 finish_us 112.034 fct_us 112.034 throughput_gbps 357.036
+UEC_FCT BG flowid 1101 start_us 0 finish_us 112.04 fct_us 112.04 throughput_gbps 357.015
+UEC_FCT BG flowid 1021 start_us 0 finish_us 112.443 fct_us 112.443 throughput_gbps 355.735
+UEC_FCT BG flowid 1155 start_us 0 finish_us 112.675 fct_us 112.675 throughput_gbps 355.003
+UEC_FCT BG flowid 1045 start_us 0 finish_us 112.888 fct_us 112.888 throughput_gbps 354.335
+UEC_FCT BG flowid 1153 start_us 0 finish_us 112.928 fct_us 112.928 throughput_gbps 354.209
+UEC_FCT BG flowid 1093 start_us 0 finish_us 113.008 fct_us 113.008 throughput_gbps 353.958
+UEC_FCT BG flowid 1105 start_us 0 finish_us 113.128 fct_us 113.128 throughput_gbps 353.581
+UEC_FCT BG flowid 1081 start_us 0 finish_us 113.131 fct_us 113.131 throughput_gbps 353.572
+UEC_FCT BG flowid 1057 start_us 0 finish_us 113.137 fct_us 113.137 throughput_gbps 353.554
+UEC_FCT BG flowid 1141 start_us 0 finish_us 113.169 fct_us 113.169 throughput_gbps 353.454
+UEC_FCT BG flowid 1180 start_us 0 finish_us 115.452 fct_us 115.452 throughput_gbps 346.465
+UEC_FCT BG flowid 1012 start_us 0 finish_us 115.612 fct_us 115.612 throughput_gbps 345.985
+UEC_FCT BG flowid 1036 start_us 0 finish_us 115.652 fct_us 115.652 throughput_gbps 345.866
+UEC_FCT BG flowid 1192 start_us 0 finish_us 115.973 fct_us 115.973 throughput_gbps 344.907
+UEC_FCT BG flowid 1168 start_us 0 finish_us 116.201 fct_us 116.201 throughput_gbps 344.231
+UEC_FCT BG flowid 1024 start_us 0 finish_us 116.415 fct_us 116.415 throughput_gbps 343.598
+UEC_FCT BG flowid 1072 start_us 0 finish_us 116.63 fct_us 116.63 throughput_gbps 342.965
+UEC_FCT BG flowid 1060 start_us 0 finish_us 116.763 fct_us 116.763 throughput_gbps 342.574
+UEC_FCT BG flowid 1084 start_us 0 finish_us 116.793 fct_us 116.793 throughput_gbps 342.485
+UEC_FCT BG flowid 1048 start_us 0 finish_us 116.794 fct_us 116.794 throughput_gbps 342.483
+UEC_FCT BG flowid 1132 start_us 0 finish_us 116.861 fct_us 116.861 throughput_gbps 342.288
+UEC_FCT BG flowid 1096 start_us 0 finish_us 116.861 fct_us 116.861 throughput_gbps 342.287
+UEC_FCT BG flowid 1120 start_us 0 finish_us 116.887 fct_us 116.887 throughput_gbps 342.21
+UEC_FCT BG flowid 1144 start_us 0 finish_us 116.954 fct_us 116.954 throughput_gbps 342.014
+UEC_FCT BG flowid 1158 start_us 0 finish_us 120.315 fct_us 120.315 throughput_gbps 332.462
+UEC_FCT BG flowid 1171 start_us 0 finish_us 121.23 fct_us 121.23 throughput_gbps 329.952
+UEC_FCT BG flowid 1003 start_us 0 finish_us 121.514 fct_us 121.514 throughput_gbps 329.181
+UEC_FCT BG flowid 1170 start_us 0 finish_us 121.685 fct_us 121.685 throughput_gbps 328.716
+UEC_FCT BG flowid 1135 start_us 0 finish_us 121.714 fct_us 121.714 throughput_gbps 328.639
+UEC_FCT BG flowid 1002 start_us 0 finish_us 121.765 fct_us 121.765 throughput_gbps 328.5
+UEC_FCT BG flowid 1051 start_us 0 finish_us 121.918 fct_us 121.918 throughput_gbps 328.088
+UEC_FCT BG flowid 1111 start_us 0 finish_us 122.563 fct_us 122.563 throughput_gbps 326.362
+UEC_FCT BG flowid 1147 start_us 0 finish_us 122.644 fct_us 122.644 throughput_gbps 326.146
+UEC_FCT BG flowid 1063 start_us 0 finish_us 122.725 fct_us 122.725 throughput_gbps 325.932
+UEC_FCT BG flowid 1015 start_us 0 finish_us 122.766 fct_us 122.766 throughput_gbps 325.824
+UEC_FCT BG flowid 1075 start_us 0 finish_us 122.767 fct_us 122.767 throughput_gbps 325.82
+UEC_FCT BG flowid 1134 start_us 0 finish_us 122.853 fct_us 122.853 throughput_gbps 325.592
+UEC_FCT BG flowid 1087 start_us 0 finish_us 122.86 fct_us 122.86 throughput_gbps 325.573
+UEC_FCT BG flowid 1099 start_us 0 finish_us 122.9 fct_us 122.9 throughput_gbps 325.467
+UEC_FCT BG flowid 1027 start_us 0 finish_us 122.94 fct_us 122.94 throughput_gbps 325.361
+UEC_FCT BG flowid 1038 start_us 0 finish_us 122.973 fct_us 122.973 throughput_gbps 325.274
+UEC_FCT BG flowid 1086 start_us 0 finish_us 123.013 fct_us 123.013 throughput_gbps 325.169
+UEC_FCT BG flowid 1122 start_us 0 finish_us 123.093 fct_us 123.093 throughput_gbps 324.957
+UEC_FCT BG flowid 1110 start_us 0 finish_us 123.135 fct_us 123.135 throughput_gbps 324.847
+UEC_FCT BG flowid 1146 start_us 0 finish_us 123.218 fct_us 123.218 throughput_gbps 324.629
+UEC_FCT BG flowid 1014 start_us 0 finish_us 123.218 fct_us 123.218 throughput_gbps 324.628
+UEC_FCT BG flowid 1074 start_us 0 finish_us 123.231 fct_us 123.231 throughput_gbps 324.593
+UEC_FCT BG flowid 1050 start_us 0 finish_us 123.258 fct_us 123.258 throughput_gbps 324.524
+UEC_FCT BG flowid 1004 start_us 0 finish_us 153.959 fct_us 153.959 throughput_gbps 259.809
+UEC_FCT BG flowid 1028 start_us 0 finish_us 155.046 fct_us 155.046 throughput_gbps 257.987
+UEC_FCT BG flowid 1148 start_us 0 finish_us 155.207 fct_us 155.207 throughput_gbps 257.72
+UEC_FCT BG flowid 1100 start_us 0 finish_us 155.731 fct_us 155.731 throughput_gbps 256.853
+UEC_FCT BG flowid 1064 start_us 0 finish_us 155.773 fct_us 155.773 throughput_gbps 256.784
+UEC_FCT BG flowid 1112 start_us 0 finish_us 156.053 fct_us 156.053 throughput_gbps 256.322
+UEC_FCT BG flowid 1076 start_us 0 finish_us 156.055 fct_us 156.055 throughput_gbps 256.319
+UEC_FCT BG flowid 1136 start_us 0 finish_us 156.056 fct_us 156.056 throughput_gbps 256.318
+UEC_FCT BG flowid 1040 start_us 0 finish_us 156.15 fct_us 156.15 throughput_gbps 256.164
+UEC_FCT BG flowid 1124 start_us 0 finish_us 156.15 fct_us 156.15 throughput_gbps 256.163
+UEC_FCT BG flowid 1088 start_us 0 finish_us 156.217 fct_us 156.217 throughput_gbps 256.054
+MPRDMA_FCT FG flowid 13 start_us 0 finish_us 1097.77 fct_us 1097.77 throughput_gbps 233.199
+MPRDMA_PATHS FG flowid 13 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 5 start_us 0 finish_us 1097.77 fct_us 1097.77 throughput_gbps 233.199
+MPRDMA_PATHS FG flowid 5 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 6 start_us 0 finish_us 1097.77 fct_us 1097.77 throughput_gbps 233.199
+MPRDMA_PATHS FG flowid 6 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 24 start_us 0 finish_us 1097.77 fct_us 1097.77 throughput_gbps 233.199
+MPRDMA_PATHS FG flowid 24 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 3 start_us 0 finish_us 1097.77 fct_us 1097.77 throughput_gbps 233.199
+MPRDMA_PATHS FG flowid 3 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 22 start_us 0 finish_us 1097.77 fct_us 1097.77 throughput_gbps 233.199
+MPRDMA_PATHS FG flowid 22 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 12 start_us 0 finish_us 1097.77 fct_us 1097.77 throughput_gbps 233.199
+MPRDMA_PATHS FG flowid 12 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 15 start_us 0 finish_us 1097.79 fct_us 1097.79 throughput_gbps 233.196
+MPRDMA_PATHS FG flowid 15 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 14 start_us 0 finish_us 1097.81 fct_us 1097.81 throughput_gbps 233.191
+MPRDMA_PATHS FG flowid 14 paths_used 2 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 11 start_us 0 finish_us 1097.91 fct_us 1097.91 throughput_gbps 233.17
+MPRDMA_PATHS FG flowid 11 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 21 start_us 0 finish_us 1097.91 fct_us 1097.91 throughput_gbps 233.17
+MPRDMA_PATHS FG flowid 21 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 4 start_us 0 finish_us 1097.91 fct_us 1097.91 throughput_gbps 233.17
+MPRDMA_PATHS FG flowid 4 paths_used 3 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 10 start_us 0 finish_us 1097.95 fct_us 1097.95 throughput_gbps 233.162
+MPRDMA_PATHS FG flowid 10 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 26 start_us 0 finish_us 1098.03 fct_us 1098.03 throughput_gbps 233.144
+MPRDMA_PATHS FG flowid 26 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 8 start_us 0 finish_us 1098.06 fct_us 1098.06 throughput_gbps 233.139
+MPRDMA_PATHS FG flowid 8 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 2 start_us 0 finish_us 1098.11 fct_us 1098.11 throughput_gbps 233.127
+MPRDMA_PATHS FG flowid 2 paths_used 2 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 20 start_us 0 finish_us 1098.25 fct_us 1098.25 throughput_gbps 233.099
+MPRDMA_PATHS FG flowid 20 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 27 start_us 0 finish_us 1098.42 fct_us 1098.42 throughput_gbps 233.063
+MPRDMA_PATHS FG flowid 27 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 23 start_us 0 finish_us 1098.42 fct_us 1098.42 throughput_gbps 233.062
+MPRDMA_PATHS FG flowid 23 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 7 start_us 0 finish_us 1098.48 fct_us 1098.48 throughput_gbps 233.048
+MPRDMA_PATHS FG flowid 7 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 30 start_us 0 finish_us 1098.53 fct_us 1098.53 throughput_gbps 233.039
+MPRDMA_PATHS FG flowid 30 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 9 start_us 0 finish_us 1098.58 fct_us 1098.58 throughput_gbps 233.029
+MPRDMA_PATHS FG flowid 9 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 31 start_us 0 finish_us 1098.78 fct_us 1098.78 throughput_gbps 232.986
+MPRDMA_PATHS FG flowid 31 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 28 start_us 0 finish_us 1098.84 fct_us 1098.84 throughput_gbps 232.972
+MPRDMA_PATHS FG flowid 28 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 25 start_us 0 finish_us 1098.88 fct_us 1098.88 throughput_gbps 232.964
+MPRDMA_PATHS FG flowid 25 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 17 start_us 0 finish_us 1098.94 fct_us 1098.94 throughput_gbps 232.951
+MPRDMA_PATHS FG flowid 17 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 32 start_us 0 finish_us 1099.09 fct_us 1099.09 throughput_gbps 232.919
+MPRDMA_PATHS FG flowid 32 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 29 start_us 0 finish_us 1099.19 fct_us 1099.19 throughput_gbps 232.899
+MPRDMA_PATHS FG flowid 29 paths_used 2 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 1 start_us 0 finish_us 1099.62 fct_us 1099.62 throughput_gbps 232.808
+MPRDMA_PATHS FG flowid 1 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 18 start_us 0 finish_us 1099.74 fct_us 1099.74 throughput_gbps 232.782
+MPRDMA_PATHS FG flowid 18 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 19 start_us 0 finish_us 1101.55 fct_us 1101.55 throughput_gbps 232.399
+MPRDMA_PATHS FG flowid 19 paths_used 1 max_paths 32 packets 8124
+MPRDMA_FCT FG flowid 16 start_us 0 finish_us 1103.63 fct_us 1103.63 throughput_gbps 231.963
+MPRDMA_PATHS FG flowid 16 paths_used 1 max_paths 32 packets 8124
+Done
+
+========== Flow Statistics ==========
+Configuration:
+  Foreground CC: MPRDMA
+  Background: PFC-only (threshold > 1000)
+  Foreground AR: ECMP
+  Background AR: ECMP
+Flow counts:
+  Foreground: 0
+  Background: 192
+  MCC-Ideal: 0
+  DCQCN: 0
+  Swift: 0
+  PFC-only: 192
+
+AR Strategy Statistics:
+  Foreground AR: ECMP
+  Background AR: ECMP
+
+ToR 0 Uplink Packet Distribution:
+Uplink 0: FG=8124 pkts, BG=39440 pkts
+Uplink 1: FG=24323 pkts, BG=36355 pkts
+Uplink 2: FG=56868 pkts, BG=40470 pkts
+Uplink 3: FG=16263 pkts, BG=42657 pkts
+Uplink 4: FG=8124 pkts, BG=39995 pkts
+Uplink 5: FG=16199 pkts, BG=37202 pkts
+Uplink 6: FG=16214 pkts, BG=37574 pkts
+Uplink 7: FG=0 pkts, BG=35163 pkts
+Uplink 8: FG=8182 pkts, BG=36385 pkts
+Uplink 9: FG=16248 pkts, BG=36597 pkts
+Uplink 10: FG=8081 pkts, BG=38333 pkts
+Uplink 11: FG=48778 pkts, BG=37389 pkts
+Uplink 12: FG=8124 pkts, BG=0 pkts
+Uplink 13: FG=16248 pkts, BG=0 pkts
+Uplink 14: FG=8124 pkts, BG=0 pkts
+Uplink 15: FG=24406 pkts, BG=0 pkts
+Uplink 16: FG=16248 pkts, BG=0 pkts
+Uplink 17: FG=32457 pkts, BG=0 pkts
+Uplink 18: FG=16209 pkts, BG=0 pkts
+Uplink 19: FG=16248 pkts, BG=0 pkts
+Uplink 20: FG=16205 pkts, BG=0 pkts
+Uplink 21: FG=8124 pkts, BG=0 pkts
+Uplink 22: FG=8105 pkts, BG=0 pkts
+Uplink 23: FG=8124 pkts, BG=0 pkts
+Uplink 24: FG=16374 pkts, BG=0 pkts
+Uplink 25: FG=24372 pkts, BG=0 pkts
+Uplink 26: FG=39 pkts, BG=0 pkts
+Uplink 27: FG=0 pkts, BG=0 pkts
+Uplink 28: FG=32496 pkts, BG=0 pkts
+Uplink 29: FG=0 pkts, BG=0 pkts
+Uplink 30: FG=24372 pkts, BG=0 pkts
+Uplink 31: FG=16248 pkts, BG=0 pkts
+PFC Statistics:
+  pause_sent: 0
+  pause_cleared: 0
+  pfc_thresholds: low 632000 high 1052000
+
+ToR 0 Uplink Queue Statistics:
+Uplink 0: packets_served=8942 max_size=16128
+Uplink 1: packets_served=9227 max_size=20128
+Uplink 2: packets_served=10002 max_size=44128
+Uplink 3: packets_served=17537 max_size=28256
+Uplink 4: packets_served=9372 max_size=20128
+Uplink 5: packets_served=17321 max_size=20192
+Uplink 6: packets_served=792 max_size=16000
+Uplink 7: packets_served=967 max_size=16000
+Uplink 8: packets_served=1964 max_size=36000
+Uplink 9: packets_served=18166 max_size=36064
+Uplink 10: packets_served=786 max_size=16000
+Uplink 11: packets_served=17654 max_size=36192
+Uplink 12: packets_served=0 max_size=0
+Uplink 13: packets_served=0 max_size=0
+Uplink 14: packets_served=8124 max_size=4064
+Uplink 15: packets_served=16282 max_size=105664
+Uplink 16: packets_served=8124 max_size=4064
+Uplink 17: packets_served=16209 max_size=8128
+Uplink 18: packets_served=8124 max_size=4064
+Uplink 19: packets_served=8124 max_size=4064
+Uplink 20: packets_served=16205 max_size=8128
+Uplink 21: packets_served=8124 max_size=4064
+Uplink 22: packets_served=8105 max_size=8128
+Uplink 23: packets_served=8124 max_size=4064
+Uplink 24: packets_served=16325 max_size=199136
+Uplink 25: packets_served=8124 max_size=4064
+Uplink 26: packets_served=0 max_size=0
+Uplink 27: packets_served=0 max_size=0
+Uplink 28: packets_served=16248 max_size=8128
+Uplink 29: packets_served=0 max_size=0
+Uplink 30: packets_served=8124 max_size=4064
+Uplink 31: packets_served=8124 max_size=4064
+
+ToR 0 Uplink Background Flow Counts:
+Uplink 0: bg_flows=10
+Uplink 1: bg_flows=15
+Uplink 2: bg_flows=11
+Uplink 3: bg_flows=14
+Uplink 4: bg_flows=20
+Uplink 5: bg_flows=17
+Uplink 6: bg_flows=17
+Uplink 7: bg_flows=11
+Uplink 8: bg_flows=14
+Uplink 9: bg_flows=19
+Uplink 10: bg_flows=13
+Uplink 11: bg_flows=19
+Uplink 12: bg_flows=0
+Uplink 13: bg_flows=0
+Uplink 14: bg_flows=0
+Uplink 15: bg_flows=0
+Uplink 16: bg_flows=0
+Uplink 17: bg_flows=0
+Uplink 18: bg_flows=0
+Uplink 19: bg_flows=0
+Uplink 20: bg_flows=0
+Uplink 21: bg_flows=0
+Uplink 22: bg_flows=0
+Uplink 23: bg_flows=0
+Uplink 24: bg_flows=0
+Uplink 25: bg_flows=0
+Uplink 26: bg_flows=0
+Uplink 27: bg_flows=0
+Uplink 28: bg_flows=0
+Uplink 29: bg_flows=0
+Uplink 30: bg_flows=0
+Uplink 31: bg_flows=0
+
+ToR 0 Uplink PFC Pause Counts:
+Uplink 0: pause_sent=0 pause_cleared=0
+Uplink 1: pause_sent=0 pause_cleared=0
+Uplink 2: pause_sent=0 pause_cleared=0
+Uplink 3: pause_sent=0 pause_cleared=0
+Uplink 4: pause_sent=0 pause_cleared=0
+Uplink 5: pause_sent=0 pause_cleared=0
+Uplink 6: pause_sent=0 pause_cleared=0
+Uplink 7: pause_sent=0 pause_cleared=0
+Uplink 8: pause_sent=0 pause_cleared=0
+Uplink 9: pause_sent=0 pause_cleared=0
+Uplink 10: pause_sent=0 pause_cleared=0
+Uplink 11: pause_sent=0 pause_cleared=0
+Uplink 12: pause_sent=0 pause_cleared=0
+Uplink 13: pause_sent=0 pause_cleared=0
+Uplink 14: pause_sent=0 pause_cleared=0
+Uplink 15: pause_sent=0 pause_cleared=0
+Uplink 16: pause_sent=0 pause_cleared=0
+Uplink 17: pause_sent=0 pause_cleared=0
+Uplink 18: pause_sent=0 pause_cleared=0
+Uplink 19: pause_sent=0 pause_cleared=0
+Uplink 20: pause_sent=0 pause_cleared=0
+Uplink 21: pause_sent=0 pause_cleared=0
+Uplink 22: pause_sent=0 pause_cleared=0
+Uplink 23: pause_sent=0 pause_cleared=0
+Uplink 24: pause_sent=0 pause_cleared=0
+Uplink 25: pause_sent=0 pause_cleared=0
+Uplink 26: pause_sent=0 pause_cleared=0
+Uplink 27: pause_sent=0 pause_cleared=0
+Uplink 28: pause_sent=0 pause_cleared=0
+Uplink 29: pause_sent=0 pause_cleared=0
+Uplink 30: pause_sent=0 pause_cleared=0
+Uplink 31: pause_sent=0 pause_cleared=0
+
+PFC-only flows: 192
+
+========================================
+      Mixed Traffic Summary
+========================================
+Configuration:

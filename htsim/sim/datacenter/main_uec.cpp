@@ -33,6 +33,7 @@
 #include "oversubscribed_cc.h"
 #include "queue_lossless_input.h"
 #include "queue_lossless_output.h"
+#include "mprdma.h"
 
 // ===== New：DCQCN 头文件 =====
 #include "dcqcn.h"
@@ -57,7 +58,7 @@ uint32_t DEFAULT_NONTRIMMING_QUEUESIZE_FACTOR = 5;
 
 EventList eventlist;
 
-enum ForegroundCCType { FG_NSCC, FG_DCQCN, FG_SWIFT, FG_MCC_IDEAL, FG_MCC_INCAST, FG_PFC_ONLY };
+enum ForegroundCCType { FG_NSCC, FG_DCQCN, FG_SWIFT, FG_MCC_IDEAL, FG_MCC_INCAST, FG_PFC_ONLY, FG_MPRDMA };
 
 static const char* fg_cc_name(ForegroundCCType type) {
     switch (type) {
@@ -73,6 +74,8 @@ static const char* fg_cc_name(ForegroundCCType type) {
         return "MCC-Incast";
     case FG_PFC_ONLY:
         return "PFC-only";
+    case FG_MPRDMA:
+        return "MPRDMA";
     default:
         return "Unknown";
     }
@@ -123,8 +126,12 @@ private:
 
 class FlowEventLoggerFct : public FlowEventLogger {
 public:
-    FlowEventLoggerFct(Logfile& logfile, EventList& eventlist, FlowEventLoggerSimple* raw_logger)
-        : _logfile(logfile), _eventlist(eventlist), _raw_logger(raw_logger) {}
+    FlowEventLoggerFct(Logfile& logfile, EventList& eventlist, FlowEventLoggerSimple* raw_logger,
+                       uint64_t bg_threshold)
+        : _logfile(logfile),
+          _eventlist(eventlist),
+          _raw_logger(raw_logger),
+          _bg_threshold(bg_threshold) {}
 
     void logEvent(PacketFlow& flow, Logged& location, FlowEvent ev, mem_b bytes, uint64_t pkts) override {
         if (_raw_logger) {
@@ -149,6 +156,18 @@ public:
                << " finish_us " << timeAsUs(finish)
                << " fct_us " << timeAsUs(fct);
             _logfile.write(ss.str());
+            double seconds = timeAsSec(fct);
+            double gbps = 0.0;
+            if (seconds > 0.0 && bytes > 0) {
+                gbps = (bytes * 8.0) / (seconds * 1e9);
+            }
+            cout << "UEC_FCT " << (fid > _bg_threshold ? "BG" : "FG")
+                 << " flowid " << fid
+                 << " start_us " << timeAsUs(start)
+                 << " finish_us " << timeAsUs(finish)
+                 << " fct_us " << timeAsUs(fct)
+                 << " throughput_gbps " << gbps
+                 << endl;
         }
     }
 
@@ -157,12 +176,27 @@ private:
     EventList& _eventlist;
     FlowEventLoggerSimple* _raw_logger;
     std::unordered_map<flowid_t, simtime_picosec> _starts;
+    uint64_t _bg_threshold;
 };
 
 void exit_error(char* progr) {
-    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-lossless_ecn_enable] force ECN on lossless output queues\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-dcqcn_single_path] force DCQCN single path\n\t[-dcqcn_ar single|bitmap|reps|reps_legacy|oblivious|mixed]\n\t[-pfc_thresholds low high]\n\t[-min_rto us] minimum RTO in us\n\t[-ar_granularity packet|flow]\n\t[-fg_ar_granularity packet|flow]\n\t[-bg_ar_granularity packet|flow]\n\t[-fg_path|-fg_paths N] foreground paths (ECMP)\n\t[-bg_path|-bg_paths N] background paths (ECMP)\n\t[-ar_method pause|queue|bandwidth|pqb|pq|pb|qb]\n\t[-fg_cc nscc|dcqcn|swift|mcc|pfc]\n\t[-mcc_rtt_thresh us]\n\t[-mcc_r1 val]\n\t[-mcc_r2 val]\n\t[-mcc_r3 val]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n\t[-fg_ar ecmp|adaptive|mixed]\n\t[-bg_ar ecmp|adaptive]\n"<< endl;
+    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-lossless_ecn_enable] force ECN on lossless output queues\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-dcqcn_single_path] force DCQCN single path\n\t[-dcqcn_ar single|bitmap|reps|reps_legacy|oblivious|mixed]\n\t[-pfc_thresholds low high]\n\t[-min_rto us] minimum RTO in us\n\t[-ar_granularity packet|flow]\n\t[-fg_ar_granularity packet|flow]\n\t[-bg_ar_granularity packet|flow]\n\t[-fg_path|-fg_paths N] foreground paths (ECMP)\n\t[-bg_path|-bg_paths N] background paths (ECMP)\n\t[-ar_method pause|queue|bandwidth|pqb|pq|pb|qb]\n\t[-fg_cc nscc|dcqcn|swift|mcc|mprdma|pfc]\n\t[-mprdma_L bitmap_len]\n\t[-mprdma_delta delta]\n\t[-mprdma_alpha alpha]\n\t[-mprdma_probe p]\n\t[-mprdma_iw iw]\n\t[-mprdma_burst_us t]\n\t[-mprdma_idle_us t]\n\t[-mprdma_msg_bytes bytes]\n\t[-mprdma_verb send|write|read_resp]\n\t[-mprdma_recv_wq depth]\n\t[-mprdma_enable_pathselection 0|1]\n\t[-mprdma_enable_cc 0|1]\n\t[-mprdma_enable_recovery 0|1]\n\t[-mprdma_vp_seed seed]\n\t[-mprdma_timeout sec]\n\t[-TIMEOUT sec]\n\t[-mprdma_min_rto_us us]\n\t[-mcc_rtt_thresh us]\n\t[-mcc_r1 val]\n\t[-mcc_r2 val]\n\t[-mcc_r3 val]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n\t[-fg_ar ecmp|adaptive|mixed]\n\t[-bg_ar ecmp|adaptive]\n"<< endl;
     exit(1);
 }
+
+class MPRdmaCqeTrigger : public MPRdmaCqeHandler {
+public:
+    explicit MPRdmaCqeTrigger(Trigger* trigger) : _trigger(trigger) {}
+    void on_cqe(flowid_t qp_id, MPRdmaPacket::psn_t msn, MPRdmaCqeStatus status) override {
+        (void)qp_id;
+        (void)msn;
+        if (_trigger && status == CQE_SUCCESS) {
+            _trigger->activate();
+        }
+    }
+private:
+    Trigger* _trigger;
+};
 
 simtime_picosec calculate_rtt(FatTreeTopologyCfg* t_cfg, linkspeed_bps host_linkspeed) { 
     /*
@@ -223,6 +257,24 @@ int main(int argc, char **argv) {
     bool log_sink = false;
     bool log_nic = false;
     bool log_flow_events = true;
+
+    bool mprdma_enable_pathselection = true;
+    bool mprdma_enable_cc = true;
+    bool mprdma_enable_recovery = true;
+    uint32_t mprdma_L = 64;
+    uint32_t mprdma_delta = 32;
+    double mprdma_alpha = 1.0;
+    double mprdma_probe = 0.01;
+    uint32_t mprdma_iw = 1;
+    double mprdma_burst_us = 0.5;
+    double mprdma_idle_us = 3.0;
+    double mprdma_timeout_sec = 0.0;
+    uint32_t mprdma_min_rto_us = 0;
+    uint64_t mprdma_msg_bytes = 0;
+    string mprdma_verb = "write";
+    uint32_t mprdma_recv_wq = 0;
+    bool mprdma_vp_seed_set = false;
+    uint32_t mprdma_vp_seed = 0;
 
     bool log_tor_downqueue = false;
     bool log_tor_upqueue = false;
@@ -441,6 +493,56 @@ int main(int argc, char **argv) {
                 exit_error(argv[0]);
             }
             cout << "Load balancing algorithm set to  "<< argv[i+1] << endl;
+            i++;
+        }
+        else if (!strcmp(argv[i],"-mprdma_L")) {
+            mprdma_L = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_delta")) {
+            mprdma_delta = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_alpha")) {
+            mprdma_alpha = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_probe")) {
+            mprdma_probe = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_iw")) {
+            mprdma_iw = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_burst_us")) {
+            mprdma_burst_us = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_idle_us")) {
+            mprdma_idle_us = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_msg_bytes")) {
+            mprdma_msg_bytes = strtoull(argv[i+1], NULL, 10);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_verb")) {
+            mprdma_verb = argv[i+1];
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_recv_wq")) {
+            mprdma_recv_wq = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_enable_pathselection")) {
+            mprdma_enable_pathselection = (atoi(argv[i+1]) != 0);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_enable_cc")) {
+            mprdma_enable_cc = (atoi(argv[i+1]) != 0);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_enable_recovery")) {
+            mprdma_enable_recovery = (atoi(argv[i+1]) != 0);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_vp_seed")) {
+            mprdma_vp_seed = static_cast<uint32_t>(strtoul(argv[i+1], NULL, 10));
+            mprdma_vp_seed_set = true;
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_timeout") || !strcmp(argv[i],"-TIMEOUT")) {
+            mprdma_timeout_sec = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_min_rto_us")) {
+            mprdma_min_rto_us = static_cast<uint32_t>(strtoul(argv[i+1], NULL, 10));
             i++;
         }
         else if (!strcmp(argv[i],"-dcqcn_ar")){
@@ -778,6 +880,8 @@ int main(int argc, char **argv) {
                 fg_cc_type = FG_DCQCN;
             } else if (!strcmp(argv[i+1], "swift")) {
                 fg_cc_type = FG_SWIFT;
+            } else if (!strcmp(argv[i+1], "mprdma") || !strcmp(argv[i+1], "mp_rdma")) {
+                fg_cc_type = FG_MPRDMA;
             } else if (!strcmp(argv[i+1], "mcc") || !strcmp(argv[i+1], "mcc_ideal")) {
                 fg_cc_type = FG_MCC_IDEAL;
                 UecSrc::_sender_cc_algo = UecSrc::MCC_IDEAL;
@@ -791,7 +895,7 @@ int main(int argc, char **argv) {
             } else if (!strcmp(argv[i+1], "pfc") || !strcmp(argv[i+1], "pfc_only")) {
                 fg_cc_type = FG_PFC_ONLY;
             } else {
-                cout << "Unknown foreground CC " << argv[i+1] << " expecting one of nscc|dcqcn|swift|mcc|mcc_incast|pfc" << endl;
+                cout << "Unknown foreground CC " << argv[i+1] << " expecting one of nscc|dcqcn|swift|mprdma|mcc|mcc_incast|pfc" << endl;
                 exit(1);
             }
             cout << "Foreground CC: " << fg_cc_name(fg_cc_type) << endl;
@@ -1008,7 +1112,7 @@ int main(int argc, char **argv) {
     if (log_flow_events) {
         raw_event_logger = new FlowEventLoggerSimple();
         logfile.addLogger(*raw_event_logger);
-        event_logger = new FlowEventLoggerFct(logfile, eventlist, raw_event_logger);
+        event_logger = new FlowEventLoggerFct(logfile, eventlist, raw_event_logger, bg_flowid_threshold);
         logfile.addLogger(*event_logger);
     }
 
@@ -1271,6 +1375,8 @@ int main(int argc, char **argv) {
     vector<connection*>* all_conns = conns->getAllConnections();
     vector <UecSrc*> uec_srcs;
     vector <UecSrc*> pfc_only_srcs;
+    vector<MPRdmaSrc*> mprdma_srcs;
+    vector<MPRdmaSink*> mprdma_sinks;
 
     // ===== New：DCQCN 容器 =====
     vector<DCQCNSrc*> dcqcn_srcs;
@@ -1490,6 +1596,148 @@ int main(int argc, char **argv) {
 
             dcqcn_srcs.push_back(dcqcn_src);
             dcqcn_sinks.push_back(dcqcn_sink);
+            continue;
+
+        } else if (actual_cc == FG_MPRDMA) {
+            if (conn_reuse) {
+                cout << "ERROR: MPRDMA does not support connection reuse." << endl;
+                exit(1);
+            }
+
+            MPRdmaSrc* mprdma_src = new MPRdmaSrc(nullptr, eventlist, linkspeed);
+            MPRdmaSink* mprdma_sink = new MPRdmaSink();
+
+            uint16_t mprdma_paths = static_cast<uint16_t>(fg_paths > 0 ? fg_paths : 1);
+            if (!mprdma_enable_pathselection) {
+                mprdma_paths = 1;
+            }
+            mprdma_src->set_max_path_id(mprdma_paths);
+            mprdma_src->set_bitmap_len(mprdma_L);
+            mprdma_src->set_delta(mprdma_delta);
+            mprdma_src->set_alpha(mprdma_alpha);
+            mprdma_src->set_probe_p(mprdma_probe);
+            mprdma_src->set_initial_window(mprdma_iw);
+            mprdma_src->set_burst_timeout(timeFromUs(mprdma_burst_us));
+            mprdma_src->set_idle_timeout(timeFromUs(mprdma_idle_us));
+            mprdma_src->set_message_bytes(mprdma_msg_bytes);
+            mprdma_src->set_recv_wq_depth(mprdma_recv_wq);
+            mprdma_src->set_enable_cc(mprdma_enable_cc);
+            mprdma_src->set_enable_recovery(mprdma_enable_recovery);
+            mprdma_src->set_log_fct(true);
+            mprdma_src->set_is_background(is_background);
+            if (mprdma_timeout_sec > 0.0) {
+                mprdma_src->set_rto_timeout(timeFromSec(mprdma_timeout_sec));
+            }
+            if (mprdma_min_rto_us > 0) {
+                mprdma_src->set_min_rto(timeFromUs(mprdma_min_rto_us));
+            }
+            if (mprdma_vp_seed_set) {
+                mprdma_src->set_vp_seed(mprdma_vp_seed);
+            }
+
+            if (mprdma_verb == "send") {
+                mprdma_src->set_verb(MPRdmaSrc::VERB_SEND);
+            } else if (mprdma_verb == "read_resp") {
+                mprdma_src->set_verb(MPRdmaSrc::VERB_READ_RESP);
+            } else {
+                mprdma_src->set_verb(MPRdmaSrc::VERB_WRITE);
+            }
+
+            mprdma_src->set_flowid(current_flowid);
+            mprdma_src->set_dst(dest);
+            mprdma_sink->set_src(src);
+
+            if (crt->size > 0) {
+                mprdma_src->set_flowsize(crt->size);
+            }
+
+            mprdma_src->setName("MPRdma_" + ntoa(src) + "_" + ntoa(dest));
+            logfile.writeName(*mprdma_src);
+            mprdma_sink->setName("MPRdma_sink_" + ntoa(src) + "_" + ntoa(dest));
+            logfile.writeName(*mprdma_sink);
+
+            if (crt->trigger) {
+                Trigger* trig = conns->getTrigger(crt->trigger, eventlist);
+                trig->add_target(*mprdma_src);
+            }
+            if (crt->send_done_trigger) {
+                Trigger* trig = conns->getTrigger(crt->send_done_trigger, eventlist);
+                mprdma_src->set_end_trigger(*trig);
+            }
+            if (crt->recv_done_trigger) {
+                Trigger* trig = conns->getTrigger(crt->recv_done_trigger, eventlist);
+                mprdma_sink->set_cqe_handler(new MPRdmaCqeTrigger(trig));
+            }
+
+            HostQueue* src_hq = dynamic_cast<HostQueue*>(
+                topo[0]->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]
+            );
+            assert(src_hq != nullptr);
+            src_hq->addHostSender(mprdma_src);
+
+            Route* first_routeout = nullptr;
+            Route* first_routeback = nullptr;
+            if (route_strategy == ECMP_FIB || route_strategy == ECMP_FIB_ECN ||
+                route_strategy == REACTIVE_ECN) {
+                Route* srctotor = new Route();
+                srctotor->push_back(topo[0]->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]);
+                srctotor->push_back(topo[0]->pipes_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]);
+                srctotor->push_back(topo[0]->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]->getRemoteEndpoint());
+
+                Route* dsttotor = new Route();
+                dsttotor->push_back(topo[0]->queues_ns_nlp[dest][topo_cfg->HOST_POD_SWITCH(dest)][0]);
+                dsttotor->push_back(topo[0]->pipes_ns_nlp[dest][topo_cfg->HOST_POD_SWITCH(dest)][0]);
+                dsttotor->push_back(topo[0]->queues_ns_nlp[dest][topo_cfg->HOST_POD_SWITCH(dest)][0]->getRemoteEndpoint());
+
+                first_routeout = srctotor;
+                first_routeback = dsttotor;
+            } else {
+                vector<const Route*>* paths_out = topo[0]->get_paths(src, dest);
+                vector<const Route*>* paths_back = topo[0]->get_paths(dest, src);
+                if (!paths_out || paths_out->empty()) {
+                    cout << "ERROR: no forward paths for MPRDMA flow " << current_flowid
+                         << " (" << src << "->" << dest << ")" << endl;
+                    exit(1);
+                }
+                if (!paths_back || paths_back->empty()) {
+                    cout << "ERROR: no reverse paths for MPRDMA flow " << current_flowid
+                         << " (" << dest << "->" << src << ")" << endl;
+                    exit(1);
+                }
+                Route* routeout = new Route(*(paths_out->at(0)), *mprdma_sink);
+                Route* routeback = new Route(*(paths_back->at(0)), *mprdma_src);
+                routeout->add_endpoints(mprdma_src, mprdma_sink);
+                routeback->add_endpoints(mprdma_sink, mprdma_src);
+                first_routeout = routeout;
+                first_routeback = routeback;
+            }
+
+            simtime_picosec start_time = (crt->start == TRIGGER_START) ? 0 : timeFromUs((uint32_t)crt->start);
+            if (!first_routeout || !first_routeback) {
+                cout << "ERROR: no MPRDMA routes for " << src << "->" << dest << endl;
+                exit(1);
+            }
+            mprdma_src->connect(first_routeout, first_routeback, *mprdma_sink, start_time);
+
+            FatTreeSwitch* src_switch = dynamic_cast<FatTreeSwitch*>(
+                topo[0]->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]
+            );
+            FatTreeSwitch* dst_switch = dynamic_cast<FatTreeSwitch*>(
+                topo[0]->switches_lp[topo_cfg->HOST_POD_SWITCH(dest)]
+            );
+            if (src_switch) {
+                src_switch->addHostPort(src, mprdma_src->flow_id(), mprdma_src);
+            } else {
+                cout << "ERROR: src_switch is NULL for MPRDMA flow " << current_flowid << endl;
+            }
+            if (dst_switch) {
+                dst_switch->addHostPort(dest, mprdma_src->flow_id(), mprdma_sink);
+            } else {
+                cout << "ERROR: dst_switch is NULL for MPRDMA flow " << current_flowid << endl;
+            }
+
+            mprdma_srcs.push_back(mprdma_src);
+            mprdma_sinks.push_back(mprdma_sink);
             continue;
 
         } else if (actual_cc == FG_SWIFT) {
@@ -1869,6 +2117,14 @@ int main(int argc, char **argv) {
                 }
             }
             if (all_done) {
+                for (auto* src : mprdma_srcs) {
+                    if (!src->is_done()) {
+                        all_done = false;
+                        break;
+                    }
+                }
+            }
+            if (all_done) {
                 break;
             }
             last_completion_check = now;
@@ -1880,6 +2136,19 @@ int main(int argc, char **argv) {
     }
 
     cout << "Done" << endl;
+
+    if (!mprdma_srcs.empty()) {
+        size_t incomplete = 0;
+        for (auto* src : mprdma_srcs) {
+            if (!src->is_done()) {
+                incomplete++;
+            }
+        }
+        if (incomplete > 0) {
+            cout << "MPRDMA incomplete flows: " << incomplete
+                 << " of " << mprdma_srcs.size() << endl;
+        }
+    }
 
     cout << "\n========== Flow Statistics ==========" << endl;
     cout << "Configuration:" << endl;

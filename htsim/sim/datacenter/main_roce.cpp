@@ -17,6 +17,7 @@
 #include "loggers.h"
 #include "clock.h"
 #include "roce.h"
+#include "mprdma.h"
 #include "dcqcn.h"
 #include "compositequeue.h"
 #include "firstfit.h"
@@ -47,9 +48,23 @@ int DEFAULT_NODES = 432;
 EventList eventlist;
 
 void exit_error(char* progr) {
-    cout << "Usage " << progr << " [-nodes N]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,\n\tecmp_host,ecmp_ar,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-switch_latency x] switching latency in us, default 0\n\t[-start_delta] time in us to randomly delay the start of connections\n\t[-pfc_thresholds low high]" << endl;
+    cout << "Usage " << progr << " [-nodes N]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,\n\tecmp_host,ecmp_ar,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-switch_latency x] switching latency in us, default 0\n\t[-start_delta] time in us to randomly delay the start of connections\n\t[-pfc_thresholds low high]\n\t[-mprdma]\n\t[-mprdma_L bitmap_len]\n\t[-mprdma_delta delta]\n\t[-mprdma_alpha alpha]\n\t[-mprdma_probe p]\n\t[-mprdma_iw iw]\n\t[-mprdma_burst_us t]\n\t[-mprdma_idle_us t]\n\t[-mprdma_msg_bytes bytes]\n\t[-mprdma_verb send|write|read_resp]\n\t[-mprdma_recv_wq depth]" << endl;
     exit(1);
 }
+
+class MPRdmaCqeTrigger : public MPRdmaCqeHandler {
+public:
+    explicit MPRdmaCqeTrigger(Trigger* trigger) : _trigger(trigger) {}
+    void on_cqe(flowid_t qp_id, MPRdmaPacket::psn_t msn, MPRdmaCqeStatus status) override {
+        (void)qp_id;
+        (void)msn;
+        if (_trigger && status == CQE_SUCCESS) {
+            _trigger->activate();
+        }
+    }
+private:
+    Trigger* _trigger;
+};
 
 int main(int argc, char **argv) {
     Clock c(timeFromSec(5 / 100.), eventlist);
@@ -69,6 +84,17 @@ int main(int argc, char **argv) {
 
     bool dcqcn = false;
     int ecn_threshold = 0;
+    bool use_mprdma = false;
+    uint32_t mprdma_L = 64;
+    uint32_t mprdma_delta = 32;
+    double mprdma_alpha = 1.0;
+    double mprdma_probe = 0.01;
+    uint32_t mprdma_iw = 1;
+    double mprdma_burst_us = 0.5 * RTT;
+    double mprdma_idle_us = 3.0 * RTT;
+    uint64_t mprdma_msg_bytes = 0;
+    string mprdma_verb = "write";
+    uint32_t mprdma_recv_wq = 0;
 
     queue_type snd_type = FAIR_PRIO;
 
@@ -108,9 +134,41 @@ int main(int argc, char **argv) {
             ecn_threshold = atoi (argv[i+1]);
             cout << "dcqcn ecn threshold "<< ecn_threshold << endl;
             i++;
+        } else if (!strcmp(argv[i],"-mprdma")) {
+            use_mprdma = true;
         } else if (!strcmp(argv[i],"-failed")){
             // number of failed links (failed to 25% linkspeed)
             topo_num_failed = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_L")) {
+            mprdma_L = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_delta")) {
+            mprdma_delta = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_alpha")) {
+            mprdma_alpha = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_probe")) {
+            mprdma_probe = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_iw")) {
+            mprdma_iw = atoi(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_burst_us")) {
+            mprdma_burst_us = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_idle_us")) {
+            mprdma_idle_us = atof(argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_msg_bytes")) {
+            mprdma_msg_bytes = strtoull(argv[i+1], NULL, 10);
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_verb")) {
+            mprdma_verb = argv[i+1];
+            i++;
+        } else if (!strcmp(argv[i],"-mprdma_recv_wq")) {
+            mprdma_recv_wq = atoi(argv[i+1]);
             i++;
         } else if (!strcmp(argv[i],"-tiers")) {
             tiers = atoi(argv[i+1]);
@@ -313,6 +371,11 @@ int main(int argc, char **argv) {
         i++;
     }
 
+    if (use_mprdma && dcqcn) {
+        cout << "MP-RDMA selected, disabling DCQCN." << endl;
+        dcqcn = false;
+    }
+
     srand(seed);
     srandom(seed);
 
@@ -367,19 +430,30 @@ int main(int argc, char **argv) {
 
     logfile.setStartTime(timeFromSec(0));
 
+    bool enable_roce_logging = !use_mprdma;
+    if (!enable_roce_logging && (log_sink || log_traffic)) {
+        cout << "MP-RDMA selected, disabling RoCE-specific loggers." << endl;
+        log_sink = false;
+        log_traffic = false;
+    }
+
     RoceSinkLoggerSampling sinkLogger = RoceSinkLoggerSampling(timeFromMs(logtime), eventlist);
-    if (log_sink) {
+    if (log_sink && enable_roce_logging) {
         logfile.addLogger(sinkLogger);
     }
     RoceTrafficLogger traffic_logger = RoceTrafficLogger();
-    if (log_traffic) {
+    if (log_traffic && enable_roce_logging) {
         logfile.addLogger(traffic_logger);
     }
 
-    RoceSrc::setMinRTO(1000); //increase RTO to avoid spurious retransmits
+    if (!use_mprdma) {
+        RoceSrc::setMinRTO(1000); //increase RTO to avoid spurious retransmits
+    }
 
-    RoceSrc* roceSrc;
-    RoceSink* roceSnk;
+    RoceSrc* roceSrc = nullptr;
+    RoceSink* roceSnk = nullptr;
+    MPRdmaSrc* mprdmaSrc = nullptr;
+    MPRdmaSink* mprdmaSnk = nullptr;
 
     Route* routeout, *routein;
 
@@ -481,7 +555,8 @@ int main(int argc, char **argv) {
     //list <const Route*> routes;
 
     all_conns = conns->getAllConnections();
-    vector <RoceSrc*> roce_srcs;
+    vector<RoceSrc*> roce_srcs;
+    vector<MPRdmaSrc*> mprdma_srcs;
 
     for (size_t c = 0; c < all_conns->size(); c++){
         connection* crt = all_conns->at(c);
@@ -513,49 +588,106 @@ int main(int argc, char **argv) {
         int dest = crt->dst;
         cout << "Connection " << crt->src << "->" <<crt->dst << " starting at " << timeAsUs(crt->start) << " size " << crt->size << endl;
 
-        if (dcqcn)
-            roceSrc = new DCQCNSrc(NULL, NULL, eventlist,linkspeed);
-        else
-            roceSrc = new RoceSrc(NULL, NULL, eventlist,linkspeed);
+        if (use_mprdma) {
+            mprdmaSrc = new MPRdmaSrc(nullptr, eventlist, linkspeed);
+            mprdmaSrc->set_max_path_id(path_entropy_size);
+            mprdmaSrc->set_bitmap_len(mprdma_L);
+            mprdmaSrc->set_delta(mprdma_delta);
+            mprdmaSrc->set_alpha(mprdma_alpha);
+            mprdmaSrc->set_probe_p(mprdma_probe);
+            mprdmaSrc->set_initial_window(mprdma_iw);
+            mprdmaSrc->set_burst_timeout(timeFromUs(mprdma_burst_us));
+            mprdmaSrc->set_idle_timeout(timeFromUs(mprdma_idle_us));
+            mprdmaSrc->set_message_bytes(mprdma_msg_bytes);
+            mprdmaSrc->set_recv_wq_depth(mprdma_recv_wq);
+            if (mprdma_verb == "send") {
+                mprdmaSrc->set_verb(MPRdmaSrc::VERB_SEND);
+            } else if (mprdma_verb == "read_resp") {
+                mprdmaSrc->set_verb(MPRdmaSrc::VERB_READ_RESP);
+            } else {
+                mprdmaSrc->set_verb(MPRdmaSrc::VERB_WRITE);
+            }
+            mprdmaSrc->set_dst(dest);
+            mprdma_srcs.push_back(mprdmaSrc);
+        } else {
+            if (dcqcn)
+                roceSrc = new DCQCNSrc(NULL, NULL, eventlist,linkspeed);
+            else
+                roceSrc = new RoceSrc(NULL, NULL, eventlist,linkspeed);
 
-        roce_srcs.push_back(roceSrc);
-        roceSrc->set_dst(dest);
+            roce_srcs.push_back(roceSrc);
+            roceSrc->set_dst(dest);
+        }
                         
         if (crt->size>0){
-            roceSrc->set_flowsize(crt->size);
+            if (use_mprdma) {
+                mprdmaSrc->set_flowsize(crt->size);
+            } else {
+                roceSrc->set_flowsize(crt->size);
+            }
         }
 
         if (crt->flowid) {
-            roceSrc->set_flowid(crt->flowid);
-            assert(flowmap.find(crt->flowid) == flowmap.end()); // don't have dups
-            flowmap[crt->flowid] = roceSrc;
+            if (use_mprdma) {
+                mprdmaSrc->set_flowid(crt->flowid);
+                assert(flowmap.find(crt->flowid) == flowmap.end());
+                flowmap[crt->flowid] = mprdmaSrc;
+            } else {
+                roceSrc->set_flowid(crt->flowid);
+                assert(flowmap.find(crt->flowid) == flowmap.end()); // don't have dups
+                flowmap[crt->flowid] = roceSrc;
+            }
         }
 
         if (crt->trigger) {
             Trigger* trig = conns->getTrigger(crt->trigger, eventlist);
-            trig->add_target(*roceSrc);
+            if (use_mprdma) {
+                trig->add_target(*mprdmaSrc);
+            } else {
+                trig->add_target(*roceSrc);
+            }
         }
         if (crt->send_done_trigger) {
             Trigger* trig = conns->getTrigger(crt->send_done_trigger, eventlist);
-            roceSrc->set_end_trigger(*trig);
+            if (use_mprdma) {
+                mprdmaSrc->set_end_trigger(*trig);
+            } else {
+                roceSrc->set_end_trigger(*trig);
+            }
         }
 
-        if (dcqcn)
+        if (use_mprdma) {
+            mprdmaSnk = new MPRdmaSink();
+        } else if (dcqcn) {
             roceSnk = new DCQCNSink(eventlist);
-        else
+        } else {
             roceSnk = new RoceSink();
+        }
         
                         
-        roceSrc->setName("Roce_" + ntoa(src) + "_" + ntoa(dest));
-
-        logfile.writeName(*roceSrc);
-
-        roceSnk->set_src(src);
+        if (use_mprdma) {
+            mprdmaSrc->setName("MPRdma_" + ntoa(src) + "_" + ntoa(dest));
+            logfile.writeName(*mprdmaSrc);
+            mprdmaSnk->set_src(src);
+            mprdmaSnk->setName("MPRdma_sink_" + ntoa(src) + "_" + ntoa(dest));
+            logfile.writeName(*mprdmaSnk);
+            if (crt->recv_done_trigger) {
+                Trigger* trig = conns->getTrigger(crt->recv_done_trigger, eventlist);
+                mprdmaSnk->set_cqe_handler(new MPRdmaCqeTrigger(trig));
+            }
+        } else {
+            roceSrc->setName("Roce_" + ntoa(src) + "_" + ntoa(dest));
+            logfile.writeName(*roceSrc);
+            roceSnk->set_src(src);
+            roceSnk->setName("Roce_sink_" + ntoa(src) + "_" + ntoa(dest));
+            logfile.writeName(*roceSnk);
+        }
                         
-        roceSnk->setName("Roce_sink_" + ntoa(src) + "_" + ntoa(dest));
-        logfile.writeName(*roceSnk);
-                        
-        ((HostQueue*)top->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0])->addHostSender(roceSrc);
+        if (use_mprdma) {
+            ((HostQueue*)top->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0])->addHostSender(mprdmaSrc);
+        } else {
+            ((HostQueue*)top->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0])->addHostSender(roceSrc);
+        }
 
         if (route_strategy!=SINGLE_PATH && route_strategy!=ECMP_FIB){
             abort();
@@ -576,21 +708,39 @@ int main(int argc, char **argv) {
                 crt->start += timeFromUs(drand48()*start_delta);
                 cout << "Start is " << timeAsUs(crt->start) << endl;
             }
-            roceSrc->connect(srctotor, dsttotor, *roceSnk, crt->start);
+            if (use_mprdma) {
+                mprdmaSrc->connect(srctotor, dsttotor, *mprdmaSnk, crt->start);
+            } else {
+                roceSrc->connect(srctotor, dsttotor, *roceSnk, crt->start);
+            }
 
             //register src and snk to receive packets from their respective TORs. 
             assert(top->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]);
             assert(top->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]);
-            top->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]->addHostPort(src,roceSrc->flow_id(),roceSrc);
-            top->switches_lp[topo_cfg->HOST_POD_SWITCH(dest)]->addHostPort(dest,roceSrc->flow_id(),roceSnk);
+            if (use_mprdma) {
+                top->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]->addHostPort(src,mprdmaSrc->flow_id(),mprdmaSrc);
+                top->switches_lp[topo_cfg->HOST_POD_SWITCH(dest)]->addHostPort(dest,mprdmaSrc->flow_id(),mprdmaSnk);
+            } else {
+                top->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]->addHostPort(src,roceSrc->flow_id(),roceSrc);
+                top->switches_lp[topo_cfg->HOST_POD_SWITCH(dest)]->addHostPort(dest,roceSrc->flow_id(),roceSnk);
+            }
         } else {
             int choice = rand()%net_paths[src][dest]->size();
             routeout = new Route(*(net_paths[src][dest]->at(choice)));
-            routeout->add_endpoints(roceSrc, roceSnk);
+            if (use_mprdma) {
+                routeout->add_endpoints(mprdmaSrc, mprdmaSnk);
+            } else {
+                routeout->add_endpoints(roceSrc, roceSnk);
+            }
                                 
             routein = new Route(*top->get_bidir_paths(dest,src,false)->at(choice));
-            routein->add_endpoints(roceSnk, roceSrc);
-            roceSrc->connect(routeout, routein, *roceSnk, timeFromUs((uint32_t)rand()%20));
+            if (use_mprdma) {
+                routein->add_endpoints(mprdmaSnk, mprdmaSrc);
+                mprdmaSrc->connect(routeout, routein, *mprdmaSnk, timeFromUs((uint32_t)rand()%20));
+            } else {
+                routein->add_endpoints(roceSnk, roceSrc);
+                roceSrc->connect(routeout, routein, *roceSnk, timeFromUs((uint32_t)rand()%20));
+            }
         }
 
         path_refcounts[src][dest]--;
@@ -616,7 +766,7 @@ int main(int argc, char **argv) {
             delete net_paths[dest][src];
         }
 
-        if (log_sink) {
+        if (log_sink && !use_mprdma) {
             sinkLogger.monitorSink(roceSnk);
         }
     }
@@ -641,12 +791,14 @@ int main(int argc, char **argv) {
     }
 
     cout << "Done" << endl;
-    int new_pkts = 0, rtx_pkts = 0;
-    for (size_t ix = 0; ix < roce_srcs.size(); ix++) {
-        new_pkts += roce_srcs[ix]->_new_packets_sent;
-        rtx_pkts += roce_srcs[ix]->_rtx_packets_sent;
+    if (!use_mprdma) {
+        int new_pkts = 0, rtx_pkts = 0;
+        for (size_t ix = 0; ix < roce_srcs.size(); ix++) {
+            new_pkts += roce_srcs[ix]->_new_packets_sent;
+            rtx_pkts += roce_srcs[ix]->_rtx_packets_sent;
+        }
+        cout << "New: " << new_pkts << " Rtx: " << rtx_pkts << endl;
     }
-    cout << "New: " << new_pkts << " Rtx: " << rtx_pkts << endl;
 
     /*list <const Route*>::iterator rt_i;
       int counts[10]; int hop;

@@ -216,6 +216,15 @@ Packet::str() const {
     case ROCENACK:
         s = "ROCENACK";
         break;
+    case MPRDMA:
+        s = "MPRDMA";
+        break;
+    case MPRDMAACK:
+        s = "MPRDMAACK";
+        break;
+    case MPRDMANACK:
+        s = "MPRDMANACK";
+        break;
     case HPCC:
         s = "HPCC";
         break;
