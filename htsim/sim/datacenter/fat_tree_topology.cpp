@@ -308,7 +308,9 @@ void FatTreeTopologyCfg::set_custom_params(uint32_t no_of_nodes) {
     no_of_tor_uplinks = (no_of_nodes * _downlink_speeds[TOR_TIER]) / (_downlink_speeds[AGG_TIER] *  _oversub[TOR_TIER]);
     cout << "no_of_tor_uplinks: " << no_of_tor_uplinks << endl;
 
-    if (_radix_down[TOR_TIER]/_radix_up[TOR_TIER] != _oversub[TOR_TIER]) {
+    uint64_t tor_down_bw = static_cast<uint64_t>(_radix_down[TOR_TIER]) * _downlink_speeds[TOR_TIER];
+    uint64_t tor_up_bw = static_cast<uint64_t>(_radix_up[TOR_TIER]) * _downlink_speeds[AGG_TIER];
+    if (tor_up_bw == 0 || tor_down_bw != tor_up_bw * _oversub[TOR_TIER]) {
         cerr << "Mismatch between TOR linkspeeds (" << speedAsGbps(_downlink_speeds[TOR_TIER]) << "Gbps down, "
              << speedAsGbps(_downlink_speeds[AGG_TIER]) << "Gbps up) and TOR radix (" << _radix_down[TOR_TIER] << " down, "
              << _radix_up[TOR_TIER] << " up) and oversubscription ratio of " << _oversub[TOR_TIER] << endl;

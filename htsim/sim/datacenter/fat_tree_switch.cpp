@@ -5,8 +5,28 @@
 #include "callback_pipe.h"
 #include "queue_lossless.h"
 #include "queue_lossless_output.h"
+#include "queue_lossless_input.h"
 
 unordered_map<BaseQueue*,uint32_t> FatTreeSwitch::_port_flow_counts;
+unordered_map<flowid_t, unordered_set<uint32_t>> FatTreeSwitch::_fg_pathid_logged;
+
+static bool is_data_packet(const Packet& pkt) {
+    switch (pkt.type()) {
+    case IP:
+    case TCP:
+    case SWIFT:
+    case STRACK:
+    case NDP:
+    case NDPLITE:
+    case ROCE:
+    case HPCC:
+    case EQDSDATA:
+    case UECDATA:
+        return true;
+    default:
+        return false;
+    }
+}
 
 FatTreeSwitch::FatTreeSwitch(EventList& eventlist, string s, switch_type t, uint32_t id,simtime_picosec delay, FatTreeTopology* ft): Switch(eventlist, s) {
     _id = id;
@@ -61,6 +81,16 @@ void FatTreeSwitch::receivePacket(Packet& pkt){
         pkt.sendOn();
     }
 };
+
+void FatTreeSwitch::receivePacket(Packet& pkt, VirtualQueue* prev){
+    if (prev) {
+        auto* liq = dynamic_cast<LosslessInputQueue*>(prev);
+        if (liq) {
+            pkt.set_ingress_queue(liq);
+        }
+    }
+    receivePacket(pkt);
+}
 
 void FatTreeSwitch::addHostPort(int addr, int flowid, PacketSink* transport_port){
     Route* rt = new Route();
@@ -368,6 +398,10 @@ Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
             ArStrategy ar_strategy = getArStrategyForFlow(flow_id);
             switch (ar_strategy) {
             case AR_ECMP: {
+                if (_strategy == RR || _strategy == RR_ECMP) {
+                    ecmp_choice = selectByOriginalStrategy(pkt, hops);
+                    break;
+                }
                 uint32_t hash = (is_background && _bg_paths <= 1)
                     ? freeBSDHash(pkt.flow_id(), 0, _hash_salt)
                     : freeBSDHash(pkt.flow_id(), pkt.pathid(), _hash_salt);
@@ -401,10 +435,25 @@ Route* FatTreeSwitch::getNextHop(Packet& pkt, BaseQueue* ingress_port){
         if (_type == TOR && e->getDirection() == UP) {
             int uplink_index = getUplinkIndex((BaseQueue*)e->getEgressPort()->at(0));
             if (uplink_index >= 0) {
-                if (is_background) {
-                    _bg_uplink_packets[uplink_index]++;
-                } else {
-                    _fg_uplink_packets[uplink_index]++;
+                if (is_data_packet(pkt)) {
+                    if (is_background) {
+                        _bg_uplink_packets[uplink_index]++;
+                    } else {
+                        _fg_uplink_packets[uplink_index]++;
+                    }
+                }
+                if (!is_background) {
+                    if (flow_id <= 32) {
+                        auto& seen = _fg_pathid_logged[flow_id];
+                        uint32_t pid = pkt.pathid();
+                        if (seen.insert(pid).second) {
+                            cout << "FG_ECMP_MAP flow " << flow_id
+                                 << " pathid " << pid
+                                 << " uplink " << uplink_index
+                                 << " hops " << hops->size()
+                                 << endl;
+                        }
+                    }
                 }
             }
         }

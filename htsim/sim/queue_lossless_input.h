@@ -14,6 +14,7 @@
 #include "eth_pause_packet.h"
 #include "switch.h"
 #include <unordered_map>
+#include <string>
 #include "callback_pipe.h"
 
 class Switch;
@@ -44,6 +45,7 @@ public:
     static std::unordered_map<const LosslessInputQueue*, uint64_t> _pause_sent_by_q;
     static std::unordered_map<const LosslessInputQueue*, uint64_t> _pause_cleared_by_q;
     static bool _log_pfc_events;
+    static std::string _pfc_log_substr;
 
 private:
     int _state_recv;

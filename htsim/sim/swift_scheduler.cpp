@@ -2,6 +2,7 @@
 #include <math.h>
 #include "swift_scheduler.h"
 #include "swiftpacket.h"
+#include "eth_pause_packet.h"
 
 
 // We have one Swift Scheduler per sending host.  Multiple Swift flows
@@ -16,7 +17,7 @@
 // network can send.
 
 BaseScheduler::BaseScheduler(linkspeed_bps bitrate, EventList &eventlist, QueueLogger* logger)
-    : BaseQueue(bitrate, eventlist, logger), _pkt_count(0) {
+    : BaseQueue(bitrate, eventlist, logger), _pkt_count(0), _paused(false), _servicing(false) {
 }
 
 void
@@ -31,6 +32,19 @@ BaseScheduler::add_src(int32_t flow_id, ScheduledSrc* src) {
 
 void
 BaseScheduler::receivePacket(Packet & pkt) {
+    if (pkt.type() == ETH_PAUSE) {
+        EthPausePacket* pause = static_cast<EthPausePacket*>(&pkt);
+        if (pause->sleepTime() > 0) {
+            _paused = true;
+        } else {
+            _paused = false;
+            if (!_servicing && _pkt_count > 0) {
+                beginService();
+            }
+        }
+        pkt.free();
+        return;
+    }
     int flow_id = pkt.flow_id();
     //cout << "recv_packet " << this << " flow_id " << flow_id << " count " << _pkt_count << " flow_count " << _queue_counts[flow_id] << endl;
     if (pkt.type() == SWIFT) {
@@ -39,7 +53,7 @@ BaseScheduler::receivePacket(Packet & pkt) {
     }
     enqueue(pkt);
     //cout << "recv_packet2 " << this << " count " << _pkt_count << endl;
-    if (_pkt_count == 1) {
+    if (_pkt_count == 1 && !_paused) {
         beginService();
     }
 }
@@ -48,6 +62,9 @@ void
 BaseScheduler::beginService() {
     /* schedule the next dequeue event */
     //cout << "begin " << this << endl;
+    if (_paused || _servicing) {
+        return;
+    }
     assert(!empty());
     Packet* p = next_packet();
     if (p->type() == SWIFT) {
@@ -56,6 +73,7 @@ BaseScheduler::beginService() {
         SwiftPacket *sp = static_cast<SwiftPacket*>(p);
         sp->set_ts(eventlist().now());
     }
+    _servicing = true;
     eventlist().sourceIsPendingRel(*this, drainTime(p));
 }
 
@@ -79,7 +97,8 @@ BaseScheduler::completeService()
     /* tell the packet to move on to the next pipe */
     pkt->sendOn();
 
-    if (!empty()) {
+    _servicing = false;
+    if (!empty() && !_paused) {
         /* schedule the next dequeue event */
         beginService();
     }
@@ -201,5 +220,3 @@ FairScheduler::create_queue(const Packet& pkt) {
     _queue_map.insert(pair<int32_t, list<Packet*>*>(pkt.flow_id(), new_queue));
     return new_queue;
 }
-
-

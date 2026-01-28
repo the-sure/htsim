@@ -160,7 +160,7 @@ private:
 };
 
 void exit_error(char* progr) {
-    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-lossless_ecn_enable] force ECN on lossless output queues\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-dcqcn_single_path] force DCQCN single path\n\t[-dcqcn_ar single|bitmap|reps|reps_legacy|oblivious|mixed]\n\t[-pfc_thresholds low high]\n\t[-min_rto us] minimum RTO in us\n\t[-ar_granularity packet|flow]\n\t[-fg_ar_granularity packet|flow]\n\t[-bg_ar_granularity packet|flow]\n\t[-fg_path|-fg_paths N] foreground paths (ECMP)\n\t[-bg_path|-bg_paths N] background paths (ECMP)\n\t[-ar_method pause|queue|bandwidth|pqb|pq|pb|qb]\n\t[-fg_cc nscc|dcqcn|swift|mcc|pfc]\n\t[-mcc_rtt_thresh us]\n\t[-mcc_r1 val]\n\t[-mcc_r2 val]\n\t[-mcc_r3 val]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n\t[-fg_ar ecmp|adaptive|mixed]\n\t[-bg_ar ecmp|adaptive]\n"<< endl;
+    cout << "Usage " << progr << " [-nodes N]\n\t[-cwnd cwnd_size]\n\t[-pfc_only_cwnd pkts]\n\t[-q queue_size]\n\t[-queue_type composite|random|lossless|lossless_input|]\n\t[-tm traffic_matrix_file]\n\t[-strat route_strategy (single,rand,perm,pull,ecmp,\n\tecmp_host path_count,ecmp_ar,ecmp_rr,\n\tecmp_host_ar ar_thresh)]\n\t[-log log_level]\n\t[-seed random_seed]\n\t[-end end_time_in_usec]\n\t[-mtu MTU]\n\t[-hop_latency x] per hop wire latency in us,default 1\n\t[-target_q_delay x] target_queuing_delay in us, default is 6us \n\t[-switch_latency x] switching latency in us, default 0\n\t[-host_queue_type  swift|prio|fair_prio]\n\t[-logtime dt] sample time for sinklogger, etc\n\t[-conn_reuse] enable connection reuse\n\t[-quiet] suppress per-flow finish logs\n\t[-verbose] keep per-flow logs even for large runs\n\t[-no_ecn] disable ECN marking\n\t[-ecn_enable|-ecn-able] enable ECN marking\n\t[-lossless_ecn_enable] force ECN on lossless output queues\n\t[-dcqcn_no_cc] DCQCN flows ignore CNP (PFC only)\n\t[-dcqcn_single_path] force DCQCN single path\n\t[-dcqcn_ar single|bitmap|reps|reps_legacy|oblivious|mixed]\n\t[-pfc_thresholds low high]\n\t[-min_rto us] minimum RTO in us\n\t[-ar_granularity packet|flow]\n\t[-fg_ar_granularity packet|flow]\n\t[-bg_ar_granularity packet|flow]\n\t[-fg_path|-fg_paths N] foreground paths (ECMP)\n\t[-bg_path|-bg_paths N] background paths (ECMP)\n\t[-ar_method pause|queue|bandwidth|pqb|pq|pb|qb]\n\t[-fg_cc nscc|dcqcn|swift|mcc|pfc]\n\t[-mcc_rtt_thresh us]\n\t[-mcc_r1 val]\n\t[-mcc_r2 val]\n\t[-mcc_r3 val]\n\t[-bg_threshold N] flowid > N is background (PFC only)\n\t[-linkspeed_low Mbps] flowid<=1000 linkspeed\n\t[-linkspeed_mid Mbps] 1000<flowid<=100000 linkspeed\n\t[-linkspeed_high Mbps] flowid>100000 linkspeed\n\t[-log_pfc] log PFC events for all ingress queues\n\t[-log_spine0_pfc] log PFC events for spine0 ingress queues\n\t[-log_spine0_ecn] log ECN marks on spine0 egress queues\n\t[-fg_ar ecmp|adaptive|mixed]\n\t[-bg_ar ecmp|adaptive]\n"<< endl;
     exit(1);
 }
 
@@ -189,6 +189,11 @@ int main(int argc, char **argv) {
     bool param_queuesize_set = false;
     uint32_t queuesize_pkt = 0;
     linkspeed_bps linkspeed = speedFromMbps((double)HOST_NIC);
+    linkspeed_bps linkspeed_low = 0;
+    linkspeed_bps linkspeed_mid = 0;
+    linkspeed_bps linkspeed_high = 0;
+    const flowid_t kLinkspeedMidThreshold = 1000;
+    const flowid_t kLinkspeedHighThreshold = 100000;
     int packet_size = 4150;
     uint32_t path_entropy_size = 64;
     uint32_t fg_path_entropy_size = 0;
@@ -209,16 +214,16 @@ int main(int argc, char **argv) {
     queue_type qt = LOSSLESS_INPUT;
 
     // ===== New：前后台混合拥塞控制变量 =====
-    ForegroundCCType fg_cc_type = FG_MCC_IDEAL;  // 观测流量默认使用 MCC
+    ForegroundCCType fg_cc_type = FG_SWIFT;  // 观测流量默认使用 Swift
     uint64_t bg_flowid_threshold = 1000;    // flowid > threshold 为背景流
     bool dcqcn_no_cc = false;
     bool dcqcn_single_path = false;
     // ===================================
 
     enum LoadBalancing_Algo { BITMAP, REPS, REPS_LEGACY, OBLIVIOUS, MIXED};
-    LoadBalancing_Algo load_balancing_algo = MIXED;
+    LoadBalancing_Algo load_balancing_algo = OBLIVIOUS;
     bool dcqcn_ar_override = false;
-    LoadBalancing_Algo dcqcn_ar_algo = MIXED;
+    LoadBalancing_Algo dcqcn_ar_algo = OBLIVIOUS;
 
     bool log_sink = false;
     bool log_nic = false;
@@ -229,6 +234,9 @@ int main(int argc, char **argv) {
     bool log_traffic = false;
     bool log_switches = false;
     bool log_queue_usage = false;
+    bool log_pfc = false;
+    bool log_spine0_pfc = false;
+    bool log_spine0_ecn = false;
     const double ecn_thresh = 0.5; // default marking threshold for ECN load balancing
     simtime_picosec target_Qdelay = 0;
 
@@ -241,7 +249,7 @@ int main(int argc, char **argv) {
 
     bool receiver_driven = false;
     bool sender_driven = true;
-    // Default foreground congestion control to MCC unless overridden.
+    // Default UEC sender CC to MCC unless overridden.
     UecSrc::_sender_cc_algo = UecSrc::MCC_IDEAL;
     UecSrc::_sender_based_cc = true;
     uint64_t high_pfc = 150, low_pfc = 120;
@@ -261,13 +269,19 @@ int main(int argc, char **argv) {
     bool enable_accurate_base_rtt = false;
 
     //unsure how to set this. 
-    queue_type snd_type = FAIR_PRIO;
+    // Match the default foreground CC (Swift) with the Swift scheduler.
+    queue_type snd_type = SWIFT_SCHEDULER;
 
     float ar_sticky_delta = 10;
     FatTreeSwitch::sticky_choices ar_sticky = FatTreeSwitch::PER_PACKET;
     FatTreeSwitch::sticky_choices fg_ar_sticky = FatTreeSwitch::PER_PACKET;
     FatTreeSwitch::sticky_choices bg_ar_sticky = FatTreeSwitch::PER_PACKET;
     bool separate_ar_granularity = false;
+    bool fg_ar_set = false;
+    bool bg_ar_set = false;
+    bool ar_granularity_set = false;
+    bool fg_ar_granularity_set = false;
+    bool bg_ar_granularity_set = false;
 
     char* tm_file = NULL;
     char* topo_file = NULL;
@@ -617,6 +631,10 @@ int main(int argc, char **argv) {
             ecn = false;
             cout << "ECN disabled" << endl;
         }
+        else if (!strcmp(argv[i],"-ecn_enable") || !strcmp(argv[i],"-ecn-able")){
+            ecn = true;
+            cout << "ECN enabled" << endl;
+        }
         else if (!strcmp(argv[i],"-lossless_ecn_enable")){
             force_lossless_ecn = true;
             ecn = true;
@@ -647,6 +665,15 @@ int main(int argc, char **argv) {
             logtime = timeFromUs(log_us);
             cout << "logtime "<< log_us << " us" << endl;
             i++;
+        } else if (!strcmp(argv[i],"-log_pfc")){
+            log_pfc = true;
+            cout << "Logging PFC events enabled" << endl;
+        } else if (!strcmp(argv[i],"-log_spine0_pfc")){
+            log_spine0_pfc = true;
+            cout << "Logging spine0 PFC events enabled" << endl;
+        } else if (!strcmp(argv[i],"-log_spine0_ecn")){
+            log_spine0_ecn = true;
+            cout << "Logging spine0 ECN marks enabled" << endl;
         } else if (!strcmp(argv[i],"-failed")){
             // number of failed links (failed to 25% linkspeed)
             topo_num_failed = atoi(argv[i+1]);
@@ -654,6 +681,18 @@ int main(int argc, char **argv) {
         } else if (!strcmp(argv[i],"-linkspeed")){
             // linkspeed specified is in Mbps
             linkspeed = speedFromMbps(atof(argv[i+1]));
+            i++;
+        } else if (!strcmp(argv[i],"-linkspeed_low")){
+            linkspeed_low = speedFromMbps(atof(argv[i+1]));
+            cout << "Linkspeed low (flowid<=1000) set to " << speedAsGbps(linkspeed_low) << "Gbps" << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-linkspeed_mid")){
+            linkspeed_mid = speedFromMbps(atof(argv[i+1]));
+            cout << "Linkspeed mid (1000<flowid<=100000) set to " << speedAsGbps(linkspeed_mid) << "Gbps" << endl;
+            i++;
+        } else if (!strcmp(argv[i],"-linkspeed_high")){
+            linkspeed_high = speedFromMbps(atof(argv[i+1]));
+            cout << "Linkspeed high (flowid>100000) set to " << speedAsGbps(linkspeed_high) << "Gbps" << endl;
             i++;
         } else if (!strcmp(argv[i],"-seed")){
             seed = atoi(argv[i+1]);
@@ -710,6 +749,7 @@ int main(int argc, char **argv) {
             fg_ar_sticky = ar_sticky;
             bg_ar_sticky = ar_sticky;
             separate_ar_granularity = false;
+            ar_granularity_set = true;
             i++;
         } else if (!strcmp(argv[i],"-fg_ar_granularity")){
             if (!strcmp(argv[i+1],"packet"))
@@ -721,6 +761,7 @@ int main(int argc, char **argv) {
                 exit(1);
             }
             separate_ar_granularity = true;
+            fg_ar_granularity_set = true;
             i++;
         } else if (!strcmp(argv[i],"-bg_ar_granularity")){
             if (!strcmp(argv[i+1],"packet"))
@@ -732,6 +773,7 @@ int main(int argc, char **argv) {
                 exit(1);
             }
             separate_ar_granularity = true;
+            bg_ar_granularity_set = true;
             i++;
         } else if (!strcmp(argv[i],"-ar_method") || !strcmp(argv[i],"-fg_ar_method")){
             if (!strcmp(argv[i+1],"pause")){
@@ -819,6 +861,7 @@ int main(int argc, char **argv) {
             }
             FatTreeSwitch::set_fg_ar_strategy(fg_ar);
             cout << "Foreground AR strategy: " << argv[i+1] << endl;
+            fg_ar_set = true;
             i++;
         } else if (!strcmp(argv[i],"-bg_ar")) {
             FatTreeSwitch::ArStrategy bg_ar = FatTreeSwitch::AR_ECMP;
@@ -832,6 +875,7 @@ int main(int argc, char **argv) {
             }
             FatTreeSwitch::set_bg_ar_strategy(bg_ar);
             cout << "Background AR strategy: " << argv[i+1] << endl;
+            bg_ar_set = true;
             i++;
         } else if (!strcmp(argv[i],"-dcqcn_no_cc")) {
             dcqcn_no_cc = true;
@@ -897,6 +941,15 @@ int main(int argc, char **argv) {
     if (bg_paths == 0) {
         bg_paths = 1;
     }
+    if (linkspeed_low == 0) {
+        linkspeed_low = linkspeed;
+    }
+    if (linkspeed_mid == 0) {
+        linkspeed_mid = linkspeed;
+    }
+    if (linkspeed_high == 0) {
+        linkspeed_high = linkspeed;
+    }
     LoadBalancing_Algo fg_lb_algo = load_balancing_algo;
     LoadBalancing_Algo bg_lb_algo = OBLIVIOUS;
 
@@ -910,6 +963,9 @@ int main(int argc, char **argv) {
         logtime = timeFromUs((uint32_t)end_time) - 1;
     }
 
+    LosslessOutputQueue::set_fg_flowid_threshold(bg_flowid_threshold);
+    LosslessOutputQueue::set_fg_util_sample_period(timeFromUs((uint32_t)10));
+
     assert(trimsize >= 64 && trimsize <= (uint32_t)packet_size);
 
     cout << "Packet size (MTU) is " << packet_size << endl;
@@ -920,6 +976,17 @@ int main(int argc, char **argv) {
     Packet::set_packet_size(packet_size);
     LosslessInputQueue::_high_threshold = Packet::data_packet_size()*high_pfc;
     LosslessInputQueue::_low_threshold = Packet::data_packet_size()*low_pfc;
+    if (log_pfc) {
+        LosslessInputQueue::_log_pfc_events = true;
+        LosslessInputQueue::_pfc_log_substr = "";
+    } else if (log_spine0_pfc) {
+        LosslessInputQueue::_log_pfc_events = true;
+        LosslessInputQueue::_pfc_log_substr = "US0->LS_";
+    }
+    if (log_spine0_ecn) {
+        LosslessOutputQueue::_log_spine0_ecn = true;
+        LosslessOutputQueue::_spine0_ecn_substr = "US0->LS_";
+    }
 
 
     UecSrc::_mtu = Packet::data_packet_size();
@@ -930,9 +997,17 @@ int main(int argc, char **argv) {
         FatTreeSwitch::set_strategy(FatTreeSwitch::ECMP);
     }
 
-    FatTreeSwitch::set_bg_ar_strategy(FatTreeSwitch::AR_ECMP);
-    bg_ar_sticky = FatTreeSwitch::PER_FLOWLET;
-    separate_ar_granularity = true;
+    if (!fg_ar_set) {
+        FatTreeSwitch::set_fg_ar_strategy(FatTreeSwitch::AR_ADAPTIVE);
+    }
+    if (!bg_ar_set) {
+        FatTreeSwitch::set_bg_ar_strategy(FatTreeSwitch::AR_ADAPTIVE);
+    }
+    if (!ar_granularity_set && !fg_ar_granularity_set && !bg_ar_granularity_set) {
+        fg_ar_sticky = FatTreeSwitch::PER_PACKET;
+        bg_ar_sticky = FatTreeSwitch::PER_PACKET;
+        separate_ar_granularity = true;
+    }
 
     /*
     UecSink::_oversubscribed_congestion_control = oversubscribed_congestion_control;
@@ -1317,11 +1392,17 @@ int main(int argc, char **argv) {
         }
 
         bool is_background = (current_flowid > bg_flowid_threshold);
+        linkspeed_bps flow_linkspeed = linkspeed_low;
+        if (current_flowid > kLinkspeedHighThreshold) {
+            flow_linkspeed = linkspeed_high;
+        } else if (current_flowid > kLinkspeedMidThreshold) {
+            flow_linkspeed = linkspeed_mid;
+        }
         ForegroundCCType actual_cc = is_background ? FG_PFC_ONLY : fg_cc_type;
         // ==========================================
 
-        simtime_picosec transmission_delay = (Packet::data_packet_size() * 8 / speedAsGbps(linkspeed) * topo_cfg->get_diameter() * 1000) 
-                                             + (UecBasePacket::get_ack_size() * 8 / speedAsGbps(linkspeed) * topo_cfg->get_diameter() * 1000);
+        simtime_picosec transmission_delay = (Packet::data_packet_size() * 8 / speedAsGbps(flow_linkspeed) * topo_cfg->get_diameter() * 1000) 
+                                             + (UecBasePacket::get_ack_size() * 8 / speedAsGbps(flow_linkspeed) * topo_cfg->get_diameter() * 1000);
         simtime_picosec base_rtt_bw_two_points = 2*topo_cfg->get_two_point_diameter_latency(src, dest) + transmission_delay;
 
         //cout << "Connection " << crt->src << "->" <<crt->dst << " starting at " << crt->start << " size " << crt->size << endl;
@@ -1335,6 +1416,7 @@ int main(int argc, char **argv) {
                  << " dst=" << dest << " (" << dest/64 << ")"
                  << " ToR_src=" << topo_cfg->HOST_POD_SWITCH(src)
                  << " ToR_dst=" << topo_cfg->HOST_POD_SWITCH(dest)
+                 << " linkspeed=" << speedAsGbps(flow_linkspeed) << "Gbps"
                  << endl;
         }
 
@@ -1360,7 +1442,7 @@ int main(int argc, char **argv) {
                 }
             }
 
-            DCQCNSrc* dcqcn_src = new DCQCNSrc(NULL, traffic_logger, eventlist, linkspeed, std::move(mp));
+            DCQCNSrc* dcqcn_src = new DCQCNSrc(NULL, traffic_logger, eventlist, flow_linkspeed, std::move(mp));
             DCQCNSink* dcqcn_sink = new DCQCNSink(eventlist);
 
             // Set identifiers and endpoints before connect.
@@ -1404,7 +1486,8 @@ int main(int argc, char **argv) {
             bool dcqcn_switch_ecmp = (route_strategy == ECMP_FIB ||
                                       route_strategy == ECMP_FIB_ECN ||
                                       route_strategy == REACTIVE_ECN) &&
-                (dcqcn_algo == REPS || dcqcn_algo == BITMAP || dcqcn_algo == MIXED);
+                (dcqcn_algo == REPS || dcqcn_algo == BITMAP || dcqcn_algo == MIXED ||
+                 dcqcn_algo == OBLIVIOUS);
 
             Route* first_routeout = nullptr;
             Route* first_routeback = nullptr;
@@ -1511,11 +1594,7 @@ int main(int argc, char **argv) {
                 uint64_t swift_cwnd_b = cwnd * Packet::data_packet_size();
                 swift_src->set_cwnd(static_cast<uint32_t>(std::min<uint64_t>(swift_cwnd_b, UINT32_MAX)));
             } else {
-                mem_b bdp = static_cast<mem_b>(timeAsSec(network_max_unloaded_rtt) * (linkspeed / 8.0));
-                mem_b initial_cwnd = static_cast<mem_b>(bdp * 0.5);
-                if (initial_cwnd < 10 * Packet::data_packet_size()) {
-                    initial_cwnd = 10 * Packet::data_packet_size();
-                }
+                mem_b initial_cwnd = 70 * Packet::data_packet_size();
                 swift_src->set_cwnd(static_cast<uint32_t>(std::min<mem_b>(initial_cwnd, UINT32_MAX)));
             }
 
@@ -1528,26 +1607,58 @@ int main(int argc, char **argv) {
                 swift_src->logFlowEvents(*event_logger);
             }
 
-            vector<const Route*>* paths_out = topo[0]->get_paths(src, dest);
-            vector<const Route*>* paths_back = topo[0]->get_paths(dest, src);
-            if (!paths_out || paths_out->empty()) {
-                cout << "ERROR: no Swift forward paths for " << src << "->" << dest << endl;
-                exit(1);
-            }
-            if (!paths_back || paths_back->empty()) {
-                cout << "ERROR: no Swift reverse paths for " << dest << "->" << src << endl;
-                exit(1);
-            }
-
+            bool swift_switch_ecmp = (route_strategy == ECMP_FIB ||
+                                      route_strategy == ECMP_FIB_ECN ||
+                                      route_strategy == REACTIVE_ECN);
             Route* first_routeout = nullptr;
             Route* first_routeback = nullptr;
-            for (size_t i = 0; i < paths_out->size(); i++) {
-                Route* routeout = new Route(*(paths_out->at(i)));
-                Route* routeback = new Route(*(paths_back->at(i % paths_back->size())));
-                swift_src->addPath(routeout, routeback);
-                if (i == 0) {
-                    first_routeout = routeout;
-                    first_routeback = routeback;
+            if (swift_switch_ecmp) {
+                uint32_t swift_paths = std::max<uint32_t>(1, fg_paths);
+                for (uint32_t i = 0; i < swift_paths; i++) {
+                    Route* routeout = new Route();
+                    routeout->push_back(topo[0]->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]);
+                    routeout->push_back(topo[0]->pipes_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]);
+                    PacketSink* src_endpoint = topo[0]->queues_ns_nlp[src][topo_cfg->HOST_POD_SWITCH(src)][0]->getRemoteEndpoint();
+                    routeout->push_back(src_endpoint);
+                    if (dynamic_cast<LosslessInputQueue*>(src_endpoint) != nullptr) {
+                        routeout->push_back(topo[0]->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]);
+                    }
+
+                    Route* routeback = new Route();
+                    routeback->push_back(topo[0]->queues_ns_nlp[dest][topo_cfg->HOST_POD_SWITCH(dest)][0]);
+                    routeback->push_back(topo[0]->pipes_ns_nlp[dest][topo_cfg->HOST_POD_SWITCH(dest)][0]);
+                    PacketSink* dst_endpoint = topo[0]->queues_ns_nlp[dest][topo_cfg->HOST_POD_SWITCH(dest)][0]->getRemoteEndpoint();
+                    routeback->push_back(dst_endpoint);
+                    if (dynamic_cast<LosslessInputQueue*>(dst_endpoint) != nullptr) {
+                        routeback->push_back(topo[0]->switches_lp[topo_cfg->HOST_POD_SWITCH(dest)]);
+                    }
+
+                    swift_src->addPath(routeout, routeback);
+                    if (i == 0) {
+                        first_routeout = routeout;
+                        first_routeback = routeback;
+                    }
+                }
+            } else {
+                vector<const Route*>* paths_out = topo[0]->get_paths(src, dest);
+                vector<const Route*>* paths_back = topo[0]->get_paths(dest, src);
+                if (!paths_out || paths_out->empty()) {
+                    cout << "ERROR: no Swift forward paths for " << src << "->" << dest << endl;
+                    exit(1);
+                }
+                if (!paths_back || paths_back->empty()) {
+                    cout << "ERROR: no Swift reverse paths for " << dest << "->" << src << endl;
+                    exit(1);
+                }
+
+                for (size_t i = 0; i < paths_out->size(); i++) {
+                    Route* routeout = new Route(*(paths_out->at(i)));
+                    Route* routeback = new Route(*(paths_back->at(i % paths_back->size())));
+                    swift_src->addPath(routeout, routeback);
+                    if (i == 0) {
+                        first_routeout = routeout;
+                        first_routeback = routeback;
+                    }
                 }
             }
 
@@ -1569,6 +1680,30 @@ int main(int argc, char **argv) {
             swift_src->connect(*first_routeout, *first_routeback, *swift_sink, start_time);
 
             SwiftSubflowSrc* subflow = swift_src->get_subflow();
+            if (swift_switch_ecmp) {
+                FatTreeSwitch* src_switch = dynamic_cast<FatTreeSwitch*>(
+                    topo[0]->switches_lp[topo_cfg->HOST_POD_SWITCH(src)]
+                );
+                FatTreeSwitch* dst_switch = dynamic_cast<FatTreeSwitch*>(
+                    topo[0]->switches_lp[topo_cfg->HOST_POD_SWITCH(dest)]
+                );
+                if (src_switch && subflow) {
+                    src_switch->addHostPort(src, current_flowid, subflow);
+                } else if (!src_switch) {
+                    cout << "ERROR: src_switch is NULL for Swift flow " << current_flowid << endl;
+                } else {
+                    cout << "ERROR: Swift subflow is NULL for flow " << current_flowid << endl;
+                }
+
+                SwiftSubflowSink* subflow_sink = subflow ? subflow->get_subflow_sink() : nullptr;
+                if (dst_switch && subflow_sink) {
+                    dst_switch->addHostPort(dest, current_flowid, subflow_sink);
+                } else if (!dst_switch) {
+                    cout << "ERROR: dst_switch is NULL for Swift flow " << current_flowid << endl;
+                } else {
+                    cout << "ERROR: Swift subflow sink is NULL for flow " << current_flowid << endl;
+                }
+            }
             if (subflow) {
                 unique_ptr<UecMultipath> mp = nullptr;
                 if (fg_lb_algo == BITMAP) {
@@ -1631,7 +1766,7 @@ int main(int argc, char **argv) {
                 uec_snk = new UecSink(NULL, pacers[dest].get(), *nics.at(dest),
                                       ports);
             else //each connection has its own pacer, so receiver driven mode does not kick in! 
-                uec_snk = new UecSink(NULL,linkspeed,1.1,UecBasePacket::unquantize(UecSink::_credit_per_pull),eventlist,*nics.at(dest), ports);
+                uec_snk = new UecSink(NULL,flow_linkspeed,1.1,UecBasePacket::unquantize(UecSink::_credit_per_pull),eventlist,*nics.at(dest), ports);
 
             flowmap[uec_src->flowId()] = { uec_src, uec_snk };
 
@@ -1665,7 +1800,7 @@ int main(int argc, char **argv) {
                         pfc_only_cwnd = cwnd_b;
                     } else {
                         // Keep PFC-only flows bounded by BDP to avoid runaway event counts.
-                        pfc_only_cwnd = static_cast<mem_b>(timeAsSec(network_max_unloaded_rtt) * (linkspeed / 8.0));
+                        pfc_only_cwnd = static_cast<mem_b>(timeAsSec(network_max_unloaded_rtt) * (flow_linkspeed / 8.0));
                         if (pfc_only_cwnd < Packet::data_packet_size()) {
                             pfc_only_cwnd = Packet::data_packet_size();
                         }

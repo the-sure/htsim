@@ -2,6 +2,7 @@
 #include <math.h>
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 #include "switch.h"
 #include "hpccpacket.h"
 #include "queue_lossless_output.h"
@@ -10,6 +11,138 @@
 
 int LosslessOutputQueue::_ecn_enabled = false;
 int LosslessOutputQueue::_K = 0;
+flowid_t LosslessOutputQueue::_fg_flowid_threshold = 1000;
+simtime_picosec LosslessOutputQueue::_fg_util_sample_period = timeFromMs(0.25);
+bool LosslessOutputQueue::_log_spine0_ecn = false;
+std::string LosslessOutputQueue::_spine0_ecn_substr = "";
+
+namespace {
+bool is_fg_flow(const Packet& pkt) {
+    flowid_t id = pkt.flow_id();
+    return id > 0 && id <= LosslessOutputQueue::_fg_flowid_threshold;
+}
+
+bool is_spine_to_leaf1_queue(LosslessOutputQueue* queue) {
+    const string& name = queue->str();
+    return name.rfind("US", 0) == 0 && name.find("->LS_1(") != string::npos;
+}
+
+struct FgQueueState {
+    simtime_picosec last_change = 0;
+    simtime_picosec busy_in_window = 0;
+    double link_bps = 0.0;
+    bool fg_busy = false;
+    bool initialized = false;
+};
+
+class FgSpineLeaf1UtilMonitor : public EventSource {
+public:
+    FgSpineLeaf1UtilMonitor(EventList& eventlist, simtime_picosec period)
+        : EventSource(eventlist, "fg_spine_leaf1_util"),
+          _period(period) {
+        if (_period > 0) {
+            eventlist.sourceIsPendingRel(*this, _period);
+        }
+    }
+
+    void txStart(LosslessOutputQueue* queue, const Packet& pkt) {
+        simtime_picosec now = eventlist().now();
+        auto& state = _states[queue];
+        if (!state.initialized) {
+            state.initialized = true;
+            state.last_change = now;
+            state.busy_in_window = 0;
+            state.fg_busy = false;
+        }
+        if (state.link_bps == 0.0) {
+            simtime_picosec drain_ps = queue->drainTime(const_cast<Packet*>(&pkt));
+            if (drain_ps > 0 && pkt.size() > 0) {
+                state.link_bps = (static_cast<double>(pkt.size()) * 8.0 * 1e12) /
+                                 static_cast<double>(drain_ps);
+            }
+        }
+        if (state.fg_busy) {
+            return;
+        }
+        state.last_change = now;
+        state.fg_busy = true;
+    }
+
+    void txEnd(LosslessOutputQueue* queue) {
+        auto it = _states.find(queue);
+        if (it == _states.end()) {
+            return;
+        }
+        simtime_picosec now = eventlist().now();
+        auto& state = it->second;
+        if (state.fg_busy) {
+            state.busy_in_window += now - state.last_change;
+            state.fg_busy = false;
+        }
+        state.last_change = now;
+    }
+
+    void doNextEvent() override {
+        if (_period <= 0) {
+            return;
+        }
+        simtime_picosec now = eventlist().now();
+        double period_ps = static_cast<double>(_period);
+        double baseline_bps = speedFromGbps(50.0);
+        for (auto& entry : _states) {
+            auto& state = entry.second;
+            simtime_picosec busy = state.busy_in_window;
+            if (state.fg_busy) {
+                busy += now - state.last_change;
+            }
+            double util = 0.0;
+            if (period_ps > 0.0) {
+                util = static_cast<double>(busy) / period_ps;
+            }
+            double throughput_bps = util * state.link_bps;
+            double ratio_50g = (baseline_bps > 0.0) ? (throughput_bps / baseline_bps) : 0.0;
+            cout << "FG_SPINE_LEAF1_UTIL time_us " << timeAsUs(now)
+                 << " queue " << entry.first->str()
+                 << " throughput_gbps " << (throughput_bps / 1.0e9)
+                 << " ratio_50g " << ratio_50g
+                 << endl;
+            state.busy_in_window = 0;
+            state.last_change = now;
+        }
+        eventlist().sourceIsPendingRel(*this, _period);
+    }
+
+private:
+    simtime_picosec _period;
+    std::unordered_map<LosslessOutputQueue*, FgQueueState> _states;
+};
+
+FgSpineLeaf1UtilMonitor* fg_spine_leaf1_monitor = nullptr;
+
+void record_fg_spine_leaf1_tx_start(LosslessOutputQueue* queue, Packet& pkt) {
+    if (!is_fg_flow(pkt) || !is_spine_to_leaf1_queue(queue)) {
+        return;
+    }
+    if (LosslessOutputQueue::_fg_util_sample_period <= 0) {
+        return;
+    }
+    if (!fg_spine_leaf1_monitor) {
+        fg_spine_leaf1_monitor = new FgSpineLeaf1UtilMonitor(queue->eventlist(),
+                                                             LosslessOutputQueue::_fg_util_sample_period);
+    }
+    fg_spine_leaf1_monitor->txStart(queue, pkt);
+}
+
+void record_fg_spine_leaf1_tx_end(LosslessOutputQueue* queue, Packet& pkt) {
+    if (!is_fg_flow(pkt) || !is_spine_to_leaf1_queue(queue)) {
+        return;
+    }
+    if (!fg_spine_leaf1_monitor) {
+        return;
+    }
+    fg_spine_leaf1_monitor->txEnd(queue);
+}
+} // namespace
 
 LosslessOutputQueue::LosslessOutputQueue(linkspeed_bps bitrate, mem_b maxsize, 
                                          EventList& eventlist, QueueLogger* logger)
@@ -129,6 +262,9 @@ LosslessOutputQueue::receivePacket(Packet& pkt,VirtualQueue* prev)
 void LosslessOutputQueue::beginService(){
     assert(_state_send==READY&&!_sending);
 
+    Packet* pkt = _enqueued.back();
+    record_fg_spine_leaf1_tx_start(this, *pkt);
+
     Queue::beginService();
     _sending = 1;
 }
@@ -166,6 +302,15 @@ void LosslessOutputQueue::completeService(){
     //mark on deque
     if (_ecn_enabled && _queuesize > _K && is_ecn_eligible(*pkt)) {
         pkt->set_flags(pkt->flags() | ECN_CE);
+        if (_log_spine0_ecn &&
+            (_spine0_ecn_substr.empty() ||
+             _name.find(_spine0_ecn_substr) != std::string::npos)) {
+            cout << "ECN_MARK_SPINE0 time_us " << timeAsUs(eventlist().now())
+                 << " queue " << _name
+                 << " queuesize " << _queuesize
+                 << " K " << _K
+                 << endl;
+        }
     }
 
     if (pkt->type()==HPCC){
@@ -199,6 +344,7 @@ void LosslessOutputQueue::completeService(){
 
     //this is used for bandwidth utilization tracking. 
     log_packet_send(drainTime(pkt));
+    record_fg_spine_leaf1_tx_end(this, *pkt);
 
     //if (((uint64_t)timeAsUs(eventlist().now()))%5==0)
     //    cout << "Queue bandwidth utilization " << average_utilization() << "%" << endl;

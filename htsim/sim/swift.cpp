@@ -10,7 +10,7 @@ static const uint16_t kReorderDupAcks = 64;
 ////////////////////////////////////////////////////////////////
 //  SWIFT SUBFLOW SOURCE
 ////////////////////////////////////////////////////////////////
-uint32_t SwiftSubflowSrc::_default_cwnd = 60;
+uint32_t SwiftSubflowSrc::_default_cwnd = 70;
 
 SwiftSubflowSrc::SwiftSubflowSrc(SwiftSrc& src, TrafficLogger* pktlogger, int sub_id)
     : EventSource(src.eventlist(), "swift_subflow_src"), _flow(pktlogger), _src(src), _pacer(*this, src.eventlist())
@@ -400,6 +400,7 @@ SwiftSubflowSrc::send_next_packet() {
     }
 
     SwiftPacket* p = SwiftPacket::newpkt(_flow, *selected_route, _highest_sent+1, dsn, mss());
+    p->set_dst(static_cast<uint32_t>(_src.get_dst()));
     //cout << timeAsUs(eventlist().now()) << " " << nodename() << " sent " << _highest_sent+1 << "-" << _highest_sent+mss() << " dsn " << dsn << endl;
     if (_mp && _no_of_paths > 0) {
         p->set_pathid(_last_path_id);
@@ -707,7 +708,7 @@ SwiftSrc::SwiftSrc(SwiftRtxTimerScanner& rtx_scanner, SwiftLogger* logger, Traff
     : EventSource(eventlst,"swift"),  _logger(logger), _traffic_logger(pktlogger), _rtx_timer_scanner(&rtx_scanner)
 {
     _mss = Packet::data_packet_size();
-    SwiftSubflowSrc::_default_cwnd = 60 * _mss; // start at 60 packets (bytes)
+    SwiftSubflowSrc::_default_cwnd = 70 * _mss; // start at 70 packets (bytes)
     _scheduler = NULL;
     _maxcwnd = 0xffffffff;//200*_mss;
     _flow_size = ((uint64_t)1)<<63;
@@ -1165,6 +1166,7 @@ SwiftSubflowSink::send_ack(simtime_picosec ts) {
     const Route* rt = _route;
     
     SwiftAck *ack = SwiftAck::newpkt(_subflow_src->flow(), *rt, 0, _cumulative_ack, _sink._cumulative_data_ack, ts);
+    ack->set_dst(static_cast<uint32_t>(_sink.get_src_id()));
 
     ack->flow().logTraffic(*ack,*this,TrafficLogger::PKT_CREATESEND);
     ack->sendOn();

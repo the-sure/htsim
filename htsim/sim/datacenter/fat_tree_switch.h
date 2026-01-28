@@ -106,6 +106,7 @@ public:
     ~FatTreeSwitch() override;
   
     virtual void receivePacket(Packet& pkt);
+    virtual void receivePacket(Packet& pkt, VirtualQueue* prev);
     virtual Route* getNextHop(Packet& pkt, BaseQueue* ingress_port);
     virtual uint32_t getType() {return _type;}
 
@@ -175,6 +176,7 @@ public:
     static std::unordered_set<flowid_t> _logged_bg_uplink_flows;
     static std::unordered_map<int, uint64_t> _fg_uplink_packets;
     static std::unordered_map<int, uint64_t> _bg_uplink_packets;
+    static std::unordered_map<flowid_t, std::unordered_set<uint32_t>> _fg_pathid_logged;
     static flowid_t _bg_flowid_threshold;
     static uint16_t _bg_paths;
     static void set_bg_flowid_threshold(flowid_t threshold) {

@@ -87,6 +87,7 @@ public:
     uint32_t get_cwnd() const { return _swift_cwnd; }
     simtime_picosec get_rtt() const { return _rtt; }
     bool is_established() const { return _established; }
+    SwiftSubflowSink* get_subflow_sink() const { return _subflow_sink; }
     void set_multipath(std::unique_ptr<UecMultipath> mp, uint16_t no_of_paths);
     uint16_t selectPath();
     void processPathFeedback(uint16_t path_id, UecMultipath::PathFeedback feedback);

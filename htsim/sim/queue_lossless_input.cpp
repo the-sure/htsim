@@ -12,6 +12,7 @@ uint64_t LosslessInputQueue::_pause_cleared = 0;
 std::unordered_map<const LosslessInputQueue*, uint64_t> LosslessInputQueue::_pause_sent_by_q = {};
 std::unordered_map<const LosslessInputQueue*, uint64_t> LosslessInputQueue::_pause_cleared_by_q = {};
 bool LosslessInputQueue::_log_pfc_events = false;
+std::string LosslessInputQueue::_pfc_log_substr = "";
 
 LosslessInputQueue::LosslessInputQueue(EventList& eventlist)
     : Queue(speedFromGbps(1),Packet::data_packet_size()*2000,eventlist,NULL),
@@ -74,9 +75,11 @@ LosslessInputQueue::receivePacket(Packet& pkt)
     assert(_queuesize > 0);
     if ((uint64_t)_queuesize > _high_threshold && _state_recv!=PAUSED){
         _state_recv = PAUSED;
-        if (_log_pfc_events) {
+        if (_log_pfc_events &&
+            (_pfc_log_substr.empty() || _name.find(_pfc_log_substr) != std::string::npos)) {
+            std::string log_name = _nodename.empty() ? _name : _nodename;
             cout << "PFC_PAUSE_SEND time_us " << timeAsUs(eventlist().now())
-                 << " queue " << _name
+                 << " queue " << log_name
                  << " queuesize " << _queuesize
                  << " high_threshold " << _high_threshold
                  << endl;
@@ -117,9 +120,11 @@ void LosslessInputQueue::completedService(Packet& pkt){
     assert(_queuesize >= 0);
     if ((uint64_t)_queuesize < _low_threshold && _state_recv == PAUSED) {
         _state_recv = READY;
-        if (_log_pfc_events) {
+        if (_log_pfc_events &&
+            (_pfc_log_substr.empty() || _name.find(_pfc_log_substr) != std::string::npos)) {
+            std::string log_name = _nodename.empty() ? _name : _nodename;
             cout << "PFC_PAUSE_CLEAR time_us " << timeAsUs(eventlist().now())
-                 << " queue " << _name
+                 << " queue " << log_name
                  << " queuesize " << _queuesize
                  << " low_threshold " << _low_threshold
                  << endl;

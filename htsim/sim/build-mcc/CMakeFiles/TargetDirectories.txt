@@ -1,0 +1,15 @@
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/CMakeFiles/htsim.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/CMakeFiles/parse_output.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/CMakeFiles/always_run.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/CMakeFiles/edit_cache.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/CMakeFiles/rebuild_cache.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_dc.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_tcp.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_ndp.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_roce.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_swift.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_hpcc.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_eqds.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/htsim_uec.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/edit_cache.dir
+/home/zhaoshuo/mcc-motivation/htsim/sim/build-mcc/datacenter/CMakeFiles/rebuild_cache.dir

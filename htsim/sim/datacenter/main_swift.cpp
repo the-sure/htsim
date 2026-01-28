@@ -372,13 +372,13 @@ is_dest[i] = 0;
         //routein->push_back(swiftSrc);
 
         if (no_of_subflows == 1) {
-            swiftSrc->connect(*routeout, *routein, *swiftSnk, timeFromUs((uint32_t)crt->start));
+            swiftSrc->connect(*routeout, *routein, *swiftSnk, crt->start);
         }
         swiftSrc->set_paths(net_paths[src][dest]);
         if (no_of_subflows > 1) {
             // could probably use this for single-path case too, but historic reasons
             cout << "will start subflow " << c << " at " << crt->start << endl;
-            swiftSrc->multipath_connect(*swiftSnk, timeFromUs((uint32_t)crt->start), no_of_subflows);
+            swiftSrc->multipath_connect(*swiftSnk, crt->start, no_of_subflows);
         }
           
         sinkLogger.monitorSink(swiftSnk);

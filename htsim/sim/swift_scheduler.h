@@ -45,6 +45,8 @@ class BaseScheduler : public BaseQueue {
     uint32_t _pkt_count;
     map <flowid_t, int32_t> _queue_counts;  // map from flow id to packet count
     map <flowid_t, ScheduledSrc*> _srcs; // map from flow id to SubflowSrc for callbacks
+    bool _paused;
+    bool _servicing;
 };
 
 class FifoScheduler : public BaseScheduler {

@@ -6,6 +6,7 @@
  */
 
 #include <list>
+#include <string>
 #include "queue.h"
 #include "config.h"
 #include "eventlist.h"
@@ -28,6 +29,9 @@ public:
 
     enum queue_state {PAUSED,READY,PAUSE_RECEIVED};
 
+    static void set_fg_flowid_threshold(flowid_t threshold) { _fg_flowid_threshold = threshold; }
+    static void set_fg_util_sample_period(simtime_picosec period) { _fg_util_sample_period = period; }
+
 private:
     list<VirtualQueue*> _vq;
 
@@ -38,6 +42,10 @@ private:
 public:
     static int _ecn_enabled;
     static int _K;
+    static flowid_t _fg_flowid_threshold;
+    static simtime_picosec _fg_util_sample_period;
+    static bool _log_spine0_ecn;
+    static std::string _spine0_ecn_substr;
 };
 
 #endif
